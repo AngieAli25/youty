@@ -401,12 +401,11 @@ def public_hook(request, data: HookLeadIn):
     except Salon.DoesNotExist:
         raise HttpError(404, "Salone non trovato")
 
-    # Senza informativa il modulo è chiuso: un consenso a un testo che non
-    # esiste non è un consenso, quindi non c'è titolo per raccogliere i dati.
-    # La pagina pubblica non offre nemmeno il form; questo 403 è per chi posta
-    # lo stesso. Non contraddice la regola del "sempre 200": quella nasconde se
-    # una PERSONA è in rubrica, questo dice com'è configurato il SALONE, cosa
-    # già visibile a chiunque apra la pagina.
+    # Il modulo raccoglie anche se il salone non ha configurato l'informativa:
+    # bloccarlo spegnerebbe la raccolta contatti alla maggior parte dei saloni
+    # attivi, ed è una decisione commerciale, non tecnica. Resta il WARNING qui
+    # e l'avviso in dashboard — il consenso senza informativa da leggere è
+    # debole, e chi lo raccoglie deve poterlo sapere.
     # values_list().first() e non _settings(): un endpoint pubblico non deve
     # creare righe (get_or_create) su richiesta di uno sconosciuto.
     privacy_url = (
@@ -415,8 +414,9 @@ def public_hook(request, data: HookLeadIn):
         .first()
     )
     if not privacy_url:
-        logger.warning("hook: modulo aperto senza informativa privacy (salone=%s)", salon.slug)
-        raise HttpError(403, "Il modulo non è attivo: manca l'informativa privacy del salone")
+        logger.warning(
+            "hook: consenso raccolto senza informativa privacy configurata (salone=%s)", salon.slug
+        )
 
     # Rate limit per IP. La cache è su database (vedi settings.CACHES): condivisa
     # fra i worker, altrimenti ognuno conterebbe per conto suo e il limite non

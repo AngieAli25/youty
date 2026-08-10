@@ -296,7 +296,7 @@ class PublicHookTests(TestCase):
         cache.clear()  # il rate limit è per (salone, IP): senza reset i test si contaminano
         self.salon = Salon.objects.create(name="The Parlour", slug="the-parlour")
 
-    def _open_the_form(self):
+    def _with_privacy_policy(self):
         SalonSettings.objects.create(
             salon=self.salon, privacy_policy_url="https://theparlour.it/privacy"
         )
@@ -315,7 +315,7 @@ class PublicHookTests(TestCase):
         return self.client.post(self.URL, body, content_type="application/json")
 
     def test_lead_lands_in_the_address_book(self):
-        self._open_the_form()
+        self._with_privacy_policy()
         self.assertEqual(self._post().status_code, 200)
         client = Client.objects.get(salon=self.salon, phone="3331234567")
         self.assertEqual(client.origin, "hook")
@@ -323,11 +323,12 @@ class PublicHookTests(TestCase):
         self.assertTrue(client.consents["privacy_at"])  # senza data non è dimostrabile
         self.assertTrue(client.categories.filter(name="Da form").exists())
 
-    def test_closed_without_privacy_policy(self):
-        """Consenso a un'informativa che non esiste: niente titolo a raccogliere."""
-        resp = self._post()
-        self.assertEqual(resp.status_code, 403)
-        self.assertFalse(Client.objects.filter(salon=self.salon).exists())
+    def test_collects_even_without_privacy_policy(self):
+        """Decisione presa, non svista: senza informativa il modulo raccoglie
+        lo stesso. Chiuderlo spegnerebbe la raccolta contatti alla maggior parte
+        dei saloni attivi. Restano il WARNING nei log e l'avviso in dashboard."""
+        self.assertEqual(self._post().status_code, 200)
+        self.assertTrue(Client.objects.filter(salon=self.salon).exists())
 
     def test_unknown_salon_404(self):
         resp = self._post(salon_slug="non-esiste")
@@ -335,7 +336,6 @@ class PublicHookTests(TestCase):
 
     def test_existing_client_keeps_their_data(self):
         """Chi è già in rubrica: si aggiornano i consensi, non si riscrive la scheda."""
-        self._open_the_form()
         existing = Client.objects.create(
             salon=self.salon, first_name="Sofia", last_name="Ricci",
             phone="3331234567", email="vera@esempio.it",
@@ -348,17 +348,14 @@ class PublicHookTests(TestCase):
         self.assertFalse(existing.categories.filter(name="Da form").exists())
 
     def test_honeypot_is_dropped_silently(self):
-        self._open_the_form()
         self.assertEqual(self._post(trap=True).status_code, 200)  # 200 per non istruire i bot
         self.assertFalse(Client.objects.filter(salon=self.salon).exists())
 
     def test_privacy_consent_required(self):
-        self._open_the_form()
         self.assertEqual(self._post(privacy=False).status_code, 400)
         self.assertFalse(Client.objects.filter(salon=self.salon).exists())
 
     def test_rate_limit_stops_the_flood(self):
-        self._open_the_form()
         for i in range(20):
             self.assertEqual(self._post(phone=f"33300000{i:02d}").status_code, 200)
         self.assertEqual(self._post(phone="3339999999").status_code, 200)  # scartata, non 429
@@ -371,7 +368,6 @@ class PublicHookTests(TestCase):
 
         Qui il proxy lo simuliamo noi — `peer` è quello che Traefik accoderebbe.
         """
-        self._open_the_form()
         peer = "203.0.113.7"
 
         def post(prefix, phone):
