@@ -148,8 +148,8 @@ export default function ImpostazioniSection() {
             <CopyField value={`${CLIENT_APP_URL}/${salon.slug}/hook`} t={t} fireToast={fireToast} />
             {!settings?.privacy_policy_url && (
               <div className="t-sm" style={{ color: 'var(--danger)', marginTop: 9, lineHeight: 1.45 }}>
-                {t('Manca l’informativa privacy: finché non la imposti in Brand & app cliente il modulo resta chiuso e non raccoglie contatti.',
-                   'Privacy policy missing: until you set it under Brand & client app the form stays closed and collects nothing.')}
+                {t('Manca l’informativa privacy: il modulo raccoglie comunque, ma il consenso che stai registrando è senza un testo da leggere. Impostala in Brand & app cliente.',
+                   'Privacy policy missing: the form still collects, but the consent you are recording has no notice behind it. Set it under Brand & client app.')}
               </div>
             )}
           </div>
