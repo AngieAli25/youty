@@ -36,15 +36,33 @@ _EVENT_STATUS = {
 }
 
 
-# Paesi in cui lo 0 iniziale NON è un prefisso interurbano da togliere ma fa
-# parte del numero nazionale, e quindi resta in E.164. L'Italia è il caso raro:
-# +39 02 1234567 è giusto, +39 2 1234567 non esiste. Altrove (UK, Germania,
-# Francia) lo 0 va tolto.
+# Lo 0 subito dopo il country code è il prefisso interurbano e quasi ovunque va
+# tolto: +44 020 7946 0958 e +44 20 7946 0958 sono lo stesso numero di Londra.
+# L'Italia è l'eccezione — lo 0 di distretto fa parte del numero nazionale e
+# resta: +39 02 1234567 è giusto, +39 2 1234567 non esiste.
 #
 # La distinzione conta perché il telefono è la chiave naturale dei contatti
-# Yourang: togliendo lo 0 ai fissi, lo stesso numero scritto "02 1234567" e
-# "+39 02 1234567" darebbe due chiavi diverse, cioè due contatti.
+# Yourang: sbagliarla da un lato o dall'altro fa chiudere lo stesso numero su
+# due chiavi diverse, cioè due contatti nella stessa organizzazione.
 TRUNK_ZERO_KEPT = {"39"}
+
+# Per togliere quello 0 bisogna sapere dove finisce il country code, e i CC
+# hanno lunghezza variabile. La tabella è volutamente corta (i paesi da cui
+# arrivano davvero le clienti) e un CC che non c'è lascia il numero intatto:
+# accorciare senza sapere dove finisce il prefisso è peggio che non toccare.
+COUNTRY_CODES = ("39", "44", "49", "33", "34", "41", "43", "32", "31", "30", "351", "353", "420")
+
+
+def _drop_trunk_zero(digits: str) -> str:
+    """Toglie l'eventuale 0 interurbano dopo il country code, dove serve."""
+    for cc in sorted(COUNTRY_CODES, key=len, reverse=True):
+        if not digits.startswith(cc):
+            continue
+        rest = digits[len(cc):]
+        if cc in TRUNK_ZERO_KEPT or not rest.startswith("0"):
+            return digits
+        return cc + rest[1:]
+    return digits
 
 
 def normalize_phone(raw: str, default_cc: str = "39") -> str | None:
@@ -57,8 +75,8 @@ def normalize_phone(raw: str, default_cc: str = "39") -> str | None:
     elif s.startswith("00"):
         digits = s[2:]
     else:
-        national = s if default_cc in TRUNK_ZERO_KEPT else s.lstrip("0")
-        digits = default_cc + national
+        digits = default_cc + s
+    digits = _drop_trunk_zero(digits)
     if not re.fullmatch(r"[1-9]\d{6,14}", digits):
         return None
     return "+" + digits

@@ -64,6 +64,17 @@ class PhoneTests(SimpleTestCase):
         # Fuori dall'Italia lo 0 iniziale è prefisso interurbano e va tolto.
         self.assertEqual(normalize_phone("0161 4960000", default_cc="44"), "+441614960000")
 
+    def test_foreign_landline_spellings_converge(self):
+        # L'altra faccia dello stesso errore: lo 0 va tolto anche quando il
+        # numero arriva già con il suo prefisso internazionale.
+        self.assertEqual(normalize_phone("+44 020 7946 0958"), "+442079460958")
+        self.assertEqual(normalize_phone("+44 020 7946 0958"), normalize_phone("+44 20 7946 0958"))
+        self.assertEqual(normalize_phone("0049 030 12345678"), normalize_phone("+49 30 12345678"))
+
+    def test_unknown_country_code_left_untouched(self):
+        # CC fuori tabella: intatto è meglio che accorciato a caso.
+        self.assertEqual(normalize_phone("+675 0123456"), "+6750123456")
+
     def test_garbage_returns_none(self):
         self.assertIsNone(normalize_phone("n/a"))
 
