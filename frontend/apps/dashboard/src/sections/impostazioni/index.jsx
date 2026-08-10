@@ -148,8 +148,8 @@ export default function ImpostazioniSection() {
             <CopyField value={`${CLIENT_APP_URL}/${salon.slug}/hook`} t={t} fireToast={fireToast} />
             {!settings?.privacy_policy_url && (
               <div className="t-sm" style={{ color: 'var(--danger)', marginTop: 9, lineHeight: 1.45 }}>
-                {t('Manca l’informativa privacy: impostala in Brand & app cliente prima di diffondere questo link.',
-                   'Privacy policy missing: set it under Brand & client app before sharing this link.')}
+                {t('Manca l’informativa privacy: finché non la imposti in Brand & app cliente il modulo resta chiuso e non raccoglie contatti.',
+                   'Privacy policy missing: until you set it under Brand & client app the form stays closed and collects nothing.')}
               </div>
             )}
           </div>

@@ -11,11 +11,12 @@ import datetime as dt
 from decimal import Decimal
 from types import SimpleNamespace
 
+from django.core.cache import cache
 from django.test import TestCase
 from django.utils import timezone
 from ninja.errors import HttpError
 
-from apps.core.models import ActivityLog, Salon
+from apps.core.models import ActivityLog, Salon, SalonSettings
 from common.auth import StaffContext, create_staff_tokens
 
 from .api import (
@@ -279,3 +280,110 @@ class ClientAppointmentsApiTests(TestCase):
             f"/api/clients/{foreign_client.id}/appointments", **self.auth
         )
         self.assertEqual(resp.status_code, 404)
+
+
+class PublicHookTests(TestCase):
+    """POST /api/clients/public/hook: il form pubblico di raccolta contatti.
+
+    Testato via HTTP e non chiamando la view: è l'unico endpoint del router
+    senza auth, e metà del suo comportamento (403, 404, sempre 200) sta nei
+    codici di stato.
+    """
+
+    URL = "/api/clients/public/hook"
+
+    def setUp(self):
+        cache.clear()  # il rate limit è per (salone, IP): senza reset i test si contaminano
+        self.salon = Salon.objects.create(name="The Parlour", slug="the-parlour")
+
+    def _open_the_form(self):
+        SalonSettings.objects.create(
+            salon=self.salon, privacy_policy_url="https://theparlour.it/privacy"
+        )
+
+    def _post(self, **overrides):
+        body = {
+            "salon_slug": "the-parlour",
+            "first_name": "Sofia",
+            "last_name": "Ricci",
+            "phone": "3331234567",
+            "email": "sofia@esempio.it",
+            "marketing": True,
+            "privacy": True,
+        }
+        body.update(overrides)
+        return self.client.post(self.URL, body, content_type="application/json")
+
+    def test_lead_lands_in_the_address_book(self):
+        self._open_the_form()
+        self.assertEqual(self._post().status_code, 200)
+        client = Client.objects.get(salon=self.salon, phone="3331234567")
+        self.assertEqual(client.origin, "hook")
+        self.assertTrue(client.consents["privacy"])
+        self.assertTrue(client.consents["privacy_at"])  # senza data non è dimostrabile
+        self.assertTrue(client.categories.filter(name="Da form").exists())
+
+    def test_closed_without_privacy_policy(self):
+        """Consenso a un'informativa che non esiste: niente titolo a raccogliere."""
+        resp = self._post()
+        self.assertEqual(resp.status_code, 403)
+        self.assertFalse(Client.objects.filter(salon=self.salon).exists())
+
+    def test_unknown_salon_404(self):
+        resp = self._post(salon_slug="non-esiste")
+        self.assertEqual(resp.status_code, 404)
+
+    def test_existing_client_keeps_their_data(self):
+        """Chi è già in rubrica: si aggiornano i consensi, non si riscrive la scheda."""
+        self._open_the_form()
+        existing = Client.objects.create(
+            salon=self.salon, first_name="Sofia", last_name="Ricci",
+            phone="3331234567", email="vera@esempio.it",
+        )
+        self.assertEqual(self._post(first_name="Impostora", email="falsa@esempio.it").status_code, 200)
+        existing.refresh_from_db()
+        self.assertEqual(existing.first_name, "Sofia")
+        self.assertEqual(existing.email, "vera@esempio.it")
+        self.assertTrue(existing.consents["marketing"])
+        self.assertFalse(existing.categories.filter(name="Da form").exists())
+
+    def test_honeypot_is_dropped_silently(self):
+        self._open_the_form()
+        self.assertEqual(self._post(trap=True).status_code, 200)  # 200 per non istruire i bot
+        self.assertFalse(Client.objects.filter(salon=self.salon).exists())
+
+    def test_privacy_consent_required(self):
+        self._open_the_form()
+        self.assertEqual(self._post(privacy=False).status_code, 400)
+        self.assertFalse(Client.objects.filter(salon=self.salon).exists())
+
+    def test_rate_limit_stops_the_flood(self):
+        self._open_the_form()
+        for i in range(20):
+            self.assertEqual(self._post(phone=f"33300000{i:02d}").status_code, 200)
+        self.assertEqual(self._post(phone="3339999999").status_code, 200)  # scartata, non 429
+        self.assertEqual(Client.objects.filter(salon=self.salon).count(), 20)
+
+    def test_forged_forwarded_for_does_not_reset_the_counter(self):
+        """La catena X-Forwarded-For è scrivibile dal client, ma il nostro proxy
+        accoda in fondo il peer che ha davvero aperto la connessione: cambiare i
+        primi elementi non regala quota nuova.
+
+        Qui il proxy lo simuliamo noi — `peer` è quello che Traefik accoderebbe.
+        """
+        self._open_the_form()
+        peer = "203.0.113.7"
+
+        def post(prefix, phone):
+            return self.client.post(
+                self.URL,
+                {"salon_slug": "the-parlour", "first_name": "Sofia", "phone": phone, "privacy": True},
+                content_type="application/json",
+                HTTP_X_FORWARDED_FOR=f"{prefix}, {peer}",
+            )
+
+        for i in range(20):
+            self.assertEqual(post(f"10.0.0.{i}", f"33300000{i:02d}").status_code, 200)
+        # 21ª richiesta, prefisso mai visto ma stesso peer in fondo → scartata.
+        self.assertEqual(post("9.9.9.9", "3339999999").status_code, 200)
+        self.assertEqual(Client.objects.filter(salon=self.salon).count(), 20)

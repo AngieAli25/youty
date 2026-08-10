@@ -19,6 +19,13 @@ export default function Hook() {
   const set = (k) => (e) => setF((p) => ({ ...p, [k]: e.target.value }));
   const canSend = f.first_name.trim() && f.phone.trim() && privacy && !busy;
 
+  /* Senza informativa il modulo non si apre: spuntare "ho letto" davanti a
+   * niente da leggere non è un consenso, e senza consenso valido non c'è
+   * titolo per raccogliere i dati. L'endpoint risponde 403 per conto suo —
+   * questo è lo stesso muro, dal lato gentile. La titolare vede l'avviso in
+   * Impostazioni → Link pubblici. */
+  const closed = !brand.privacyUrl;
+
   const submit = async () => {
     if (!canSend) return;
     setError(null);
@@ -55,7 +62,9 @@ export default function Hook() {
         <div style={{ color: 'var(--brand-on)', opacity: 0.75, fontSize: 13, fontWeight: 600, marginTop: 6 }}>
           {done
             ? t('Grazie!', 'Thank you!')
-            : t('Lascia i tuoi contatti', 'Leave your contact details')}
+            : closed
+              ? ''
+              : t('Lascia i tuoi contatti', 'Leave your contact details')}
         </div>
       </div>
 
@@ -65,6 +74,14 @@ export default function Hook() {
             <div className="t-h3">{t('Ti abbiamo registrata', 'You are on the list')}</div>
             <div className="t-body" style={{ color: 'var(--muted)' }}>
               {t('Ti contatteremo presto. A presto da ', 'We will be in touch soon. See you at ')}{brand.name}.
+            </div>
+          </React.Fragment>
+        ) : closed ? (
+          <React.Fragment>
+            <div className="t-h3">{t('Modulo non disponibile', 'Form unavailable')}</div>
+            <div className="t-body" style={{ color: 'var(--muted)' }}>
+              {t('Questo salone non ha ancora pubblicato la sua informativa privacy, quindi non possiamo raccogliere i tuoi dati. Riprova più tardi.',
+                 'This salon has not published its privacy policy yet, so we cannot collect your details. Please try again later.')}
             </div>
           </React.Fragment>
         ) : (
@@ -97,11 +114,11 @@ export default function Hook() {
                 style={{ marginTop: 2, width: 18, height: 18, accentColor: 'var(--brand)', flex: '0 0 auto' }} />
               <span>
                 {t('Ho letto e accetto l’', 'I have read and accept the ')}
-                {brand.privacyUrl
-                  ? <a href={brand.privacyUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--brand)', fontWeight: 700 }}>
-                      {t('informativa privacy', 'privacy policy')}
-                    </a>
-                  : <strong>{t('informativa privacy', 'privacy policy')}</strong>}
+                {/* Sempre un link: se l'informativa manca il form non arriva
+                  * a renderizzarsi (vedi `closed`), quindi qui c'è sempre. */}
+                <a href={brand.privacyUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--brand)', fontWeight: 700 }}>
+                  {t('informativa privacy', 'privacy policy')}
+                </a>
                 {t(' del salone.', ' of the salon.')}
               </span>
             </label>

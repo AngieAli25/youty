@@ -17,7 +17,7 @@ from ninja.errors import HttpError
 from ninja.pagination import LimitOffsetPagination, paginate
 
 from apps.agenda.schemas import AppointmentOut
-from apps.core.models import Salon
+from apps.core.models import Salon, SalonSettings
 from apps.core.services import emit_event, log_activity
 from common.auth import staff_auth
 from common.permissions import require_scope
@@ -400,6 +400,23 @@ def public_hook(request, data: HookLeadIn):
         salon = Salon.objects.get(slug=data.salon_slug)
     except Salon.DoesNotExist:
         raise HttpError(404, "Salone non trovato")
+
+    # Senza informativa il modulo è chiuso: un consenso a un testo che non
+    # esiste non è un consenso, quindi non c'è titolo per raccogliere i dati.
+    # La pagina pubblica non offre nemmeno il form; questo 403 è per chi posta
+    # lo stesso. Non contraddice la regola del "sempre 200": quella nasconde se
+    # una PERSONA è in rubrica, questo dice com'è configurato il SALONE, cosa
+    # già visibile a chiunque apra la pagina.
+    # values_list().first() e non _settings(): un endpoint pubblico non deve
+    # creare righe (get_or_create) su richiesta di uno sconosciuto.
+    privacy_url = (
+        SalonSettings.objects.filter(salon=salon)
+        .values_list("privacy_policy_url", flat=True)
+        .first()
+    )
+    if not privacy_url:
+        logger.warning("hook: modulo aperto senza informativa privacy (salone=%s)", salon.slug)
+        raise HttpError(403, "Il modulo non è attivo: manca l'informativa privacy del salone")
 
     # Rate limit per IP. La cache è su database (vedi settings.CACHES): condivisa
     # fra i worker, altrimenti ognuno conterebbe per conto suo e il limite non
