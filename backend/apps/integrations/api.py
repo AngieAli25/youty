@@ -1,34 +1,38 @@
-"""Rotte integrazione Yourang: connect OAuth (PKCE), webhook in ingresso, stato.
+"""Rotte integrazione Yourang: connect via proxy, webhook in ingresso, stato.
 
-Flusso "Collega Yourang" (come i portali food/real_estate, qui lato server Django):
+Flusso "Collega Yourang" (tutti i portali passano dal proxy connect.<brand>):
   1. dashboard apre un popup su /oauth-popup/start
-  2. la pagina chiama GET /oauth/start → riceve authorize_url e va su Yourang
-  3. Yourang torna su /oauth-popup/done?code&state → POST /oauth/exchange
-  4. exchange salva i token, registra il webhook e fa il primo sync
+  2. la pagina chiama GET /oauth/start → riceve l'URL di login sul proxy
+  3. il proxy gestisce consenso e PKCE e torna su /oauth-popup/done?yr_link=…
+  4. exchange riscatta il link code lato server e fa il primo sync
+
+Niente PKCE, niente state, niente token da queste parti: sono tutti nel proxy.
 """
 
+import hashlib
+import hmac
 import json
 import logging
-import secrets
+import time
 
 from django.conf import settings
 from django.utils import timezone
 from ninja import Router
 from ninja.errors import HttpError
 
-from common.auth import staff_auth
+from common.auth import StaffAuth, staff_auth
 from common.permissions import require_owner
 
 from . import client as yc
-from . import crypto, sync
-from .login import WEBHOOK_EVENT_TYPES, login_with_yourang
-from .models import YourangConnection, YourangOAuthState
+from . import sync
+from .login import login_with_link_code
+from .models import YourangConnection
 from .schemas import AuthorizeOut, ExchangeIn, OkOut, StatusOut
 
 logger = logging.getLogger("youty.integrations")
 router = Router(tags=["integrations"])
 
-STATE_TTL_SECONDS = 600
+WEBHOOK_TOLERANCE_SECONDS = 300
 
 
 def _status_out(conn: YourangConnection | None) -> dict:
@@ -39,14 +43,23 @@ def _status_out(conn: YourangConnection | None) -> dict:
         "status": conn.status,
         "connected_at": conn.connected_at,
         "last_sync_at": conn.last_sync_at,
-        "scope": conn.scope,
         "yourang_org_id": conn.yourang_org_id,
     }
 
 
 def _require_config() -> None:
-    if not (settings.YOURANG_ISSUER_URL and settings.YOURANG_CLIENT_ID):
+    if not (settings.YOURANG_PROXY_URL and settings.YOURANG_PROXY_API_KEY):
         raise HttpError(503, "Integrazione Yourang non configurata")
+
+
+def _return_to(mode: str) -> str:
+    """Dove il proxy rimanda il browser dopo il consenso (vi aggiunge ?yr_link=).
+
+    Il `mode` viaggia qui perché non esiste più una riga di stato lato nostro a
+    ricordarlo: il proxy possiede PKCE e state, e il guard sull'open-redirect
+    confronta solo schema+host+porta, quindi una query string passa intatta.
+    """
+    return f"{settings.FRONTEND_ORIGIN.rstrip('/')}/oauth-popup/done?mode={mode}"
 
 
 # ---- Connect (OAuth) -------------------------------------------------------
@@ -54,77 +67,64 @@ def _require_config() -> None:
 
 @router.get("/yourang/oauth/start", auth=staff_auth, response=AuthorizeOut)
 def oauth_start(request):
-    """Avvia il flusso "connect" (dalle impostazioni, utente loggato → collega QUESTO salone)."""
-    ctx = request.auth
-    require_owner(ctx)
+    """Avvia il flusso "connect" (dalle impostazioni, utente loggato)."""
+    require_owner(request.auth)
     _require_config()
-    verifier, challenge = yc.make_pkce()
-    state = secrets.token_urlsafe(24)
-    YourangOAuthState.objects.create(
-        state=state, code_verifier=verifier, salon=ctx.salon, user=ctx.user
-    )
-    return {"authorize_url": yc.build_authorize_url(state, challenge, nonce=secrets.token_urlsafe(16))}
+    return {"authorize_url": yc.proxy_login_url(_return_to("connect"))}
 
 
 @router.get("/yourang/oauth/login/start", auth=None, response=AuthorizeOut)
 def oauth_login_start(request):
     """Avvia il flusso "login con Yourang" (dalla pagina di login, nessuna sessione)."""
     _require_config()
-    verifier, challenge = yc.make_pkce()
-    state = secrets.token_urlsafe(24)
-    YourangOAuthState.objects.create(state=state, code_verifier=verifier)  # salon/user null
-    return {"authorize_url": yc.build_authorize_url(state, challenge, nonce=secrets.token_urlsafe(16))}
+    return {"authorize_url": yc.proxy_login_url(_return_to("login"))}
 
 
 @router.post("/yourang/oauth/exchange", auth=None)
 def oauth_exchange(request, data: ExchangeIn):
-    """Scambia il code. Lo `state` distingue i due flussi: con salone → connect;
-    senza → login con Yourang (provisiona/collega + conia la sessione staff)."""
+    """Riscatta il link code. `mode` distingue i due flussi (lo state non esiste
+    più lato nostro: PKCE e state vivono nel proxy).
+
+    connect → collega il salone della sessione staff corrente;
+    login   → provisiona/collega salone+utente e conia la sessione staff.
+    """
     _require_config()
 
-    st = (
-        YourangOAuthState.objects.select_related("salon", "user")
-        .filter(state=data.state)
-        .first()
-    )
-    if st is None:
-        raise HttpError(400, "Stato OAuth non valido o scaduto")
-    age = (timezone.now() - st.created_at).total_seconds()
-    verifier, salon, user = st.code_verifier, st.salon, st.user
-    st.delete()
-    if age > STATE_TTL_SECONDS:
-        raise HttpError(400, "Stato OAuth scaduto: riprova")
-
-    # --- Login con Yourang: nessun salone nello stato ---
-    if salon is None:
+    if data.mode == "login":
         try:
-            session = login_with_yourang(data.code, verifier)
+            session = login_with_link_code(data.code)
         except Exception as exc:
             logger.exception("Yourang login failed")
             raise HttpError(502, "Login con Yourang fallito") from exc
         return {"mode": "login", "session": session}
 
-    # --- Connect: collega il salone esistente ---
-    try:
-        token_resp = yc.exchange_code(data.code, verifier)
-    except Exception as exc:
-        logger.exception("Yourang token exchange failed")
-        raise HttpError(502, "Scambio token con Yourang fallito") from exc
+    # --- Connect: serve una sessione staff, e solo il titolare può collegare ---
+    ctx = StaffAuth()(request)
+    if not ctx:
+        raise HttpError(401, "Sessione staff richiesta")
+    require_owner(ctx)
 
-    conn, _ = YourangConnection.objects.get_or_create(salon=salon)
-    yc.store_tokens(conn, token_resp)
-    conn.yourang_org_id = yc.org_id_from_access_token(token_resp["access_token"])
-    conn.connected_by = user
+    try:
+        identity = yc.redeem_link_code(data.code)
+    except Exception as exc:
+        logger.exception("Yourang link code redemption failed")
+        raise HttpError(502, "Collegamento con Yourang fallito") from exc
+
+    org = str(identity.get("org_id") or "")
+    if not org:
+        raise HttpError(502, "Identità Yourang senza organizzazione")
+
+    # Un'org serve UN salone: se è già altrove, collegarla qui spezzerebbe
+    # silenziosamente l'altro (il webhook risolve il salone dall'org).
+    taken = YourangConnection.objects.filter(yourang_org_id=org).exclude(salon=ctx.salon).first()
+    if taken:
+        raise HttpError(409, "Questa organizzazione Yourang è già collegata a un altro salone")
+
+    conn, _ = YourangConnection.objects.get_or_create(salon=ctx.salon)
+    conn.yourang_org_id = org
+    conn.connected_by = ctx.user
     conn.status = YourangConnection.Status.CONNECTED
     conn.last_error = ""
-    if settings.YOURANG_WEBHOOK_RECEIVER_URL:
-        try:
-            secret = yc.YourangClient(conn).register_webhook(
-                settings.YOURANG_WEBHOOK_RECEIVER_URL, WEBHOOK_EVENT_TYPES
-            )
-            conn.webhook_secret_enc = crypto.encrypt(secret)
-        except Exception:
-            logger.exception("Yourang webhook registration failed")
     conn.save()
 
     try:
@@ -157,6 +157,28 @@ def disconnect(request):
 # ---- Webhook in ingresso (nessuna auth JWT: firma HMAC) ---------------------
 
 
+def _verify_webhook(body: bytes, signature_header: str, timestamp: str) -> bool:
+    """HMAC-SHA256 su "{timestamp}.{body}", come firma il proxy.
+
+    Il segreto è ora uno solo per portale (quello che il proxy usa per la sua
+    ri-emissione), non più uno per salone: il proxy verifica la firma della
+    piattaforma e ri-firma con il proprio. Fail-closed se non configurato —
+    questa rotta è pubblica.
+    """
+    secret = settings.YOURANG_PROXY_WEBHOOK_SECRET
+    if not secret or not signature_header or not timestamp:
+        return False
+    try:
+        if abs(time.time() - int(timestamp)) > WEBHOOK_TOLERANCE_SECONDS:
+            return False
+    except ValueError:
+        return False
+    expected = hmac.new(
+        secret.encode(), timestamp.encode() + b"." + body, hashlib.sha256
+    ).hexdigest()
+    return hmac.compare_digest(f"sha256={expected}", signature_header)
+
+
 @router.post("/yourang/webhook", auth=None, response=OkOut)
 def webhook(request):
     body = request.body
@@ -167,18 +189,18 @@ def webhook(request):
     except json.JSONDecodeError:
         raise HttpError(400, "Payload non valido")
 
-    conn = YourangConnection.objects.filter(yourang_org_id=org_id).first() if org_id else None
-    if conn is None:
-        return OkOut()  # org sconosciuta: ignora silenziosamente
-
-    secret = crypto.decrypt(conn.webhook_secret_enc)
-    if not crypto.verify_signature(
+    # La firma si verifica PRIMA di toccare il DB: /yourang/webhook è pubblica,
+    # e l'org nel payload non è attendibile finché la firma non lo rende tale.
+    if not _verify_webhook(
         body,
         request.headers.get("x-yourang-signature", ""),
         request.headers.get("x-yourang-timestamp", ""),
-        secret,
     ):
         raise HttpError(401, "Firma webhook non valida")
+
+    conn = YourangConnection.objects.filter(yourang_org_id=org_id).first() if org_id else None
+    if conn is None:
+        return OkOut()  # org sconosciuta: ignora silenziosamente
 
     # Payload Yourang: notifica sottile {type, resource, resource_id, organization_id}.
     # NB: `id` è l'id della consegna webhook (random), l'evento è in `resource_id`.

@@ -186,16 +186,17 @@ STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
 YOURANG_API_URL = os.getenv("YOURANG_API_URL", "")
 YOURANG_API_KEY = os.getenv("YOURANG_API_KEY", "")
 
-# Yourang — connessione OAuth2/OIDC + sync (apps.integrations).
-# Stesse convenzioni dei portali food/real_estate. Il client OAuth (id/secret) e
-# la whitelist del redirect_uri sono provisionati lato Yourang.
-YOURANG_ISSUER_URL = os.getenv("YOURANG_ISSUER_URL", "")  # es. https://api.yourang.ai
-YOURANG_CLIENT_ID = os.getenv("YOURANG_CLIENT_ID", "")
-YOURANG_CLIENT_SECRET = os.getenv("YOURANG_CLIENT_SECRET", "")
-# URL pubblico del webhook receiver (POST /api/integrations/yourang/webhook).
-YOURANG_WEBHOOK_RECEIVER_URL = os.getenv("YOURANG_WEBHOOK_RECEIVER_URL", "")
-# Cifratura token a riposo (AES-256-GCM, come food/real_estate): openssl rand -hex 32
-ENCRYPTION_KEY = os.getenv("ENCRYPTION_KEY", "")
+# Yourang — tutto passa dal proxy (connect.<brand>, tools/internal/integration-proxy).
+# Il portale non possiede credenziali Yourang: niente client_id/secret, niente
+# token, niente cifratura a riposo. Il proxy è l'OAuth client, custodisce i token
+# di ogni organizzazione e li rinnova sotto mutex.
+YOURANG_PROXY_URL = os.getenv("YOURANG_PROXY_URL", "")  # es. https://connect.yourang.ai
+YOURANG_PROXY_SLUG = os.getenv("YOURANG_PROXY_SLUG", "beauty")
+# API key del portale verso il proxy (Authorization: Bearer). openssl rand -hex 32
+YOURANG_PROXY_API_KEY = os.getenv("YOURANG_PROXY_API_KEY", "")
+# Segreto con cui il proxy firma la SUA ri-emissione dei webhook verso di noi.
+# Fail-closed: senza questo, POST /yourang/webhook rifiuta tutto.
+YOURANG_PROXY_WEBHOOK_SECRET = os.getenv("YOURANG_PROXY_WEBHOOK_SECRET", "")
 # Origine della dashboard (per redirect_uri del popup OAuth).
 FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")
 

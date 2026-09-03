@@ -9,8 +9,13 @@ class AuthorizeOut(Schema):
 
 
 class ExchangeIn(Schema):
+    """Link code monouso restituito dal proxy in ?yr_link=, più il flusso.
+
+    Niente `state`: PKCE e state sono del proxy, non nostri.
+    """
+
     code: str
-    state: str
+    mode: str = "login"
 
 
 class StatusOut(Schema):
@@ -18,7 +23,6 @@ class StatusOut(Schema):
     status: str = "disconnected"
     connected_at: Optional[datetime] = None
     last_sync_at: Optional[datetime] = None
-    scope: str = ""
     yourang_org_id: str = ""
 
 

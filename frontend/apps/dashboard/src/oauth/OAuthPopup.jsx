@@ -9,7 +9,7 @@
 // Same origin as the opener → api carries the staff Bearer (connect), and
 // postMessage targets window.location.origin.
 import React, { useEffect, useState } from 'react';
-import { api, useT } from '@youty/shared';
+import { api, staffAuth, useT } from '@youty/shared';
 
 const START = {
   login: '/api/integrations/yourang/oauth/login/start',
@@ -35,14 +35,24 @@ export default function OAuthPopup({ path }) {
           window.location.replace(res.authorize_url);
           return;
         }
-        // /oauth-popup/done — Yourang redirected back with ?code&state
+        // /oauth-popup/done — the proxy redirected back with ?yr_link (and the
+        // ?mode we asked it to carry, since there is no local state row now).
         const params = new URLSearchParams(window.location.search);
         const err = params.get('error');
         if (err) throw new Error(err);
-        const code = params.get('code');
-        const state = params.get('state');
-        if (!code || !state) throw new Error('missing code/state');
-        const res = await api.post('/api/integrations/yourang/oauth/exchange', { code, state });
+        const code = params.get('yr_link');
+        const mode = params.get('mode') === 'login' ? 'login' : 'connect';
+        if (!code) throw new Error('missing yr_link');
+        const res = await api.post('/api/integrations/yourang/oauth/exchange', { code, mode });
+        // Nessun opener = flow aperto dalla scorciatoia nella sidebar di Yourang,
+        // in una tab normale. window.close() non funziona su una finestra non
+        // aperta da script e resteremmo sullo spinner: applichiamo qui la
+        // sessione (stessa origin, localStorage) ed entriamo nell'app.
+        if (!window.opener || window.opener === window) {
+          if (res.mode === 'login' && res.session) staffAuth.applySession(res.session);
+          window.location.replace('/');
+          return;
+        }
         notify({ type: 'yourang-oauth', ok: true, mode: res.mode, session: res.session });
         window.close();
       } catch (e) {
@@ -62,7 +72,13 @@ export default function OAuthPopup({ path }) {
         <div>
           <p style={{ fontWeight: 600 }}>{t('Connessione a Yourang non riuscita', 'Yourang connection failed')}</p>
           <p style={{ color: '#888', fontSize: 13 }}>{error}</p>
-          <button onClick={() => window.close()} style={{ marginTop: 12 }}>{t('Chiudi', 'Close')}</button>
+          {/* Senza opener close() è bloccato: il bottone deve riportare al login. */}
+          <button
+            onClick={() => (window.opener ? window.close() : window.location.replace('/'))}
+            style={{ marginTop: 12 }}
+          >
+            {window.opener ? t('Chiudi', 'Close') : t('Torna al login', 'Back to sign in')}
+          </button>
         </div>
       ) : (
         <p>{t('Connessione a Yourang in corso…', 'Connecting to Yourang…')}</p>

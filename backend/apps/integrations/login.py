@@ -1,8 +1,10 @@
-"""Login con Yourang: da un'identità Yourang (OAuth) a una sessione staff beauty.
+"""Login con Yourang: da un'identità Yourang a una sessione staff beauty.
 
-Porta il pattern di food (`provisionOrLinkYourangUser`) su Django: risolve o
-provisiona Salone + Utente + Membership a partire dal claim `org` del token e
-dall'id_token OIDC, poi conia i token staff e (best-effort) collega+sincronizza.
+L'identità arriva dal proxy (riscatto del link code), non più da uno scambio
+OAuth locale: il portale non vede mai un token Yourang. La logica di
+risoluzione qui sotto è invariata — risolve o provisiona Salone + Utente +
+Membership a partire da `org` e dai claim identità, poi conia i token staff e
+(best-effort) sincronizza.
 
 Precedenza (il SALONE si risolve dall'org, l'UTENTE sempre dall'identità Yourang):
   A. `org` già mappata su un salone (login precedente / connect) → entra lì come
@@ -13,7 +15,6 @@ Precedenza (il SALONE si risolve dall'org, l'UTENTE sempre dall'identità Youran
 
 import logging
 
-from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 from django.utils.text import slugify
@@ -23,14 +24,10 @@ from apps.core.models import Location, Salon, SalonSettings
 from common.auth import create_staff_tokens
 
 from . import client as yc
-from . import crypto
 from .models import YourangConnection
 from .sync import _split_name, sync_clients, sync_services
 
 logger = logging.getLogger("youty.integrations")
-
-WEBHOOK_EVENT_TYPES = ["contact.*", "event.*"]
-
 
 def _unique_salon_slug(seed: str) -> str:
     base = slugify(seed)[:40] or "salone"
@@ -101,15 +98,14 @@ def _resolve_salon(org: str, email: str, email_verified: bool) -> tuple[Salon | 
     return None, None
 
 
-def login_with_yourang(code: str, code_verifier: str) -> dict:
-    token_resp = yc.exchange_code(code, code_verifier)
-    org = yc.org_id_from_access_token(token_resp["access_token"])
-    idc = yc.claims_from_token(token_resp.get("id_token"))
-    email = (idc.get("email") or "").strip()
+def login_with_link_code(code: str) -> dict:
+    identity = yc.redeem_link_code(code)
+    org = str(identity.get("org_id") or "")
+    email = (identity.get("email") or "").strip()
     if not email:
-        raise ValueError("Email non disponibile dal token Yourang")
-    email_verified = bool(idc.get("email_verified"))
-    name = (idc.get("name") or "").strip() or email.split("@")[0]
+        raise ValueError("Email non disponibile dall'identità Yourang")
+    email_verified = bool(identity.get("email_verified"))
+    name = (identity.get("name") or "").strip() or email.split("@")[0]
 
     salon, user = _resolve_salon(org, email, email_verified)
 
@@ -126,21 +122,14 @@ def login_with_yourang(code: str, code_verifier: str) -> dict:
             is_owner=not Membership.objects.filter(salon=salon).exists(),
         )
 
-    # Connessione Yourang del salone: token + webhook + primo sync (best-effort).
+    # Connessione Yourang del salone. Nessun token da salvare: li custodisce il
+    # proxy. Nessuna registrazione webhook: il consenso provisiona l'endpoint
+    # (client+org) verso /hooks/<slug>, e il proxy rifiuta comunque quella rotta.
     conn, _ = YourangConnection.objects.get_or_create(salon=salon)
-    yc.store_tokens(conn, token_resp)
     conn.yourang_org_id = org
     conn.connected_by = user
     conn.status = YourangConnection.Status.CONNECTED
     conn.last_error = ""
-    if settings.YOURANG_WEBHOOK_RECEIVER_URL and not conn.webhook_secret_enc:
-        try:
-            secret = yc.YourangClient(conn).register_webhook(
-                settings.YOURANG_WEBHOOK_RECEIVER_URL, WEBHOOK_EVENT_TYPES
-            )
-            conn.webhook_secret_enc = crypto.encrypt(secret)
-        except Exception:
-            logger.exception("Yourang webhook registration failed (login)")
     conn.save()
     try:
         sync_clients(conn)
