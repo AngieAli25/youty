@@ -1,5 +1,8 @@
 """Self-check dell'integrazione Yourang: firma webhook, normalizzazione telefono,
-round-trip cifratura, idempotenza import evento.
+idempotenza import evento.
+
+Niente più round-trip di cifratura: dal passaggio al proxy il portale non
+custodisce token, quindi non c'è nulla da cifrare.
 
     python manage.py test apps.integrations
 """
@@ -11,32 +14,39 @@ from unittest.mock import Mock, patch
 
 from django.test import SimpleTestCase, TestCase, override_settings
 
-from . import crypto
+from .api import _verify_webhook
 from .sync import import_event, normalize_phone
 
-# 32-byte hex key (openssl rand -hex 32) — stesso formato di food/real_estate.
-TEST_KEY = "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff"
+WEBHOOK_SECRET = "s3cret"
 
 
+@override_settings(YOURANG_PROXY_WEBHOOK_SECRET=WEBHOOK_SECRET)
 class SignatureTests(SimpleTestCase):
-    secret = "s3cret"
+    """La firma è quella che il PROXY appone ri-emettendo: stesso schema della
+    piattaforma (HMAC su "{timestamp}.{body}"), segreto diverso."""
 
     def _sign(self, body: bytes, ts: str) -> str:
         signed = f"{ts}.".encode() + body
-        return "sha256=" + hmac.new(self.secret.encode(), signed, hashlib.sha256).hexdigest()
+        return "sha256=" + hmac.new(WEBHOOK_SECRET.encode(), signed, hashlib.sha256).hexdigest()
 
     def test_valid_signature(self):
         body, ts = b'{"a":1}', str(int(time.time()))
-        self.assertTrue(crypto.verify_signature(body, self._sign(body, ts), ts, self.secret))
+        self.assertTrue(_verify_webhook(body, self._sign(body, ts), ts))
 
     def test_wrong_signature_rejected(self):
         body, ts = b'{"a":1}', str(int(time.time()))
-        self.assertFalse(crypto.verify_signature(body, "sha256=deadbeef", ts, self.secret))
+        self.assertFalse(_verify_webhook(body, "sha256=deadbeef", ts))
 
     def test_stale_timestamp_rejected(self):
         body = b'{"a":1}'
         ts = str(int(time.time()) - 10_000)
-        self.assertFalse(crypto.verify_signature(body, self._sign(body, ts), ts, self.secret))
+        self.assertFalse(_verify_webhook(body, self._sign(body, ts), ts))
+
+    @override_settings(YOURANG_PROXY_WEBHOOK_SECRET="")
+    def test_unconfigured_secret_fails_closed(self):
+        """La rotta è pubblica: senza segreto si rifiuta, non si accetta."""
+        body, ts = b'{"a":1}', str(int(time.time()))
+        self.assertFalse(_verify_webhook(body, self._sign(body, ts), ts))
 
 
 class PhoneTests(SimpleTestCase):
@@ -51,16 +61,6 @@ class PhoneTests(SimpleTestCase):
 
     def test_garbage_returns_none(self):
         self.assertIsNone(normalize_phone("n/a"))
-
-
-@override_settings(ENCRYPTION_KEY=TEST_KEY)
-class CryptoRoundTripTests(SimpleTestCase):
-    def test_round_trip(self):
-        self.assertEqual(crypto.decrypt(crypto.encrypt("token-abc")), "token-abc")
-
-    def test_empty(self):
-        self.assertEqual(crypto.encrypt(""), "")
-        self.assertEqual(crypto.decrypt(""), "")
 
 
 class ContactPushTests(TestCase):
