@@ -65,6 +65,9 @@ class SalonSettings(TimeStampedModel):
     slot_interval_min = models.PositiveSmallIntegerField(
         choices=SlotInterval.choices, default=SlotInterval.MIN_15
     )
+    # Informativa privacy del SALONE: il titolare del trattamento dei dati delle
+    # clienti è il salone, non la piattaforma. Mostrata nel form pubblico /<slug>/hook.
+    privacy_policy_url = models.URLField(blank=True, default="")
     lastminute_discount_cap = models.PositiveSmallIntegerField(default=0)  # 0/10/20/30 %
     lastminute_monthly_budget = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     flexible_enabled = models.BooleanField(default=True)

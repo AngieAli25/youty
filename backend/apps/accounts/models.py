@@ -44,6 +44,12 @@ class User(AbstractUser):
     username = None
     email = models.EmailField("email", unique=True)
 
+    # Incrementato a ogni cambio password: i JWT portano questo numero e quelli
+    # con un valore diverso vengono rifiutati. Senza, cambiare la password non
+    # butterebbe fuori nessuno — i token sono stateless e il refresh dura 30
+    # giorni, quindi chi avesse la vecchia password resterebbe dentro un mese.
+    token_version = models.PositiveIntegerField(default=0)
+
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 

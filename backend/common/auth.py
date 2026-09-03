@@ -41,7 +41,7 @@ def decode_token(token: str) -> dict | None:
 
 def create_staff_tokens(user, salon) -> dict:
     # sub come stringa: PyJWT >= 2.10 rifiuta in decodifica i sub non-stringa
-    base = {"sub": str(user.id), "salon": salon.id}
+    base = {"sub": str(user.id), "salon": salon.id, "tv": user.token_version or 0}
     return {
         "access": _encode(
             {**base, "typ": "staff"},
@@ -95,6 +95,12 @@ class StaffAuth(HttpBearer):
             .first()
         )
         if membership is None:
+            return None
+        # Password cambiata dopo l'emissione del token → sessione non più valida.
+        # I token emessi prima di questa modifica non hanno "tv": valgono 0, come
+        # il default sull'utente, quindi restano validi e nessuno viene sloggato
+        # al deploy.
+        if payload.get("tv", 0) != (membership.user.token_version or 0):
             return None
         scopes = set(membership.role.scopes or []) if membership.role else set()
         return StaffContext(

@@ -14,6 +14,7 @@ export default function BrandDrawer({ onClose }) {
   const isOwner = !!session?.is_owner;
   const [color, setColor] = useState(settings?.brand_color || '#6366F1');
   const [openingHours, setOpeningHours] = useState(settings?.opening_hours || '');
+  const [privacyUrl, setPrivacyUrl] = useState(settings?.privacy_policy_url || '');
   const [file, setFile] = useState(null);        // pending File
   const [filePreview, setFilePreview] = useState(null); // data URL of pending file
   const [saving, setSaving] = useState(false);
@@ -36,7 +37,7 @@ export default function BrandDrawer({ onClose }) {
     setSaving(true);
     try {
       if (file) await api.postForm('/api/core/settings/logo', { logo: file });
-      await api.put('/api/core/settings', { brand_color: color, opening_hours: openingHours });
+      await api.put('/api/core/settings', { brand_color: color, opening_hours: openingHours, privacy_policy_url: privacyUrl.trim() });
       await reload.salon();
       fireToast({ msg: t('Brand salvato', 'Brand saved'), icon: 'check' });
       onClose();
@@ -123,6 +124,21 @@ export default function BrandDrawer({ onClose }) {
           style={{ ...inputCss, width: '100%', boxSizing: 'border-box', resize: 'vertical', lineHeight: 1.5, opacity: isOwner ? 1 : 0.55 }}
         />
         <div className="t-sm" style={{ color: 'var(--muted-2)', marginTop: 6, marginBottom: 22 }}>{t('Compare nel footer dell’app cliente.', 'Shown in the client app footer.')}</div>
+
+        {/* informativa privacy — obbligatoria nel form pubblico di raccolta contatti */}
+        <div className="t-meta" style={{ marginBottom: 10 }}>{t('Informativa privacy', 'Privacy policy')}</div>
+        <input
+          type="url"
+          value={privacyUrl}
+          disabled={!isOwner}
+          onChange={(e) => setPrivacyUrl(e.target.value)}
+          placeholder="https://…"
+          style={{ ...inputCss, width: '100%', boxSizing: 'border-box', opacity: isOwner ? 1 : 0.55 }}
+        />
+        <div className="t-sm" style={{ color: 'var(--muted-2)', marginTop: 6, marginBottom: 22 }}>
+          {t('Link alla vostra informativa, mostrato nel form pubblico di raccolta contatti. Il titolare del trattamento dei dati delle clienti è il salone.',
+             'Link to your privacy policy, shown on the public contact form. The salon is the data controller for its clients.')}
+        </div>
 
         {isOwner && (
           <button className="dk-btn dk-btn--clay" disabled={saving} style={{ width: '100%', opacity: saving ? 0.6 : 1 }} onClick={save}>

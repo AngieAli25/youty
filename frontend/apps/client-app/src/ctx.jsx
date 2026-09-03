@@ -1,10 +1,14 @@
 // ctx.jsx — AppProvider for the client web app: branding boot, session, view routing.
 // Screen agents CONSUME this via useApp() — never edit it.
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { api, clientAuth, mediaUrl, useT, useToastHost } from '@youty/shared';
+import { api, clientAuth, mediaUrl, SALON_SLUG, useT, useToastHost } from '@youty/shared';
 import { makeBrand } from './theme.js';
 
-export const SALON_SLUG = import.meta.env.VITE_SALON_SLUG || 'the-parlour';
+/* Il salone servito da questa pagina è il primo segmento del path
+ * (`/the-parlour`). La risoluzione vive in @youty/shared perché serve anche a
+ * clientAuth, che namespacizza la sessione per salone. Vedi shared/src/salon.js.
+ * Ri-esportato qui: gli schermi lo importano da '../ctx.jsx'. */
+export { SALON_SLUG };
 
 const AppCtx = createContext(null);
 export const useApp = () => useContext(AppCtx);
@@ -29,6 +33,7 @@ export function AppProvider({ children }) {
         address: b.address || '',
         phone: b.phone || '',
         openingHours: b.opening_hours || '',
+        privacyUrl: b.privacy_policy_url || '',
       }));
     } catch (err) {
       setBrandError(err?.message || 'Errore');

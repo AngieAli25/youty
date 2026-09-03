@@ -1,5 +1,6 @@
 """Endpoint /api/auth — login staff, team & ruoli, inviti, login OTP clienti."""
 
+from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
@@ -20,6 +21,7 @@ from common.utils import salon_get
 
 from .models import Invitation, Membership, Role, User
 from .schemas import (
+    PasswordChangeIn,
     ClientAuthOut,
     ClientMeIn,
     ClientMeOut,
@@ -154,6 +156,8 @@ def staff_refresh(request, data: RefreshIn):
     )
     if membership is None:
         raise HttpError(401, "Token non valido")
+    if payload.get("tv", 0) != (membership.user.token_version or 0):
+        raise HttpError(401, "Sessione non più valida: la password è stata modificata")
     tokens = create_staff_tokens(membership.user, membership.salon)
     return _auth_payload(membership, tokens)
 
@@ -161,6 +165,38 @@ def staff_refresh(request, data: RefreshIn):
 @router.get("/me", auth=staff_auth, response=MeOut)
 def me(request):
     return _auth_payload(request.auth.membership)
+
+
+@router.post("/staff/password", auth=staff_auth, response=StaffAuthOut)
+def staff_change_password(request, data: PasswordChangeIn):
+    """Cambio password volontario del membro staff.
+
+    Incrementa `token_version`, quindi invalida TUTTE le sessioni esistenti
+    dell'utente. È il punto centrale: i JWT sono stateless e il refresh vive 30
+    giorni, perciò senza questo passaggio cambiare la password non caccerebbe
+    fuori chi ha ancora la vecchia — cioè non servirebbe a niente nel caso che
+    motiva la funzione.
+
+    Al chiamante restituiamo token nuovi: ha appena invalidato anche i propri.
+    """
+    ctx = request.auth
+    user = ctx.user
+    if not user.check_password(data.current_password):
+        raise HttpError(400, "La password attuale non è corretta")
+    if data.new_password == data.current_password:
+        raise HttpError(400, "La nuova password deve essere diversa da quella attuale")
+    try:
+        validate_password(data.new_password, user)
+    except ValidationError as exc:
+        raise HttpError(400, " ".join(exc.messages))
+
+    user.set_password(data.new_password)
+    user.token_version = (user.token_version or 0) + 1
+    user.save(update_fields=["password", "token_version"])
+    log_activity(
+        ctx.salon, "user.password_changed", f"Password modificata: {user.email}", actor=user
+    )
+    return _auth_payload(ctx.membership, create_staff_tokens(user, ctx.salon))
 
 
 # ---- Staff: membri del team ----------------------------------------------------

@@ -6,6 +6,12 @@ import { SCREENS } from './screens/registry.js';
 import AuthFlow from './screens/auth/AuthFlow.jsx';
 import NavBar, { NAV_VIEWS } from './NavBar.jsx';
 import Utility from './Utility.jsx';
+import Hook from './screens/Hook.jsx';
+
+/* Il primo segmento del path è lo slug del salone (vedi shared/salon.js), il
+ * secondo sceglie la pagina: /<slug> è l'app, /<slug>/hook il form contatti.
+ * Letto una volta sola: l'app non naviga via URL. */
+const PAGE = window.location.pathname.split('/').filter(Boolean)[1] || '';
 
 export default function App() {
   return (
@@ -47,6 +53,20 @@ function Root() {
   }
 
   const vars = brandVars(brand);
+
+  /* Form pubblico: niente shell, niente navbar, niente gate di sessione. */
+  if (PAGE === 'hook') {
+    return (
+      <div className="app-viewport">
+        <div className="app-frame" style={{ ...vars, fontFamily: 'var(--sans)' }}>
+          <div className="scroll" style={{ flex: 1, minHeight: 0, background: 'var(--paper-0)' }}>
+            <Hook />
+          </div>
+          <Toast {...toastProps} />
+        </div>
+      </div>
+    );
+  }
 
   const Screen = SCREENS[view] || SCREENS.home;
   const showNav = NAV_VIEWS.includes(view);

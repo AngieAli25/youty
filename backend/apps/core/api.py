@@ -45,6 +45,7 @@ def _settings_out(s: SalonSettings) -> dict:
         "flexible_enabled": s.flexible_enabled,
         "flexible_window_min": s.flexible_window_min,
         "flexible_reward_pct": s.flexible_reward_pct,
+        "privacy_policy_url": s.privacy_policy_url,
         "cancel_min_hours": django_settings.CLIENT_MOVE_CANCEL_MIN_HOURS,
     }
 
@@ -229,4 +230,5 @@ def public_branding(request, salon: str):
         "address": location.address if location else "",
         "phone": location.phone if location else "",
         "opening_hours": st.opening_hours,
+        "privacy_policy_url": st.privacy_policy_url,
     }

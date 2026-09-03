@@ -5,16 +5,20 @@ common.permissions). Le schede tecniche sono uno storico immutabile: solo
 GET (lista) e POST (creazione), nessun endpoint di update/delete.
 """
 
+import logging
 from typing import Optional
 
+from django.core.cache import cache
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from ninja import Router
 from ninja.errors import HttpError
 from ninja.pagination import LimitOffsetPagination, paginate
 
 from apps.agenda.schemas import AppointmentOut
-from apps.core.services import log_activity
+from apps.core.models import Salon, SalonSettings
+from apps.core.services import emit_event, log_activity
 from common.auth import staff_auth
 from common.permissions import require_scope
 from common.utils import salon_get
@@ -23,6 +27,8 @@ from .models import Client, ClientCategory, ClientNote, TechnicalSheet
 from .schemas import (
     CategoryIn,
     CategoryOut,
+    HookLeadIn,
+    HookLeadOut,
     ClientDetailOut,
     ClientIn,
     ClientOut,
@@ -36,6 +42,7 @@ from .schemas import (
 )
 from .services import client_stats, import_rows
 
+logger = logging.getLogger("youty.clients")
 router = Router(tags=["clients"])
 
 
@@ -332,3 +339,141 @@ def create_sheet(request, client_id: int, data: TechnicalSheetIn):
         payload={"client_id": client.id, "sheet_id": sheet.id},
     )
     return sheet
+
+
+# ---------------------------------------------------------------------------
+# Form pubblico di raccolta contatti — /<slug>/hook nell'app cliente
+# ---------------------------------------------------------------------------
+
+HOOK_LABEL = "Da form"
+HOOK_LABEL_COLOR = "#8B5CF6"
+# Soglia per IP e per salone. Non troppo bassa: un salone che fa compilare il
+# form da un tablet sul bancone, o clienti sulla stessa rete pubblica, arrivano
+# tutti dallo stesso IP. Serve a fermare uno script, non a contare le persone —
+# contro lo spam mirato la difesa è l'honeypot.
+HOOK_MAX_PER_WINDOW = 20
+HOOK_WINDOW_SECONDS = 3600
+
+
+def _client_ip(request) -> str:
+    """IP reale dietro il proxy.
+
+    Si prende l'ULTIMO elemento di X-Forwarded-For, non il primo: la catena è
+    scrivibile dal client, ma il nostro proxy accoda in fondo il peer che ha
+    davvero aperto la connessione. Fidarsi del primo elemento renderebbe il rate
+    limit aggirabile con un header.
+    """
+    xff = request.META.get("HTTP_X_FORWARDED_FOR", "")
+    if xff:
+        return xff.split(",")[-1].strip()
+    return request.META.get("REMOTE_ADDR", "") or "unknown"
+
+
+@router.post("/public/hook", auth=None, response=HookLeadOut)
+def public_hook(request, data: HookLeadIn):
+    """Raccoglie un contatto dal form pubblico del salone.
+
+    Risponde 200 in ogni caso in cui il salone esiste — anche se il numero è già
+    in rubrica o se la richiesta è stata scartata. Distinguere gli esiti
+    trasformerebbe l'endpoint in un oracolo: chiunque potrebbe verificare se un
+    numero è cliente di quel salone provandolo.
+    """
+    if data.trap or data.website.strip():  # honeypot
+        # WARNING, non INFO: se questa trappola scatta su un utente vero
+        # perdiamo un contatto senza che nessuno lo sappia, quindi deve essere
+        # visibile nei log. La risposta resta 200 per non istruire i bot.
+        logger.warning(
+            "hook: submission scartata dall'honeypot (salone=%s, trap=%s, website=%r)",
+            data.salon_slug, data.trap, data.website[:40],
+        )
+        return {"ok": True}
+
+    if not data.privacy:
+        raise HttpError(400, "Il consenso al trattamento dei dati è obbligatorio")
+
+    first_name = data.first_name.strip()
+    phone = data.phone.strip()
+    if not first_name or not phone:
+        raise HttpError(400, "Nome e telefono sono obbligatori")
+
+    try:
+        salon = Salon.objects.get(slug=data.salon_slug)
+    except Salon.DoesNotExist:
+        raise HttpError(404, "Salone non trovato")
+
+    # Il modulo raccoglie anche se il salone non ha configurato l'informativa:
+    # bloccarlo spegnerebbe la raccolta contatti alla maggior parte dei saloni
+    # attivi, ed è una decisione commerciale, non tecnica. Resta il WARNING qui
+    # e l'avviso in dashboard — il consenso senza informativa da leggere è
+    # debole, e chi lo raccoglie deve poterlo sapere.
+    # values_list().first() e non _settings(): un endpoint pubblico non deve
+    # creare righe (get_or_create) su richiesta di uno sconosciuto.
+    privacy_url = (
+        SalonSettings.objects.filter(salon=salon)
+        .values_list("privacy_policy_url", flat=True)
+        .first()
+    )
+    if not privacy_url:
+        logger.warning(
+            "hook: consenso raccolto senza informativa privacy configurata (salone=%s)", salon.slug
+        )
+
+    # Rate limit per IP. La cache è su database (vedi settings.CACHES): condivisa
+    # fra i worker, altrimenti ognuno conterebbe per conto suo e il limite non
+    # limiterebbe nulla.
+    key = f"hook:{salon.id}:{_client_ip(request)}"
+    hits = cache.get(key, 0)
+    if hits >= HOOK_MAX_PER_WINDOW:
+        logger.warning("hook: rate limit superato per %s", key)
+        return {"ok": True}
+    cache.set(key, hits + 1, HOOK_WINDOW_SECONDS)
+
+    now = timezone.now().isoformat()
+    client = Client.objects.filter(salon=salon, phone=phone).first()
+
+    if client is None:
+        client = Client.objects.create(
+            salon=salon,
+            first_name=first_name,
+            last_name=data.last_name.strip(),
+            phone=phone,
+            email=data.email.strip(),
+            origin="hook",
+            consents={
+                "privacy": True,
+                "privacy_at": now,
+                "marketing": bool(data.marketing),
+                "marketing_at": now if data.marketing else "",
+                "card_charge": False,
+            },
+        )
+        label, _ = ClientCategory.objects.get_or_create(
+            salon=salon, name=HOOK_LABEL, defaults={"color": HOOK_LABEL_COLOR}
+        )
+        client.categories.add(label)
+        emit_event(
+            salon,
+            "client.created",
+            {"client_id": client.id, "name": client.full_name, "phone": client.phone, "source": "hook"},
+        )
+        log_activity(salon, "client.created", f"Contatto dal form: {client.full_name}")
+    else:
+        # Cliente già in rubrica: si aggiornano i consensi (è il senso del form) e
+        # si riempiono solo i campi vuoti. Sovrascrivere nome o email con quanto
+        # digitato da uno sconosciuto rovinerebbe una scheda reale, e l'etichetta
+        # "Da form" non va messa a chi è già cliente.
+        client.consents = {
+            **(client.consents or {}),
+            "privacy": True,
+            "privacy_at": now,
+            "marketing": bool(data.marketing) or bool((client.consents or {}).get("marketing")),
+            "marketing_at": now if data.marketing else (client.consents or {}).get("marketing_at", ""),
+        }
+        if not client.email and data.email.strip():
+            client.email = data.email.strip()
+        if not client.last_name and data.last_name.strip():
+            client.last_name = data.last_name.strip()
+        client.save(update_fields=["consents", "email", "last_name"])
+        log_activity(salon, "client.updated", f"Consensi aggiornati dal form: {client.full_name}")
+
+    return {"ok": True}

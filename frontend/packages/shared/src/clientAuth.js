@@ -1,10 +1,15 @@
 // clientAuth.js — client (mobile web app) session store.
-// Persists on localStorage key `yt.client.session`: { access, client: {id, first_name, lang} }.
+// Persists on localStorage key `yt.client.session:<slug>`: { access, client: {id, first_name, lang} }.
 // There is NO client refresh endpoint: token lives ~30 days, on 401 → logout (re-do OTP).
+//
+// La chiave è namespacizzata per salone: tutti i saloni vivono sullo stesso origin
+// (`/<slug>` nel path), quindi condividono il localStorage. Senza namespace una
+// cliente che apre due saloni presenterebbe al secondo il token emesso dal primo.
 
 import { api, setTokenProvider, setOnUnauthorized } from './api.js';
+import { SALON_SLUG } from './salon.js';
 
-const KEY = 'yt.client.session';
+const KEY = `yt.client.session:${SALON_SLUG}`;
 
 let session = load();
 const listeners = new Set();

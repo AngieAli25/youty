@@ -17,6 +17,11 @@ class StaffLoginIn(Schema):
     password: str
 
 
+class PasswordChangeIn(Schema):
+    current_password: str
+    new_password: str
+
+
 class RefreshIn(Schema):
     refresh: str
 

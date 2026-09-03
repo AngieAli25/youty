@@ -12,6 +12,13 @@ import LocationsPage from './LocationsPage.jsx';
 import BrandDrawer from './BrandDrawer.jsx';
 import TeamDrawer from './TeamDrawer.jsx';
 import RolesDrawer from './RolesDrawer.jsx';
+import PasswordDrawer from './PasswordDrawer.jsx';
+import { CopyField } from './lib.jsx';
+
+/* Host dell'app cliente: la dashboard non può dedurlo (è un altro dominio),
+ * arriva come build variable. Se manca, la sezione dei link non compare invece
+ * di mostrare URL rotti. */
+const CLIENT_APP_URL = (import.meta.env.VITE_CLIENT_APP_URL || '').replace(/\/$/, '');
 
 /* grouped link-style rows — module scope: stable identity across re-renders */
 const Group = ({ title, children }) => (
@@ -37,12 +44,13 @@ const Row = ({ icon, label, sub, value, onClick, first, locked, tag }) => (
 );
 
 export default function ImpostazioniSection() {
-  const { t, lang, setLang, session, hasScope, salon, locations, openModal, fireToast, deepLink, setDeepLink } = useDash();
+  const { t, lang, setLang, session, hasScope, salon, settings, locations, openModal, fireToast, deepLink, setDeepLink } = useDash();
   const isOwner = !!session?.is_owner;
   const canTeam = hasScope('team');
   const canLog = hasScope('activity_log');
 
   const [page, setPage] = useState(null);           // 'bookings' | 'log' | 'sedi'
+  const [pwOpen, setPwOpen] = useState(false);
   const [logPeriod, setLogPeriod] = useState('all');
   const [brandOpen, setBrandOpen] = useState(false);
   const [teamOpen, setTeamOpen] = useState(false);
@@ -121,6 +129,33 @@ export default function ImpostazioniSection() {
           value={langLabel[salon?.default_lang] || salon?.default_lang || '—'} />
       </Group>
 
+      {/* LINK PUBBLICI — gli URL che il salone dà alle clienti */}
+      {CLIENT_APP_URL && salon?.slug && (
+        <Group title={t('Link pubblici', 'Public links')}>
+          <div style={{ padding: '14px 16px' }}>
+            <div style={{ fontWeight: 600, fontSize: 14.5, marginBottom: 3 }}>{t('App cliente', 'Client app')}</div>
+            <div className="t-sm" style={{ color: 'var(--muted-2)', marginBottom: 9, lineHeight: 1.45 }}>
+              {t('Mandalo alle clienti per prenotare, spostare o disdire.', 'Send it to clients to book, move or cancel.')}
+            </div>
+            <CopyField value={`${CLIENT_APP_URL}/${salon.slug}`} t={t} fireToast={fireToast} />
+          </div>
+          <div style={{ padding: '14px 16px', borderTop: '1px solid var(--hair)' }}>
+            <div style={{ fontWeight: 600, fontSize: 14.5, marginBottom: 3 }}>{t('Modulo raccolta contatti', 'Contact form')}</div>
+            <div className="t-sm" style={{ color: 'var(--muted-2)', marginBottom: 9, lineHeight: 1.45 }}>
+              {t('Nome, telefono ed email. Chi lo compila entra nei tuoi contatti con l’etichetta “Da form”.',
+                 'Name, phone and email. Whoever fills it in lands in your contacts tagged “Da form”.')}
+            </div>
+            <CopyField value={`${CLIENT_APP_URL}/${salon.slug}/hook`} t={t} fireToast={fireToast} />
+            {!settings?.privacy_policy_url && (
+              <div className="t-sm" style={{ color: 'var(--danger)', marginTop: 9, lineHeight: 1.45 }}>
+                {t('Manca l’informativa privacy: il modulo raccoglie comunque, ma il consenso che stai registrando è senza un testo da leggere. Impostala in Brand & app cliente.',
+                   'Privacy policy missing: the form still collects, but the consent you are recording has no notice behind it. Set it under Brand & client app.')}
+              </div>
+            )}
+          </div>
+        </Group>
+      )}
+
       {/* LINGUA — dashboard UI language */}
       <Group title={t('Lingua interfaccia', 'Interface language')}>
         {[['it', 'Italiano'], ['en', 'English']].map(([k, l], i) => (
@@ -170,6 +205,9 @@ export default function ImpostazioniSection() {
           locked={!canTeam}
           value={canTeam ? t('Gestisci', 'Manage') : undefined}
           onClick={canTeam ? () => setRolesOpen(true) : lockToast} />
+        <Row icon="settings" label={t('Cambia password', 'Change password')}
+          sub={t('La tua password di accesso alla dashboard', 'Your dashboard sign-in password')}
+          onClick={() => setPwOpen(true)} />
         <Row icon="clock" label={t('Registro attività', 'Activity log')}
           sub={canLog ? t('Ogni azione con data, ora e autore', 'Every action with date, time and author') : t('Richiede il permesso Registro attività', 'Requires the Activity log permission')}
           locked={!canLog}
@@ -183,6 +221,7 @@ export default function ImpostazioniSection() {
       {brandOpen && <BrandDrawer onClose={() => setBrandOpen(false)} />}
       {teamOpen && <TeamDrawer onClose={() => setTeamOpen(false)} onRoles={() => { setTeamOpen(false); setRolesOpen(true); }} />}
       {rolesOpen && <RolesDrawer onClose={() => setRolesOpen(false)} />}
+      {pwOpen && <PasswordDrawer onClose={() => setPwOpen(false)} />}
     </div>
   );
 }

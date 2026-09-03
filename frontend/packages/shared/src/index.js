@@ -8,6 +8,8 @@ export { api, ApiError, qs, mediaUrl, API_URL, setTokenProvider, setOnUnauthoriz
 export * as staffAuth from './staffAuth.js';
 export * as clientAuth from './clientAuth.js';
 
+export { SALON_SLUG, resolveSalonSlug } from './salon.js';
+
 export { LangProvider, useT, makeT } from './i18n.jsx';
 
 export {

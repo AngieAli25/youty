@@ -22,7 +22,7 @@ export function onColor(hex) {
 }
 
 /** Build a brand object from a base color (from /api/core/public/branding). */
-export function makeBrand({ color, name, slug, logoUrl, address = '', phone = '', openingHours = '', type = 'serif' }) {
+export function makeBrand({ color, name, slug, logoUrl, address = '', phone = '', openingHours = '', privacyUrl = '', type = 'serif' }) {
   return {
     color,
     ink: darken(color),
@@ -34,6 +34,7 @@ export function makeBrand({ color, name, slug, logoUrl, address = '', phone = ''
     address,
     phone,
     openingHours,
+    privacyUrl, // informativa privacy DEL SALONE (è lui il titolare del trattamento)
     type, // 'serif' | 'grotesk' — heading typography flavour
   };
 }
