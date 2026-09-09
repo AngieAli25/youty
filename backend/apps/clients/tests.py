@@ -12,7 +12,7 @@ from decimal import Decimal
 from types import SimpleNamespace
 
 from django.core.cache import cache
-from django.test import TestCase
+from common.testing import SubscribedSalonTestCase as TestCase
 from django.utils import timezone
 from ninja.errors import HttpError
 

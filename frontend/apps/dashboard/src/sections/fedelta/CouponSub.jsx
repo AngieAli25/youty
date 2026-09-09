@@ -1,3 +1,4 @@
+import { MutationButton } from '@youty/shared';
 import React, { useEffect, useState } from 'react';
 import { api, ApiError, fmtEur, parseISO, toDateStr, Icon, EmptyState } from '@youty/shared';
 import { useDash } from '../../ctx.jsx';
@@ -14,7 +15,7 @@ function couponValueLabel(c, lang) {
 }
 
 export default function CouponSub() {
-  const { t, lang, hasScope, fireToast } = useDash();
+  const { t, lang, hasScope, canMutate, fireToast } = useDash();
   const canWrite = hasScope('marketing');
 
   const [q, setQ] = useState('');
@@ -97,7 +98,7 @@ export default function CouponSub() {
           { label: t('Origine', 'Origin'), value: originF, set: setOriginF, opts: [['all', t('Tutte', 'All')], ['manual', t('Manuale', 'Manual')], ['auto', t('Automatico', 'Automatic')], ['loyalty', t('Da fedeltà', 'From loyalty')]] },
           { label: t('Stato', 'Status'), value: statusF, set: setStatusF, opts: [['all', t('Tutti', 'All')], ['active', t('Attivi', 'Active')], ['redeemed', t('Utilizzati', 'Redeemed')], ['expired', t('Scaduti', 'Expired')]] },
         ]} />
-        {canWrite && <button className="dk-btn dk-btn--clay" onClick={openNew} style={{ flexShrink: 0 }}><Icon name="plus" size={17} color="#fff" />{t('Nuovo coupon', 'New coupon')}</button>}
+        {canWrite && <MutationButton className="dk-btn dk-btn--clay" onClick={openNew} style={{ flexShrink: 0 }}><Icon name="plus" size={17} color="#fff" />{t('Nuovo coupon', 'New coupon')}</MutationButton>}
       </div>
 
       {loading && !items.length ? (
@@ -141,7 +142,7 @@ export default function CouponSub() {
         </div>
       ) : (
         <EmptyState icon="coupon" title={t('Nessun coupon', 'No coupons')} sub={t('Crea il tuo primo coupon.', 'Create your first coupon.')}
-          action={canWrite ? t('Nuovo coupon', 'New coupon') : null} onAction={openNew} />
+          mutationAction action={canWrite ? t('Nuovo coupon', 'New coupon') : null} onAction={openNew} />
       )}
 
       <Pager count={count} limit={LIMIT} offset={offset} setOffset={setOffset} t={t} />

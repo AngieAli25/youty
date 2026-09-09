@@ -1,3 +1,4 @@
+import { MutationButton } from '@youty/shared';
 // Prenota.jsx — booking wizard (core flow), ported from prototype ClientBooking.
 // Steps: -1 choice (single/pacchetti) → 0 service picker (public catalog)
 //        → 1 day+time (GET /api/agenda/client/availability) + stylist picker
@@ -468,10 +469,10 @@ export default function Prenota() {
         </div>
         <div style={{ flex: 1 }} />
         <StickyCta>
-          <button className="btn btn--brand btn--block press" disabled={otp.length !== 6 || booking} style={{ opacity: otp.length === 6 && !booking ? 1 : 0.5 }} onClick={verifyAndBook}>
+          <MutationButton className="btn btn--brand btn--block press" disabled={otp.length !== 6 || booking} style={{ opacity: otp.length === 6 && !booking ? 1 : 0.5 }} onClick={verifyAndBook}>
             <Icon name="check" size={18} color="var(--brand-on)" />
             {booking ? t('Conferma…', 'Confirming…') : t('Conferma prenotazione', 'Confirm booking')}
-          </button>
+          </MutationButton>
         </StickyCta>
       </div>
     );
@@ -521,11 +522,11 @@ export default function Prenota() {
       </div>
       <div style={{ flex: 1 }} />
       <StickyCta>
-        <button className="btn btn--brand btn--block press" disabled={booking} style={{ opacity: booking ? 0.6 : 1 }}
+        <MutationButton className="btn btn--brand btn--block press" disabled={booking} style={{ opacity: booking ? 0.6 : 1 }}
           onClick={() => (session ? confirm() : setStep(3))}>
           <Icon name="check" size={18} color="var(--brand-on)" />
           {booking ? t('Prenotazione…', 'Booking…') : t('Conferma prenotazione', 'Confirm booking')}
-        </button>
+        </MutationButton>
       </StickyCta>
     </div>
   );

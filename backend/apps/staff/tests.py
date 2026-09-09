@@ -4,7 +4,7 @@ e l'endpoint pubblico /public/operators (scelta stilista in prenotazione)."""
 import datetime as dt
 from decimal import Decimal
 
-from django.test import TestCase
+from common.testing import SubscribedSalonTestCase as TestCase
 
 from apps.core.models import Salon
 

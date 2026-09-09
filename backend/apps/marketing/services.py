@@ -5,6 +5,8 @@ sono API interne chiamate anche da apps.sales.finalize_sale (import lazy lato sa
 le firme NON vanno cambiate.
 """
 
+from common.portal_access import require_portal_access
+
 import math
 from decimal import Decimal
 
@@ -46,6 +48,7 @@ def create_gift_card(
 
     Se `gift_service` è valorizzato la carta regala quel trattamento: il valore
     passato deve già coincidere col prezzo del servizio (garantito dal chiamante)."""
+    require_portal_access(salon)
     value = Decimal(value)
     if value <= 0:
         raise HttpError(422, "Valore della gift card non valido")
@@ -87,6 +90,7 @@ def create_gift_card(
 
 def redeem_gift_card(salon, code, amount):
     """Scala `amount` dal saldo della gift card `code`. Ritorna la card aggiornata."""
+    require_portal_access(salon)
     amount = Decimal(amount)
     if amount <= 0:
         raise HttpError(422, "Importo da scalare non valido")
@@ -137,6 +141,7 @@ def redeem_gift_card(salon, code, amount):
 def accrue_loyalty(sale):
     """Accredita punti per la vendita su ogni programma attivo; alla soglia genera
     un Coupon origin=loyalty ed emette `loyalty.reward`. No-op se la vendita è anonima."""
+    require_portal_access(sale.salon)
     client = sale.client
     if client is None:
         return
@@ -228,6 +233,7 @@ def send_communication(comm: Communication, *, scheduled_at=None, actor=None):
     """Risolve l'audience in client ids (consents.marketing=True) ed emette
     `communication.send`. Se programmata l'evento esce SUBITO con scheduled_at
     nel payload: l'invio alla data è demandato a Yourang."""
+    require_portal_access(comm.salon)
     salon = comm.salon
     Client = django_apps.get_model("clients", "Client")  # lazy: evita cicli
 

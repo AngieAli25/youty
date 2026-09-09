@@ -4,6 +4,7 @@ Ogni app di dominio espone `router` in apps/<nome>/api.py.
 """
 
 from ninja import NinjaAPI
+from common.portal_access import PortalAccessDenied
 
 api = NinjaAPI(title="youty API", version="1.0", docs_url="/docs")
 
@@ -32,3 +33,10 @@ api.add_router("/marketing", marketing_router)
 api.add_router("/automations", automations_router)
 api.add_router("/insights", insights_router)
 api.add_router("/integrations", integrations_router)
+
+
+@api.exception_handler(PortalAccessDenied)
+def portal_access_denied(request, exc):
+    response = api.create_response(request, {"detail": exc.message, "code": "portal_access_" + exc.access["status"]}, status=exc.status_code)
+    response["Cache-Control"] = "no-store"
+    return response

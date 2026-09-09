@@ -1,10 +1,11 @@
+import { withPortalForm } from '@youty/shared';
 // ClientPicker — optional client for a walk-in sale. Debounced search on GET /api/clients/?q=.
 import React, { useEffect, useRef, useState } from 'react';
 import { api, Avatar, Icon } from '@youty/shared';
 
 const initialsOf = (c) => ((c.first_name?.[0] || '') + (c.last_name?.[0] || '')).toUpperCase() || '?';
 
-export default function ClientPicker({ value, onChange, t }) {
+function ClientPicker({ value, onChange, t }) {
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
   const [list, setList] = useState(null); // null = loading
@@ -68,3 +69,5 @@ export default function ClientPicker({ value, onChange, t }) {
     </div>
   );
 }
+
+export default withPortalForm(ClientPicker, { preview: () => true, framed: false, overlay: false });

@@ -13,6 +13,7 @@ from django.utils.dateparse import parse_date
 from ninja import Router
 from ninja.errors import HttpError
 
+from common.portal_access import business_operation
 from common.auth import client_auth, staff_auth
 from common.permissions import require_scope
 from common.utils import salon_get
@@ -115,6 +116,7 @@ def _breakdown(sale: Sale) -> list[dict]:
 
 
 @router.post("/checkout/{int:appointment_id}", auth=staff_auth, response=CheckoutOut)
+@business_operation
 def checkout(request, appointment_id: int, data: CheckoutIn):
     ctx = request.auth
     require_scope(ctx, "sales")
@@ -168,6 +170,7 @@ def checkout(request, appointment_id: int, data: CheckoutIn):
 
 
 @router.post("/pos", auth=staff_auth, response=SaleDetailOut)
+@business_operation
 def pos_sale(request, data: PosIn):
     ctx = request.auth
     require_scope(ctx, "sales")
@@ -257,6 +260,7 @@ def sale_detail(request, sale_id: int):
     auth=staff_auth,
     response=ChargeNoShowOut,
 )
+@business_operation
 def charge_no_show(request, appointment_id: int):
     ctx = request.auth
     require_scope(ctx, "sales")
@@ -279,6 +283,7 @@ def charge_no_show(request, appointment_id: int):
 
 
 @router.post("/client/setup-intent", auth=client_auth, response=SetupIntentOut)
+@business_operation
 def client_setup_intent(request):
     intent = stripe_service.create_setup_intent(request.auth.client)
     return {"setup_intent_id": intent["id"], "client_secret": intent.get("client_secret")}

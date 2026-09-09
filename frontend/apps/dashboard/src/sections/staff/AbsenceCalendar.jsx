@@ -1,3 +1,6 @@
+import { PortalFormGate } from '@youty/shared';
+import { MutationInput } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // AbsenceCalendar — port of prototype AvailabilityCalendar, backed by the
 // absences API (/api/staff/{id}/absences). Exceptions are date RANGES
 // { date_from, date_to, type: vacation|holiday|other, note } instead of the
@@ -98,10 +101,10 @@ export default function AbsenceCalendar({ operatorId, absences, onChanged, canEd
         const meta = AVAIL_META[k];
         const on = edit && edit.type === k;
         return (
-          <button key={k} onClick={() => setEdit((e) => ({ ...e, type: k }))}
+          <MutationButton key={k} onClick={() => setEdit((e) => ({ ...e, type: k }))}
             style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '6px 10px', borderRadius: 99, fontSize: 12, fontWeight: 700, cursor: 'pointer', border: '1px solid ' + (on ? meta.c : 'var(--hair)'), background: on ? meta.bg : 'var(--surface)', color: on ? meta.c : 'var(--ink-2)' }}>
             <span style={{ width: 7, height: 7, borderRadius: 99, background: meta.c }} />{meta[lang === 'en' ? 'en' : 'it']}
-          </button>
+          </MutationButton>
         );
       })}
     </div>
@@ -110,7 +113,7 @@ export default function AbsenceCalendar({ operatorId, absences, onChanged, canEd
   const dateField = (label, value, extra, onChange) => (
     <label>
       <div className="t-sm" style={{ color: 'var(--muted)', fontWeight: 600, marginBottom: 4 }}>{label}</div>
-      <input type="date" value={value} {...extra} onChange={onChange} style={{ ...inputCss, fontSize: 13.5, padding: '8px 10px' }} />
+      <MutationInput type="date" value={value} {...extra} onChange={onChange} style={{ ...inputCss, fontSize: 13.5, padding: '8px 10px' }} />
     </label>
   );
 
@@ -137,11 +140,11 @@ export default function AbsenceCalendar({ operatorId, absences, onChanged, canEd
             const isToday = k === today;
             const selected = edit && edit.id && ab && ab.id === edit.id;
             return (
-              <button key={k} onClick={() => openDay(d)}
+              <MutationButton key={k} onClick={() => openDay(d)}
                 style={{ aspectRatio: '1', borderRadius: 10, cursor: canEdit ? 'pointer' : 'default', border: '1px solid ' + (selected ? 'var(--ink)' : isToday ? 'var(--clay)' : 'var(--hair)'), background: st ? st.bg : 'var(--surface)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 3, padding: 4, position: 'relative' }}>
                 <span style={{ fontWeight: isToday ? 800 : 600, fontSize: 13.5, color: st ? st.c : 'var(--ink)' }}>{d}</span>
                 {st && <span style={{ fontSize: 8.5, fontWeight: 700, color: st.c, lineHeight: 1, textAlign: 'center' }}>{st[lang === 'en' ? 'en' : 'it']}</span>}
-              </button>
+              </MutationButton>
             );
           })}
         </div>
@@ -150,7 +153,7 @@ export default function AbsenceCalendar({ operatorId, absences, onChanged, canEd
       {/* side: add/edit panel + legend + month exceptions */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {canEdit && (edit ? (
-          <div className="dk-card" style={{ padding: 16, border: '1px solid var(--clay)' }}>
+          <PortalFormGate preview={!!edit.id} onClose={() => setEdit(null)}><div className="dk-card" style={{ padding: 16, border: '1px solid var(--clay)' }}>
             <div className="t-meta" style={{ marginBottom: 12 }}>
               {edit.id ? t('Modifica assenza', 'Edit time off') : t('Aggiungi assenza / periodo', 'Add time-off / period')}
             </div>
@@ -160,26 +163,26 @@ export default function AbsenceCalendar({ operatorId, absences, onChanged, canEd
               {dateField(t('Al', 'To'), edit.date_to, { min: edit.date_from }, (e) => setEdit((x) => ({ ...x, date_to: e.target.value })))}
               <label>
                 <div className="t-sm" style={{ color: 'var(--muted)', fontWeight: 600, marginBottom: 4 }}>{t('Nota', 'Note')}</div>
-                <input value={edit.note} onChange={(e) => setEdit((x) => ({ ...x, note: e.target.value }))} placeholder={t('facoltativa', 'optional')} style={{ ...inputCss, fontSize: 13.5, padding: '8px 10px' }} />
+                <MutationInput value={edit.note} onChange={(e) => setEdit((x) => ({ ...x, note: e.target.value }))} placeholder={t('facoltativa', 'optional')} style={{ ...inputCss, fontSize: 13.5, padding: '8px 10px' }} />
               </label>
             </div>
             <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
               <button className="dk-btn dk-btn--ghost" style={{ flex: 1, height: 40 }} onClick={() => setEdit(null)}>{t('Annulla', 'Cancel')}</button>
-              <button className="dk-btn dk-btn--clay" style={{ flex: 1, height: 40, opacity: saving ? 0.6 : 1 }} onClick={save} disabled={saving}>
+              <MutationButton className="dk-btn dk-btn--clay" style={{ flex: 1, height: 40, opacity: saving ? 0.6 : 1 }} onClick={save} disabled={saving}>
                 <Icon name="check" size={15} color="#fff" />{edit.id ? t('Salva', 'Save') : t('Aggiungi', 'Add')}
-              </button>
+              </MutationButton>
             </div>
             {edit.id && (
-              <button onClick={remove} disabled={saving} style={{ width: '100%', marginTop: 8, padding: '9px 0', borderRadius: 9, background: 'transparent', border: '1px solid var(--danger-tint)', color: 'var(--danger)', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+              <MutationButton onClick={remove} disabled={saving} style={{ width: '100%', marginTop: 8, padding: '9px 0', borderRadius: 9, background: 'transparent', border: '1px solid var(--danger-tint)', color: 'var(--danger)', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
                 {t('Elimina assenza', 'Delete time off')}
-              </button>
+              </MutationButton>
             )}
-          </div>
+          </div></PortalFormGate>
         ) : (
-          <button className="dk-btn dk-btn--clay" style={{ width: '100%', height: 46 }}
+          <MutationButton className="dk-btn dk-btn--clay" style={{ width: '100%', height: 46 }}
             onClick={() => setEdit({ type: 'vacation', date_from: today, date_to: today, note: '' })}>
             <Icon name="plus" size={17} color="#fff" />{t('Aggiungi assenza / ferie', 'Add time-off')}
-          </button>
+          </MutationButton>
         ))}
 
         <div className="dk-card" style={{ padding: 18 }}>

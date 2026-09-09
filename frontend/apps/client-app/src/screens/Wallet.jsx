@@ -1,3 +1,4 @@
+import { MutationButton } from '@youty/shared';
 // Wallet.jsx — gift cards (balance/initial/code), coupons (kind/value/origin/
 // expiry), loyalty programs (points/threshold/progress bar).
 // Data: GET /api/marketing/client/wallet. Gift card detail → view 'giftcard'.
@@ -62,7 +63,7 @@ export default function Wallet() {
             <div className="t-sm" style={{ color: 'var(--muted)', marginBottom: 12 }}>{t('Saldo prepagato spendibile in salone.', 'Prepaid balance to spend in the salon.')}</div>
             {cards.length ? (
               <React.Fragment>
-                <button className="press" onClick={() => setView('giftcard')} style={{ width: '100%', textAlign: 'left', borderRadius: 'var(--r-lg, 20px)', padding: '16px 18px', background: 'var(--brand)', color: 'var(--brand-on)', marginBottom: 12 }}>
+                <MutationButton className="press" onClick={() => setView('giftcard')} style={{ width: '100%', textAlign: 'left', borderRadius: 'var(--r-lg, 20px)', padding: '16px 18px', background: 'var(--brand)', color: 'var(--brand-on)', marginBottom: 12 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div>
                       <div style={{ fontSize: 12, fontWeight: 700, opacity: 0.82, letterSpacing: '0.04em' }}>{t('Saldo totale', 'Total balance')}</div>
@@ -70,13 +71,13 @@ export default function Wallet() {
                     </div>
                     <Icon name="chevR" size={20} color="var(--brand-on)" />
                   </div>
-                </button>
+                </MutationButton>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 }} className="stagger">
                   {cards.map((g) => {
                     const initial = Number(g.initial_value || 0);
                     const used = initial > 0 ? Math.round((1 - Number(g.balance) / initial) * 100) : 0;
                     return (
-                      <button key={g.id} className="card press" onClick={() => setView('giftcard')} style={{ padding: 14, boxShadow: 'none', border: '1px solid var(--hair)', textAlign: 'left', width: '100%' }}>
+                      <MutationButton key={g.id} className="card press" onClick={() => setView('giftcard')} style={{ padding: 14, boxShadow: 'none', border: '1px solid var(--hair)', textAlign: 'left', width: '100%' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 11, marginBottom: used > 0 ? 10 : 0 }}>
                           <div style={{ width: 38, height: 38, borderRadius: 10, background: 'var(--brand-tint)', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
                             <Icon name="gift" size={19} color="var(--brand-ink)" />
@@ -92,7 +93,7 @@ export default function Wallet() {
                           <span className="tabnum" style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', background: 'var(--paper-2)', padding: '4px 8px', borderRadius: 8, flexShrink: 0 }}>{g.code}</span>
                         </div>
                         {used > 0 && <ProgressBar value={used} color="var(--brand)" />}
-                      </button>
+                      </MutationButton>
                     );
                   })}
                 </div>
@@ -100,10 +101,10 @@ export default function Wallet() {
             ) : (
               <DashedEmpty style={{ marginBottom: 14 }}>{t('Nessuna gift card attiva.', 'No active gift cards.')}</DashedEmpty>
             )}
-            <button className="press" onClick={() => setView('giftcard')}
+            <MutationButton className="press" onClick={() => setView('giftcard')}
               style={{ width: '100%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 7, padding: 11, borderRadius: 'var(--r-pill)', background: 'var(--brand-tint)', color: 'var(--brand-ink)', fontWeight: 700, fontSize: 14, marginBottom: 28 }}>
               <Icon name="gift" size={16} color="var(--brand-ink)" />{t('Acquista o regala una gift card', 'Buy or gift a gift card')}
-            </button>
+            </MutationButton>
 
             {/* ---- COUPON — sconti/omaggi una tantum ---- */}
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 4 }}>

@@ -1,3 +1,5 @@
+import { withPortalForm } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // ScaricoManualeModal.jsx — module-level manual issue (scarico) of one OR MORE products.
 // Each line: searchable product picker + quantità + causale (the 4 SCARICO_REASONS);
 // one optional operatrice for the whole session. On submit each line is POSTed
@@ -15,8 +17,8 @@ let keySeq = 0;
 const nextKey = () => 'sc' + (keySeq++) + '_' + Date.now();
 const blankLine = () => ({ key: nextKey(), product: null, q: '', qty: 1, reason: null, status: 'idle', error: null });
 
-export default function ScaricoManualeModal({ products, onClose, onDone }) {
-  const { t, lang, fireToast, hasScope, operators } = useDash();
+function ScaricoManualeModal({ products, onClose, onDone }) {
+  const { t, lang, fireToast, hasScope, canMutate, operators } = useDash();
   const locked = !hasScope('inventory');
   const list = products || [];
 
@@ -85,9 +87,9 @@ export default function ScaricoManualeModal({ products, onClose, onDone }) {
           <span className="t-num" style={{ fontSize: 18 }}>{totalUnits > 0 ? '−' : ''}{totalUnits}</span>
         </div>
         <button className="dk-btn dk-btn--ghost" onClick={onClose}>{hasRun ? t('Chiudi', 'Close') : t('Annulla', 'Cancel')}</button>
-        <button className="dk-btn dk-btn--clay" disabled={!canApply} onClick={apply}>
+        <MutationButton className="dk-btn dk-btn--clay" disabled={!canApply} onClick={apply}>
           <Icon name="check" size={17} color="#fff" />{t('Registra scarico', 'Confirm issue')}
-        </button>
+        </MutationButton>
       </React.Fragment>}>
 
       {locked && (
@@ -231,3 +233,5 @@ export default function ScaricoManualeModal({ products, onClose, onDone }) {
     </DkModal>
   );
 }
+
+export default withPortalForm(ScaricoManualeModal);

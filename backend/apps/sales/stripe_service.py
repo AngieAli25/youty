@@ -9,6 +9,7 @@ from decimal import Decimal
 
 from django.conf import settings
 from ninja.errors import HttpError
+from common.portal_access import require_portal_access
 
 
 def _client():
@@ -31,6 +32,7 @@ def _currency(salon) -> str:
 
 def ensure_customer(client) -> str:
     """Ritorna lo stripe_customer_id del cliente, creandolo se assente."""
+    require_portal_access(client.salon)
     stripe = _client()
     if client.stripe_customer_id:
         return client.stripe_customer_id
@@ -47,6 +49,7 @@ def ensure_customer(client) -> str:
 
 def create_setup_intent(client):
     """SetupIntent off-session per salvare la carta del cliente dalla web app."""
+    require_portal_access(client.salon)
     stripe = _client()
     customer_id = ensure_customer(client)
     return stripe.SetupIntent.create(
@@ -58,6 +61,7 @@ def create_setup_intent(client):
 
 def create_deposit_intent(appointment):
     """PaymentIntent per l'acconto di un appuntamento (metadata.appointment_id)."""
+    require_portal_access(appointment.salon)
     stripe = _client()
     amount = Decimal(str(appointment.deposit_amount or 0))
     if amount <= 0:
@@ -73,6 +77,7 @@ def create_deposit_intent(appointment):
 
 def charge_full_amount(appointment):
     """Addebito off-session dell'intero importo (no-show) sulla carta salvata."""
+    require_portal_access(appointment.salon)
     stripe = _client()
     client = appointment.client
     if not (client.consents or {}).get("card_charge"):

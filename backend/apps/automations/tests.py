@@ -1,7 +1,7 @@
 import json
 import uuid
 
-from django.test import TestCase
+from common.testing import SubscribedSalonTestCase as TestCase
 
 from apps.accounts.models import Membership, Role, User
 from apps.core.models import OutboxEvent, Salon

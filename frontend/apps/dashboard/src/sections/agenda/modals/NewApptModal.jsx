@@ -1,3 +1,5 @@
+import { withPortalForm, PortalFormBody } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // NewApptModal — booking composer: client search, multi-service items, availability slots
 // POST /api/agenda/appointments (shows returned deposit_amount/deposit_status, handles 409)
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -6,8 +8,8 @@ import DkModal from '../../../ui/DkModal.jsx';
 import { useDash } from '../../../ctx.jsx';
 import { initialsOf, toastErr, fmtMoney } from '../lib.js';
 
-export default function NewApptModal({ prefill, onClose, asDrawer, onCreated }) {
-  const { t, lang, services, serviceCategories, operators, fireToast, hasScope } = useDash();
+function NewApptModal({ prefill, onClose, asDrawer, onCreated }) {
+  const { t, lang, services, serviceCategories, operators, fireToast, hasScope, canMutate } = useDash();
   const pf = prefill || {};
   const canWrite = hasScope('agenda');
 
@@ -176,7 +178,7 @@ export default function NewApptModal({ prefill, onClose, asDrawer, onCreated }) 
         </div>
         <button className="dk-iconbtn" style={{ flexShrink: 0, marginLeft: 12 }} onClick={onClose}><Icon name="x" size={18} /></button>
       </div>
-      <div className="dk-modalbody" style={{ flex: 1, minHeight: 0 }}>{children}</div>
+      <div className="dk-modalbody" style={{ flex: 1, minHeight: 0 }}><PortalFormBody onClose={onClose}>{children}</PortalFormBody></div>
       {foot && <div style={{ padding: '16px 24px', borderTop: '1px solid var(--hair)', display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', justifyContent: 'flex-end', background: 'var(--surface-2)' }}>{foot}</div>}
     </div>
   );
@@ -216,7 +218,7 @@ export default function NewApptModal({ prefill, onClose, asDrawer, onCreated }) 
         sub: created.client?.full_name,
         foot: (
           <React.Fragment>
-            <button className="dk-btn dk-btn--ghost" onClick={resetForm}><Icon name="plus" size={16} />{t('Nuova prenotazione', 'New booking')}</button>
+            <MutationButton className="dk-btn dk-btn--ghost" onClick={resetForm}><Icon name="plus" size={16} />{t('Nuova prenotazione', 'New booking')}</MutationButton>
             <button className="dk-btn dk-btn--clay" onClick={onClose}><Icon name="check" size={16} color="#fff" />{t('Chiudi', 'Close')}</button>
           </React.Fragment>
         ),
@@ -238,9 +240,9 @@ export default function NewApptModal({ prefill, onClose, asDrawer, onCreated }) 
         {selStart && <span className="t-sm" style={{ fontWeight: 600, color: 'var(--clay-ink)', whiteSpace: 'nowrap' }}><Icon name="calendar" size={14} style={{ verticalAlign: '-2px', marginRight: 4 }} />{timeLabel(minutesOfDay(selStart))}</span>}
       </div>
       <button className="dk-btn dk-btn--ghost" onClick={onClose}>{t('Annulla', 'Cancel')}</button>
-      <button className="dk-btn dk-btn--clay" disabled={!canWrite || !client || !items.length || !selStart || saving} onClick={create}>
+      <MutationButton className="dk-btn dk-btn--clay" disabled={!canWrite || !client || !items.length || !selStart || saving} onClick={create}>
         <Icon name="plus" size={17} color="#fff" />{saving ? t('Creazione…', 'Creating…') : t('Crea prenotazione', 'Create booking') + ' · ' + fmtMoney(totalPrice, lang)}
-      </button>
+      </MutationButton>
     </React.Fragment>
   );
 
@@ -430,3 +432,5 @@ export default function NewApptModal({ prefill, onClose, asDrawer, onCreated }) 
     </DkModal>
   );
 }
+
+export default withPortalForm(NewApptModal);

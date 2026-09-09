@@ -1,3 +1,5 @@
+import { MutationInput } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // RolesDrawer.jsx — port of RolesManager on /api/auth/roles (scope 'team').
 // Scope checkboxes come from the known API scope list; system roles read-only.
 // Keeps the prototype's local "revenue summary visible" UI toggle (ctx showRevenue).
@@ -21,7 +23,7 @@ export const SCOPES = [
 ];
 
 export default function RolesDrawer({ onClose }) {
-  const { t, lang, hasScope, showRevenue, setShowRevenue, fireToast } = useDash();
+  const { t, lang, hasScope, canMutate, showRevenue, setShowRevenue, fireToast } = useDash();
   const canTeam = hasScope('team');
   const [roles, setRoles] = useState(null);
   const [openId, setOpenId] = useState(null);
@@ -83,7 +85,7 @@ export default function RolesDrawer({ onClose }) {
       </div>
 
       <div className="scroll" style={{ flex: 1, overflowY: 'auto', padding: '16px 22px' }}>
-        {!canTeam ? (
+        {!hasScope("team") ? (
           <LockNote t={t} msg={t('Ti serve il permesso "Team" per gestire i ruoli.', 'You need the "Team" permission to manage roles.')} />
         ) : (
           <React.Fragment>
@@ -131,21 +133,21 @@ export default function RolesDrawer({ onClose }) {
                             return (
                               <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: '1px solid var(--hair)' }}>
                                 <span style={{ flex: 1, fontSize: 13.5, fontWeight: 500, color: on ? 'var(--ink)' : 'var(--muted)' }}>{p[lang] || p.it}</span>
-                                <button onClick={() => !locked && toggleScope(r.id, p.id)} disabled={locked} style={{ width: 40, height: 23, borderRadius: 99, border: 'none', cursor: locked ? 'default' : 'pointer', background: on ? 'var(--clay)' : 'var(--hair)', opacity: locked ? 0.5 : 1, position: 'relative', transition: 'background 160ms', flexShrink: 0 }}>
+                                <MutationButton onClick={() => !locked && toggleScope(r.id, p.id)} disabled={locked} style={{ width: 40, height: 23, borderRadius: 99, border: 'none', cursor: locked ? 'default' : 'pointer', background: on ? 'var(--clay)' : 'var(--hair)', opacity: locked ? 0.5 : 1, position: 'relative', transition: 'background 160ms', flexShrink: 0 }}>
                                   <span style={{ position: 'absolute', top: 2, left: on ? 19 : 2, width: 19, height: 19, borderRadius: 99, background: '#fff', transition: 'left 160ms' }} />
-                                </button>
+                                </MutationButton>
                               </div>
                             );
                           })}
                           {!r.is_system && (
                             <React.Fragment>
                               <div style={{ display: 'flex', gap: 8, marginTop: 12, alignItems: 'center' }}>
-                                <input value={d.name} onChange={(e) => setDrafts((ds) => ({ ...ds, [r.id]: { ...ds[r.id], name: e.target.value } }))} placeholder={t('Nome ruolo', 'Role name')} style={{ ...inputCss, flex: 1, fontSize: 13, padding: '8px 11px' }} />
-                                <button className="dk-btn dk-btn--clay" disabled={!dirty || !d.name.trim()} style={{ height: 38, fontSize: 13, opacity: dirty && d.name.trim() ? 1 : 0.5 }} onClick={() => saveRole(r)}><Icon name="check" size={15} color="#fff" />{t('Salva', 'Save')}</button>
+                                <MutationInput value={d.name} onChange={(e) => setDrafts((ds) => ({ ...ds, [r.id]: { ...ds[r.id], name: e.target.value } }))} placeholder={t('Nome ruolo', 'Role name')} style={{ ...inputCss, flex: 1, fontSize: 13, padding: '8px 11px' }} />
+                                <MutationButton className="dk-btn dk-btn--clay" disabled={!dirty || !d.name.trim()} style={{ height: 38, fontSize: 13, opacity: dirty && d.name.trim() ? 1 : 0.5 }} onClick={() => saveRole(r)}><Icon name="check" size={15} color="#fff" />{t('Salva', 'Save')}</MutationButton>
                               </div>
-                              <button onClick={() => delRole(r)} style={{ marginTop: 10, display: 'inline-flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--danger)', fontSize: 12.5, fontWeight: 700, padding: 0 }}>
+                              <MutationButton onClick={() => delRole(r)} style={{ marginTop: 10, display: 'inline-flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--danger)', fontSize: 12.5, fontWeight: 700, padding: 0 }}>
                                 <Icon name="x" size={13} color="var(--danger)" />{t('Elimina ruolo', 'Delete role')}
-                              </button>
+                              </MutationButton>
                             </React.Fragment>
                           )}
                         </div>
@@ -155,7 +157,7 @@ export default function RolesDrawer({ onClose }) {
                 })}
               </div>
             )}
-            <button className="dk-btn dk-btn--ghost" style={{ width: '100%', borderStyle: 'dashed', marginTop: 12 }} onClick={addRole}><Icon name="plus" size={16} />{t('Crea un nuovo ruolo', 'Create a new role')}</button>
+            <MutationButton className="dk-btn dk-btn--ghost" style={{ width: '100%', borderStyle: 'dashed', marginTop: 12 }} onClick={addRole}><Icon name="plus" size={16} />{t('Crea un nuovo ruolo', 'Create a new role')}</MutationButton>
           </React.Fragment>
         )}
       </div>

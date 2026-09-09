@@ -1,3 +1,6 @@
+import { MutationNumInput } from '@youty/shared';
+import { withPortalForm } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // SellModal — check-out of an appointment (payment & sale), opened from the Agenda with
 // openModal('sell', { appointment }). `appointment` is an AppointmentOut-shaped object.
 // Blocks are pre-populated from appointment.items grouped by operator; product / extra service /
@@ -15,7 +18,7 @@ import {
   resolvePayments, round2, svcLabel,
 } from '../lib.js';
 
-export default function SellModal({ appointment, onDone, onClose }) {
+function SellModal({ appointment, onDone, onClose }) {
   const { t, lang, services, operators, opColors, fireToast, hasScope } = useDash();
   const appt = appointment || null;
   const canSell = hasScope('sales');
@@ -224,7 +227,7 @@ export default function SellModal({ appointment, onDone, onClose }) {
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
       <div style={{ display: 'inline-flex', alignItems: 'center', gap: 3, border: '1px solid var(--hair)', borderRadius: 9, padding: '7px 9px', background: 'var(--surface)', width: 84, boxSizing: 'border-box' }}>
         <span style={{ color: 'var(--muted-2)', fontWeight: 700 }}>€</span>
-        <NumInput autoFocus min={1} value={giftForm.amt}
+        <MutationNumInput autoFocus min={1} value={giftForm.amt}
           onChange={(amt) => setGiftForm((g) => ({ ...g, amt }))}
           style={{ border: 'none', outline: 'none', background: 'transparent', fontFamily: 'ui-monospace, monospace', fontWeight: 700, fontSize: 13.5, width: '100%' }} />
       </div>
@@ -247,11 +250,11 @@ export default function SellModal({ appointment, onDone, onClose }) {
       foot={(
         <>
           <button className="dk-btn dk-btn--ghost" onClick={onClose} disabled={saving}>{t('Annulla', 'Cancel')}</button>
-          <button className="dk-btn dk-btn--clay" disabled={saving || !canSell || !dueOk || !!payErr} onClick={() => setConfirmOpen(true)}
+          <MutationButton className="dk-btn dk-btn--clay" disabled={saving || !canSell || !dueOk || !!payErr} onClick={() => setConfirmOpen(true)}
             title={!canSell ? t('Permesso "vendite" mancante', 'Missing "sales" permission') : (payErr || undefined)}>
             <Icon name="check" size={17} color="#fff" />
             {saving ? t('Registrazione…', 'Recording…') : <>{t('Incassa', 'Take payment')} {money(Math.max(0, due), lang)}</>}
-          </button>
+          </MutationButton>
         </>
       )}>
 
@@ -282,7 +285,7 @@ export default function SellModal({ appointment, onDone, onClose }) {
                       </span>
                       {l.line_type === 'product' && !l.is_gift && (
                         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 1, border: '1px solid var(--hair)', borderRadius: 8, padding: '3px 6px', height: 26, boxSizing: 'border-box', background: 'var(--surface)', flexShrink: 0 }} title={t('Sconto prodotto', 'Product discount')}>
-                          <NumInput integer min={0} max={100} value={l.discount_pct}
+                          <MutationNumInput integer min={0} max={100} value={l.discount_pct}
                             onChange={(discount_pct) => patchLine(l.key, { discount_pct })}
                             style={{ width: 24, textAlign: 'right', border: 'none', outline: 'none', background: 'transparent', fontSize: 12.5, fontWeight: 700, fontFamily: 'ui-monospace, monospace' }} />
                           <span className="t-sm" style={{ color: 'var(--muted-2)', fontWeight: 700 }}>%</span>
@@ -376,9 +379,9 @@ export default function SellModal({ appointment, onDone, onClose }) {
       foot={(
         <>
           <button className="dk-btn dk-btn--ghost" onClick={() => setConfirmOpen(false)} disabled={saving}>{t('Torna indietro', 'Go back')}</button>
-          <button className="dk-btn dk-btn--clay" onClick={submit} disabled={saving}>
+          <MutationButton className="dk-btn dk-btn--clay" onClick={submit} disabled={saving}>
             <Icon name="check" size={16} color="#fff" />{saving ? t('Registrazione…', 'Recording…') : t('Conferma', 'Confirm')}
-          </button>
+          </MutationButton>
         </>
       )}>
       <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 8 }}>
@@ -391,3 +394,5 @@ export default function SellModal({ appointment, onDone, onClose }) {
     </>
   );
 }
+
+export default withPortalForm(SellModal);

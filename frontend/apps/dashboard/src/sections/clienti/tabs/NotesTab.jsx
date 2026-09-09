@@ -1,3 +1,5 @@
+import { MutationTextarea } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // NotesTab.jsx — client notes (GET/POST/DELETE /api/clients/{id}/notes).
 // The prototype's "AI visibility" maps to the API `visibility` field:
 // shared = visible to the AI assistant, private = staff-only. Visibility is
@@ -9,7 +11,7 @@ import { useDash } from '../../../ctx.jsx';
 import { dateTimeLabel } from '../helpers.js';
 
 export default function NotesTab({ clientId }) {
-  const { t, lang, fireToast, hasScope } = useDash();
+  const { t, lang, fireToast, hasScope, canMutate } = useDash();
   const canWrite = hasScope('clients');
   const [notes, setNotes] = useState(null);
   const [draft, setDraft] = useState('');
@@ -53,13 +55,13 @@ export default function NotesTab({ clientId }) {
       {/* add */}
       {canWrite && (
         <div className="dk-card" style={{ padding: 16, marginBottom: 16, boxShadow: 'none', border: '1px solid var(--hair)' }}>
-          <textarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={2} placeholder={t('Aggiungi una nota su questo cliente…', 'Add a note about this client…')} style={{ width: '100%', border: 'none', outline: 'none', resize: 'none', fontSize: 14.5, lineHeight: 1.5, fontFamily: 'var(--sans)', background: 'transparent', color: 'var(--ink)' }} />
+          <MutationTextarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={2} placeholder={t('Aggiungi una nota su questo cliente…', 'Add a note about this client…')} style={{ width: '100%', border: 'none', outline: 'none', resize: 'none', fontSize: 14.5, lineHeight: 1.5, fontFamily: 'var(--sans)', background: 'transparent', color: 'var(--ink)' }} />
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 10, paddingTop: 12, borderTop: '1px solid var(--hair)' }}>
             <VisibilityToggle shared={draftShared} onChange={setDraftShared} t={t} />
             <div style={{ flex: 1 }} />
-            <button className="dk-btn dk-btn--clay" style={{ height: 40, opacity: draft.trim() && !saving ? 1 : 0.4 }} disabled={!draft.trim() || saving} onClick={add}>
+            <MutationButton className="dk-btn dk-btn--clay" style={{ height: 40, opacity: draft.trim() && !saving ? 1 : 0.4 }} disabled={!draft.trim() || saving} onClick={add}>
               <Icon name="plus" size={16} color="#fff" />{t('Aggiungi nota', 'Add note')}
-            </button>
+            </MutationButton>
           </div>
         </div>
       )}
@@ -92,7 +94,7 @@ export default function NotesTab({ clientId }) {
                     <div className="t-sm" style={{ color: 'var(--muted-2)', marginTop: 6 }}>{n.author_name || '—'} · {dateTimeLabel(n.created_at, lang)}</div>
                   </div>
                   {canWrite && (
-                    <button className="dk-iconbtn" style={{ width: 30, height: 30, borderRadius: 8, flexShrink: 0 }} title={t('Elimina nota', 'Delete note')} onClick={() => remove(n.id)}><Icon name="x" size={14} /></button>
+                    <MutationButton className="dk-iconbtn" style={{ width: 30, height: 30, borderRadius: 8, flexShrink: 0 }} title={t('Elimina nota', 'Delete note')} onClick={() => remove(n.id)}><Icon name="x" size={14} /></MutationButton>
                   )}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--hair)' }}>
@@ -117,12 +119,12 @@ export default function NotesTab({ clientId }) {
 export function VisibilityToggle({ shared, onChange, t }) {
   return (
     <div style={{ display: 'inline-flex', background: 'var(--paper-2)', borderRadius: 99, padding: 3, gap: 2 }}>
-      <button onClick={() => onChange(false)} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 99, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', border: 'none', background: !shared ? 'var(--surface)' : 'transparent', color: !shared ? 'var(--ink)' : 'var(--muted)', boxShadow: !shared ? 'var(--sh-sm)' : 'none' }}>
+      <MutationButton onClick={() => onChange(false)} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 99, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', border: 'none', background: !shared ? 'var(--surface)' : 'transparent', color: !shared ? 'var(--ink)' : 'var(--muted)', boxShadow: !shared ? 'var(--sh-sm)' : 'none' }}>
         <Icon name="lock" size={13} color={!shared ? 'var(--ink)' : 'var(--muted)'} />{t('Privata', 'Private')}
-      </button>
-      <button onClick={() => onChange(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 99, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', border: 'none', background: shared ? 'var(--surface)' : 'transparent', color: shared ? 'var(--clay-ink)' : 'var(--muted)', boxShadow: shared ? 'var(--sh-sm)' : 'none' }}>
+      </MutationButton>
+      <MutationButton onClick={() => onChange(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 99, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', border: 'none', background: shared ? 'var(--surface)' : 'transparent', color: shared ? 'var(--clay-ink)' : 'var(--muted)', boxShadow: shared ? 'var(--sh-sm)' : 'none' }}>
         <Icon name="sparkle" size={13} color={shared ? 'var(--clay-ink)' : 'var(--muted)'} />{t("Visibile all'AI", 'Visible to AI')}
-      </button>
+      </MutationButton>
     </div>
   );
 }

@@ -22,9 +22,11 @@ from ninja.errors import HttpError
 
 from common.auth import StaffAuth, staff_auth
 from common.permissions import require_owner
+from common.portal_access import background_allowed, PortalAccessDenied
 
 from . import client as yc
 from . import sync
+from .access_policy import automatic_sync_allowed, record_skipped_webhook, record_sync_gap, webhook_was_skipped
 from .login import login_with_link_code
 from .models import YourangConnection
 from .schemas import AuthorizeOut, ExchangeIn, OkOut, StatusOut
@@ -128,6 +130,8 @@ def oauth_exchange(request, data: ExchangeIn):
     conn.save()
 
     try:
+        if not automatic_sync_allowed(conn.salon, "initial_sync"):
+            return {"mode": "connect", "status": _status_out(conn)}
         sync.sync_clients(conn)
         sync.sync_services(conn)
         conn.last_sync_at = timezone.now()
@@ -150,6 +154,7 @@ def status(request):
 def disconnect(request):
     ctx = request.auth
     require_owner(ctx)
+    record_sync_gap(ctx.salon, "integration_disconnect", "disconnected")
     YourangConnection.objects.filter(salon=ctx.salon).delete()
     return OkOut()
 
@@ -185,8 +190,10 @@ def webhook(request):
     org_id = ""
     try:
         payload = json.loads(body) if body else {}
+        if not isinstance(payload, dict):
+            raise ValueError("Payload non valido")
         org_id = str(payload.get("organization_id") or "")
-    except json.JSONDecodeError:
+    except (ValueError, UnicodeDecodeError):
         raise HttpError(400, "Payload non valido")
 
     # La firma si verifica PRIMA di toccare il DB: /yourang/webhook è pubblica,
@@ -202,18 +209,28 @@ def webhook(request):
     if conn is None:
         return OkOut()  # org sconosciuta: ignora silenziosamente
 
+    delivery_key = hashlib.sha256(str(payload.get("id") or json.dumps(payload, sort_keys=True)).encode()).hexdigest()
+    if webhook_was_skipped(conn.salon, delivery_key):
+        return OkOut()
+    if not background_allowed(conn.salon, "yourang_webhook"):
+        record_skipped_webhook(conn.salon, delivery_key)
+        return OkOut()
+
     # Payload Yourang: notifica sottile {type, resource, resource_id, organization_id}.
     # NB: `id` è l'id della consegna webhook (random), l'evento è in `resource_id`.
     event_type = str(payload.get("type") or payload.get("event_type") or "")
     entity_id = str(payload.get("resource_id") or "")
 
     try:
-        if event_type.startswith("contact"):
-            sync.sync_clients(conn)  # riconciliazione completa (robusta al payload)
+        if event_type in ("contact.created", "contact.updated") and entity_id:
+            sync.import_contact(conn, entity_id)
         elif event_type == "event.deleted":
             sync.cancel_event(conn, entity_id)
         elif event_type.startswith("event") and entity_id:
             sync.import_event(conn, entity_id)
+    except PortalAccessDenied as exc:
+        record_sync_gap(conn.salon, "yourang_webhook", exc.access["status"])
+        record_skipped_webhook(conn.salon, delivery_key)
     except Exception:
         logger.exception("Yourang webhook processing failed (%s)", event_type)
 

@@ -1,3 +1,4 @@
+import { MutationButton } from '@youty/shared';
 // WaitlistModal — full waiting list (GET /api/agenda/waitlist), ranked presentation,
 // "Contattato" → POST /waitlist/{id}/contacted, "Proponi" → newappt prefill.
 // NOTE: entries are created by clients from the app — no staff add-form (API is client-only).
@@ -8,7 +9,7 @@ import { useDash } from '../../../ctx.jsx';
 import { initialsOf, prefLabel, toastErr, wlDaysWaiting } from '../lib.js';
 
 export default function WaitlistModal({ onClose }) {
-  const { t, fireToast, openModal, hasScope } = useDash();
+  const { t, fireToast, openModal, hasScope, canMutate } = useDash();
   const canWrite = hasScope('agenda');
   const [list, setList] = useState(null); // null = loading
   const [busyId, setBusyId] = useState(null);
@@ -102,13 +103,13 @@ export default function WaitlistModal({ onClose }) {
                   </div>
                   {canWrite && (
                     <div style={{ display: 'flex', gap: 8 }}>
-                      <button className="dk-btn dk-btn--clay" style={{ flex: 1, height: 36, fontSize: 13 }} onClick={() => propose(w)}>
+                      <MutationButton className="dk-btn dk-btn--clay" style={{ flex: 1, height: 36, fontSize: 13 }} onClick={() => propose(w)}>
                         <Icon name="calendar" size={15} color="#fff" />{t('Proponi', 'Propose')}
-                      </button>
+                      </MutationButton>
                       {!contacted && (
-                        <button className="dk-btn dk-btn--ghost" disabled={busyId === w.id} style={{ flex: 1, height: 36, fontSize: 13 }} onClick={() => markContacted(w)}>
+                        <MutationButton className="dk-btn dk-btn--ghost" disabled={busyId === w.id} style={{ flex: 1, height: 36, fontSize: 13 }} onClick={() => markContacted(w)}>
                           <Icon name="whatsapp" size={15} color="#3F9D58" />{t('Contattato', 'Contacted')}
-                        </button>
+                        </MutationButton>
                       )}
                     </div>
                   )}

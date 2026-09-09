@@ -10,6 +10,7 @@ from ninja.files import UploadedFile
 from ninja.pagination import LimitOffsetPagination, paginate
 
 from apps.core.services import emit_event, log_activity
+from common.portal_access import business_operation
 from common.auth import staff_auth
 from common.permissions import require_scope
 from common.utils import salon_get
@@ -114,6 +115,7 @@ def list_products(
 
 
 @router.post("/products", auth=staff_auth, response=ProductOut)
+@business_operation
 def create_product(request, data: ProductIn):
     ctx = request.auth
     require_scope(ctx, "inventory")
@@ -134,6 +136,7 @@ def get_product(request, product_id: int):
 
 
 @router.put("/products/{int:product_id}", auth=staff_auth, response=ProductOut)
+@business_operation
 def update_product(request, product_id: int, data: ProductIn):
     ctx = request.auth
     require_scope(ctx, "inventory")
@@ -150,6 +153,7 @@ def update_product(request, product_id: int, data: ProductIn):
 
 
 @router.delete("/products/{int:product_id}", auth=staff_auth, response=OkOut)
+@business_operation
 def delete_product(request, product_id: int):
     """Soft delete: il prodotto resta in archivio (movimenti/storici intatti)."""
     ctx = request.auth
@@ -171,6 +175,7 @@ def delete_product(request, product_id: int):
 
 
 @router.post("/products/{int:product_id}/load", auth=staff_auth, response=MovementOut)
+@business_operation
 def load_product(
     request,
     product_id: int,
@@ -201,6 +206,7 @@ def load_product(
 
 
 @router.post("/products/{int:product_id}/unload", auth=staff_auth, response=MovementOut)
+@business_operation
 def unload_product(request, product_id: int, data: ProductUnloadIn):
     ctx = request.auth
     require_scope(ctx, "inventory")
@@ -233,6 +239,7 @@ def unload_product(request, product_id: int, data: ProductUnloadIn):
 
 
 @router.post("/load-csv", auth=staff_auth, response=LoadCsvOut)
+@business_operation
 def load_csv(request, data: LoadCsvIn):
     """Carico multiplo da CSV: match per SKU poi per nome; non sovrascrive, somma.
 
@@ -344,6 +351,7 @@ def list_suppliers(request):
 
 
 @router.post("/suppliers", auth=staff_auth, response=SupplierOut)
+@business_operation
 def create_supplier(request, data: SupplierIn):
     ctx = request.auth
     require_scope(ctx, "inventory")
@@ -361,6 +369,7 @@ def create_supplier(request, data: SupplierIn):
 
 
 @router.put("/suppliers/{int:supplier_id}", auth=staff_auth, response=SupplierOut)
+@business_operation
 def update_supplier(request, supplier_id: int, data: SupplierIn):
     ctx = request.auth
     require_scope(ctx, "inventory")
@@ -381,6 +390,7 @@ def update_supplier(request, supplier_id: int, data: SupplierIn):
 
 
 @router.delete("/suppliers/{int:supplier_id}", auth=staff_auth, response=OkOut)
+@business_operation
 def delete_supplier(request, supplier_id: int):
     ctx = request.auth
     require_scope(ctx, "inventory")
@@ -408,6 +418,7 @@ def list_categories(request):
 
 
 @router.post("/categories", auth=staff_auth, response=CategoryOut)
+@business_operation
 def create_category(request, data: CategoryIn):
     ctx = request.auth
     require_scope(ctx, "inventory")
@@ -420,6 +431,7 @@ def create_category(request, data: CategoryIn):
 
 
 @router.put("/categories/{int:category_id}", auth=staff_auth, response=CategoryOut)
+@business_operation
 def update_category(request, category_id: int, data: CategoryIn):
     ctx = request.auth
     require_scope(ctx, "inventory")
@@ -433,6 +445,7 @@ def update_category(request, category_id: int, data: CategoryIn):
 
 
 @router.delete("/categories/{int:category_id}", auth=staff_auth, response=OkOut)
+@business_operation
 def delete_category(request, category_id: int):
     ctx = request.auth
     require_scope(ctx, "inventory")
@@ -463,6 +476,7 @@ def list_orders(request, status: str = "", supplier_id: Optional[int] = None):
 
 
 @router.post("/orders/generate", auth=staff_auth, response=list[OrderOut])
+@business_operation
 def generate_orders(request):
     """Genera bozze d'ordine per i prodotti sotto soglia, raggruppate per fornitore."""
     ctx = request.auth
@@ -484,6 +498,7 @@ def get_order(request, order_id: int):
 
 
 @router.put("/orders/{int:order_id}", auth=staff_auth, response=OrderOut)
+@business_operation
 def update_order(request, order_id: int, data: OrderUpdateIn):
     ctx = request.auth
     require_scope(ctx, "inventory")
@@ -510,6 +525,7 @@ def update_order(request, order_id: int, data: OrderUpdateIn):
 
 
 @router.post("/orders/{int:order_id}/send", auth=staff_auth, response=OrderOut)
+@business_operation
 def send_order(request, order_id: int, data: OrderSendIn):
     ctx = request.auth
     require_scope(ctx, "inventory")
@@ -561,6 +577,7 @@ def send_order(request, order_id: int, data: OrderSendIn):
 
 
 @router.post("/orders/{int:order_id}/receive", auth=staff_auth, response=OrderReceiveOut)
+@business_operation
 def receive_order_view(request, order_id: int, data: OrderReceiveIn):
     ctx = request.auth
     require_scope(ctx, "inventory")

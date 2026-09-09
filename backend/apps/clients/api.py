@@ -19,6 +19,7 @@ from ninja.pagination import LimitOffsetPagination, paginate
 from apps.agenda.schemas import AppointmentOut
 from apps.core.models import Salon, SalonSettings
 from apps.core.services import emit_event, log_activity
+from common.portal_access import business_operation, require_portal_access
 from common.auth import staff_auth
 from common.permissions import require_scope
 from common.utils import salon_get
@@ -55,6 +56,7 @@ def list_categories(request):
 
 
 @router.post("/categories", auth=staff_auth, response=CategoryOut)
+@business_operation
 def create_category(request, data: CategoryIn):
     ctx = request.auth
     require_scope(ctx, "clients")
@@ -70,6 +72,7 @@ def create_category(request, data: CategoryIn):
 
 
 @router.put("/categories/{int:category_id}", auth=staff_auth, response=CategoryOut)
+@business_operation
 def update_category(request, category_id: int, data: CategoryIn):
     ctx = request.auth
     require_scope(ctx, "clients")
@@ -88,6 +91,7 @@ def update_category(request, category_id: int, data: CategoryIn):
 
 
 @router.delete("/categories/{int:category_id}", auth=staff_auth, response=OkOut)
+@business_operation
 def delete_category(request, category_id: int):
     ctx = request.auth
     require_scope(ctx, "clients")
@@ -151,6 +155,7 @@ def list_clients(
 
 
 @router.post("/", auth=staff_auth, response=ClientOut)
+@business_operation
 def create_client(request, data: ClientIn):
     ctx = request.auth
     require_scope(ctx, "clients")
@@ -183,6 +188,7 @@ def get_client(request, client_id: int):
 
 
 @router.put("/{int:client_id}", auth=staff_auth, response=ClientOut)
+@business_operation
 def update_client(request, client_id: int, data: ClientIn):
     ctx = request.auth
     require_scope(ctx, "clients")
@@ -207,6 +213,7 @@ def update_client(request, client_id: int, data: ClientIn):
 
 
 @router.delete("/{int:client_id}", auth=staff_auth, response=OkOut)
+@business_operation
 def delete_client(request, client_id: int):
     ctx = request.auth
     require_scope(ctx, "clients")
@@ -224,6 +231,7 @@ def delete_client(request, client_id: int):
 
 
 @router.post("/import", auth=staff_auth, response=ImportOut)
+@business_operation
 def import_clients(request, data: ImportIn):
     ctx = request.auth
     require_scope(ctx, "clients")
@@ -274,6 +282,7 @@ def list_notes(request, client_id: int):
 
 
 @router.post("/{int:client_id}/notes", auth=staff_auth, response=NoteOut)
+@business_operation
 def create_note(request, client_id: int, data: NoteIn):
     ctx = request.auth
     require_scope(ctx, "clients")
@@ -295,6 +304,7 @@ def create_note(request, client_id: int, data: NoteIn):
 
 
 @router.delete("/{int:client_id}/notes/{int:note_id}", auth=staff_auth, response=OkOut)
+@business_operation
 def delete_note(request, client_id: int, note_id: int):
     ctx = request.auth
     require_scope(ctx, "clients")
@@ -322,6 +332,7 @@ def list_sheets(request, client_id: int):
 
 
 @router.post("/{int:client_id}/sheets", auth=staff_auth, response=TechnicalSheetOut)
+@business_operation
 def create_sheet(request, client_id: int, data: TechnicalSheetIn):
     ctx = request.auth
     require_scope(ctx, "clients")
@@ -400,6 +411,8 @@ def public_hook(request, data: HookLeadIn):
         salon = Salon.objects.get(slug=data.salon_slug)
     except Salon.DoesNotExist:
         raise HttpError(404, "Salone non trovato")
+
+    require_portal_access(salon, public=True)
 
     # Il modulo raccoglie anche se il salone non ha configurato l'informativa:
     # bloccarlo spegnerebbe la raccolta contatti alla maggior parte dei saloni

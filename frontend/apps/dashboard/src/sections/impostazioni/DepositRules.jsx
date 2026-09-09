@@ -1,3 +1,7 @@
+import { withPortalForm } from '@youty/shared';
+import { MutationNumInput } from '@youty/shared';
+import { MutationToggle } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // DepositRules.jsx — CRUD on /api/core/deposit-rules (owner-only, read included).
 // Port of DkDepositRules / DkDepositRuleCard with the API conditions model:
 // { op: 'and'|'or', rules: [{ field, cmp, value }] } + amount_type pct|fixed.
@@ -7,8 +11,8 @@ import DkSeg from '../../ui/DkSeg.jsx';
 import { useDash } from '../../ctx.jsx';
 import { DkCondRow, depositFields, ruleSentence, inputCss, toastErr, LockNote } from './lib.jsx';
 
-export default function DepositRules() {
-  const { t, lang, session, clientCategories, fireToast } = useDash();
+function DepositRules() {
+  const { t, lang, session, operationalAccess, clientCategories, fireToast } = useDash();
   const isOwner = !!session?.is_owner;
   const [rules, setRules] = useState(null);   // null = loading
   const [openId, setOpenId] = useState(null);
@@ -68,7 +72,7 @@ export default function DepositRules() {
           <div style={{ fontWeight: 600, fontSize: 14.5 }}>{t('Regole deposito', 'Deposit rules')}</div>
           <div className="t-sm" style={{ color: 'var(--muted)' }}>{t('A chi richiedere un acconto. Si applicano in automatico alla prenotazione.', 'Who is asked for a deposit. Applied automatically at booking.')}</div>
         </div>
-        <button className="dk-btn dk-btn--clay" style={{ flexShrink: 0 }} onClick={add}><Icon name="plus" size={16} color="#fff" />{t('Nuova regola deposito', 'New deposit rule')}</button>
+        <MutationButton className="dk-btn dk-btn--clay" style={{ flexShrink: 0 }} onClick={add}><Icon name="plus" size={16} color="#fff" />{t('Nuova regola deposito', 'New deposit rule')}</MutationButton>
       </div>
 
       {rules === null ? (
@@ -154,13 +158,13 @@ function RuleCard({ rule, fields, open, onToggleOpen, onSave, onDelete, t, lang,
     <div className="dk-card" style={{ boxShadow: 'none', border: '1px solid var(--hair)', borderLeft: '3px solid ' + (rule.active ? 'var(--clay)' : 'var(--faint)'), opacity: rule.active ? 1 : 0.65 }}>
       {/* compact row — the rule as a sentence */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '12px 14px', cursor: 'pointer' }} onClick={onToggleOpen}>
-        <span onClick={(e) => e.stopPropagation()}><Toggle on={rule.active} onChange={toggleActive} /></span>
+        <span onClick={(e) => e.stopPropagation()}><MutationToggle on={rule.active} onChange={toggleActive} /></span>
         <div style={{ flex: 1, minWidth: 0, fontSize: 13.5, lineHeight: 1.45 }}>
           <span style={{ fontWeight: 800, fontSize: 11, letterSpacing: '0.08em', color: 'var(--clay-ink)', background: 'var(--clay-tint)', padding: '2px 7px', borderRadius: 6, marginRight: 7 }}>{t('SE', 'IF')}</span>
           <strong>{sentence}</strong>
           <span style={{ color: 'var(--muted)' }}> → {t('acconto', 'deposit')} {amtTxt} · {t('priorità', 'priority')} {draft.priority}</span>
         </div>
-        <button className="dk-iconbtn" onClick={(e) => { e.stopPropagation(); onDelete(); }} title={t('Elimina regola', 'Delete rule')} style={{ width: 30, height: 30, borderRadius: 8, display: 'grid', placeItems: 'center', color: 'var(--muted)', flexShrink: 0 }}><Icon name="x" size={14} /></button>
+        <MutationButton className="dk-iconbtn" onClick={(e) => { e.stopPropagation(); onDelete(); }} title={t('Elimina regola', 'Delete rule')} style={{ width: 30, height: 30, borderRadius: 8, display: 'grid', placeItems: 'center', color: 'var(--muted)', flexShrink: 0 }}><Icon name="x" size={14} /></MutationButton>
         <Icon name="chevD" size={16} color="var(--muted-2)" style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 160ms', flexShrink: 0 }} />
       </div>
 
@@ -175,7 +179,7 @@ function RuleCard({ rule, fields, open, onToggleOpen, onSave, onDelete, t, lang,
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 12 }}>
             {QUICK.map(([label, cond]) => {
               const on = quickOn(cond);
-              return <button key={label} onClick={() => setConds(() => [{ _id: newCondId(), ...cond }])} style={{ padding: '7px 13px', borderRadius: 99, fontSize: 12.5, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', border: '1px solid ' + (on ? 'var(--ink)' : 'var(--hair)'), background: on ? 'var(--ink)' : 'var(--surface)', color: on ? '#fff' : 'var(--ink-2)' }}>{label}</button>;
+              return <MutationButton key={label} onClick={() => setConds(() => [{ _id: newCondId(), ...cond }])} style={{ padding: '7px 13px', borderRadius: 99, fontSize: 12.5, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', border: '1px solid ' + (on ? 'var(--ink)' : 'var(--hair)'), background: on ? 'var(--ink)' : 'var(--surface)', color: on ? '#fff' : 'var(--ink-2)' }}>{label}</MutationButton>;
             })}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -185,7 +189,7 @@ function RuleCard({ rule, fields, open, onToggleOpen, onSave, onDelete, t, lang,
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '8px 0' }}>
                     <div className="dk-seg" style={{ padding: 3 }}>
                       {[['and', t('E', 'AND')], ['or', t('O', 'OR')]].map(([k, l]) => (
-                        <button key={k} className={draft.op === k ? 'on' : ''} style={{ height: 26, padding: '0 12px', fontSize: 11.5 }} onClick={() => upd({ op: k })}>{l}</button>
+                        <MutationButton key={k} className={draft.op === k ? 'on' : ''} style={{ height: 26, padding: '0 12px', fontSize: 11.5 }} onClick={() => upd({ op: k })}>{l}</MutationButton>
                       ))}
                     </div>
                     <div style={{ flex: 1, height: 1, background: 'var(--hair)' }} />
@@ -196,7 +200,7 @@ function RuleCard({ rule, fields, open, onToggleOpen, onSave, onDelete, t, lang,
             ))}
             {!draft.conds.length && <div className="t-sm" style={{ color: 'var(--muted-2)', padding: '4px 2px' }}>{t('Nessuna condizione: la regola vale per tutte le clienti.', 'No conditions: the rule applies to every client.')}</div>}
           </div>
-          <button className="dk-btn dk-btn--soft" style={{ height: 34, fontSize: 12.5, marginTop: 10 }} onClick={addCond}><Icon name="plus" size={14} />{t('Aggiungi condizione', 'Add condition')}</button>
+          <MutationButton className="dk-btn dk-btn--soft" style={{ height: 34, fontSize: 12.5, marginTop: 10 }} onClick={addCond}><Icon name="plus" size={14} />{t('Aggiungi condizione', 'Add condition')}</MutationButton>
 
           {/* amount */}
           <div className="t-meta" style={{ margin: '18px 0 8px' }}>{t('Importo dell’acconto', 'Deposit amount')}</div>
@@ -204,7 +208,7 @@ function RuleCard({ rule, fields, open, onToggleOpen, onSave, onDelete, t, lang,
             <DkSeg value={draft.amount_type} onChange={(v) => upd({ amount_type: v })} options={[{ value: 'pct', label: t('% del totale', '% of total') }, { value: 'fixed', label: t('Importo fisso', 'Fixed amount') }]} />
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, border: '1px solid var(--hair)', borderRadius: 9, padding: '0 10px', height: 36, background: 'var(--surface)' }}>
               {draft.amount_type === 'fixed' && <span className="t-sm" style={{ color: 'var(--muted-2)', fontWeight: 700 }}>€</span>}
-              <NumInput value={draft.amount} min={0} integer={draft.amount_type === 'pct'} max={draft.amount_type === 'pct' ? 100 : undefined} onChange={(amount) => upd({ amount })} style={{ width: 52, border: 'none', outline: 'none', background: 'transparent', fontSize: 14.5, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }} />
+              <MutationNumInput value={draft.amount} min={0} integer={draft.amount_type === 'pct'} max={draft.amount_type === 'pct' ? 100 : undefined} onChange={(amount) => upd({ amount })} style={{ width: 52, border: 'none', outline: 'none', background: 'transparent', fontSize: 14.5, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }} />
               {draft.amount_type === 'pct' && <span className="t-sm" style={{ color: 'var(--muted-2)', fontWeight: 700 }}>%</span>}
             </div>
           </div>
@@ -213,16 +217,18 @@ function RuleCard({ rule, fields, open, onToggleOpen, onSave, onDelete, t, lang,
           <div className="t-meta" style={{ margin: '16px 0 8px' }}>{t('Priorità', 'Priority')}</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, border: '1px solid var(--hair)', borderRadius: 9, padding: '0 10px', height: 36, background: 'var(--surface)' }}>
-              <NumInput integer min={0} value={draft.priority} onChange={(priority) => upd({ priority })} style={{ width: 44, border: 'none', outline: 'none', background: 'transparent', fontSize: 14.5, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }} />
+              <MutationNumInput integer min={0} value={draft.priority} onChange={(priority) => upd({ priority })} style={{ width: 44, border: 'none', outline: 'none', background: 'transparent', fontSize: 14.5, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }} />
             </div>
             <span className="t-sm" style={{ color: 'var(--muted)' }}>{t('0 = valutata per prima', '0 = evaluated first')}</span>
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
-            <button className="dk-btn dk-btn--clay" disabled={!dirty} style={{ opacity: dirty ? 1 : 0.5 }} onClick={saveDraft}><Icon name="check" size={16} color="#fff" />{t('Salva regola', 'Save rule')}</button>
+            <MutationButton className="dk-btn dk-btn--clay" disabled={!dirty} style={{ opacity: dirty ? 1 : 0.5 }} onClick={saveDraft}><Icon name="check" size={16} color="#fff" />{t('Salva regola', 'Save rule')}</MutationButton>
           </div>
         </div>
       )}
     </div>
   );
 }
+
+export default withPortalForm(DepositRules, { preview: () => true, framed: false, overlay: false });

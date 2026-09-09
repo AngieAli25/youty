@@ -1,3 +1,4 @@
+import { MutationNumInput } from '@youty/shared';
 // DkCondRow.jsx — one "SE / IF" condition row of the automation builder.
 // Builds a rule of the API `conditions` JSON: { field, cmp, value } — fields and
 // operators come from GET /api/automations/events-catalog (bilingual labels).
@@ -72,7 +73,7 @@ export default function DkCondRow({ c, onChange, onRemove, t, lang, fields, oper
           />
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, border: '1px solid var(--hair)', borderRadius: 9, padding: '0 10px', height: 36, background: 'var(--surface)' }}>
             {kind === 'money' && <span className="t-sm" style={{ color: 'var(--muted-2)', fontWeight: 700 }}>€</span>}
-            <NumInput
+            <MutationNumInput
               integer={kind !== 'money'}
               min={0}
               value={c.value}

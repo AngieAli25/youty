@@ -1,3 +1,4 @@
+import { MutationButton } from '@youty/shared';
 import React, { useEffect, useState } from 'react';
 import { api, ApiError, Icon, EmptyState } from '@youty/shared';
 import { useDash } from '../../ctx.jsx';
@@ -6,7 +7,7 @@ import LoyaltyMembersDrawer from './LoyaltyMembersDrawer.jsx';
 import { LOYALTY_TYPES, composeReward } from './meta.js';
 
 export default function LoyaltySub() {
-  const { t, lang, hasScope, fireToast, services, setDrawer } = useDash();
+  const { t, lang, hasScope, canMutate, fireToast, services, setDrawer } = useDash();
   const canWrite = hasScope('marketing');
 
   const [items, setItems] = useState([]);
@@ -63,7 +64,7 @@ export default function LoyaltySub() {
         <div className="t-sm" style={{ color: 'var(--muted)', maxWidth: 560 }}>
           {t('Crea percorsi fedeltà a punti, timbri, livelli o membership. Il progresso di ogni cliente è visibile nella sua scheda.', 'Create points, stamps, tier or membership loyalty paths. Each client’s progress shows on their profile.')}
         </div>
-        {canWrite && <button className="dk-btn dk-btn--clay" onClick={openNew} style={{ flexShrink: 0 }}><Icon name="plus" size={17} color="#fff" />{t('Nuovo programma', 'New program')}</button>}
+        {canWrite && <MutationButton className="dk-btn dk-btn--clay" onClick={openNew} style={{ flexShrink: 0 }}><Icon name="plus" size={17} color="#fff" />{t('Nuovo programma', 'New program')}</MutationButton>}
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '12px 16px', background: 'var(--clay-tint)', borderRadius: 12, marginBottom: 18 }}>
@@ -122,7 +123,7 @@ export default function LoyaltySub() {
         </div>
       ) : (
         <EmptyState icon="star" title={t('Nessun programma', 'No programs')} sub={t('Crea il primo percorso fedeltà.', 'Create your first loyalty path.')}
-          action={canWrite ? t('Nuovo programma', 'New program') : null} onAction={openNew} />
+          mutationAction action={canWrite ? t('Nuovo programma', 'New program') : null} onAction={openNew} />
       )}
 
       {edit && (

@@ -1,3 +1,8 @@
+import { MutationTextarea } from '@youty/shared';
+import { MutationNumInput } from '@youty/shared';
+import { MutationSelect } from '@youty/shared';
+import { MutationInput } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // ApptDetailModal — full appointment detail: lifecycle actions, note edit, margin,
 // reschedule via availability + move, freed-slot waitlist hand-off on cancel/no-show.
 import React, { useEffect, useRef, useState } from 'react';
@@ -11,7 +16,7 @@ const NOSHOW_REASONS = [['cliente', 'Mancata presenza', 'No-show'], ['salute', '
 const CANCEL_REASONS = [['cliente', 'Richiesta cliente', 'Client request'], ['salute', 'Malattia', 'Illness'], ['agenda', 'Sovrapposizione', 'Schedule clash'], ['altro', 'Altro', 'Other']];
 
 export default function ApptDetailModal({ appointment, onMutate, onClose }) {
-  const { t, lang, operators, opColors, services, serviceCategories, settings, fireToast, openModal, setTab, setSelClient, hasScope } = useDash();
+  const { t, lang, operators, opColors, services, serviceCategories, settings, fireToast, openModal, setTab, setSelClient, hasScope, canMutate } = useDash();
   const canWrite = hasScope('agenda');
   const [appt, setAppt] = useState(appointment);
   const [flow, setFlow] = useState(null); // 'reschedule' | 'noshow' | 'cancel'
@@ -171,11 +176,11 @@ export default function ApptDetailModal({ appointment, onMutate, onClose }) {
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 14 }}>
         {reasons.map(([k, it, en]) => {
           const on = reason === k;
-          return <button key={k} onClick={() => setReason(k)} style={{ padding: '8px 14px', borderRadius: 99, fontSize: 13, fontWeight: 600, cursor: 'pointer', border: '1.5px solid ' + (on ? 'var(--ink)' : 'var(--hair)'), background: on ? 'var(--ink)' : 'var(--surface)', color: on ? '#fff' : 'var(--ink-2)' }}>{t(it, en)}</button>;
+          return <MutationButton key={k} onClick={() => setReason(k)} style={{ padding: '8px 14px', borderRadius: 99, fontSize: 13, fontWeight: 600, cursor: 'pointer', border: '1.5px solid ' + (on ? 'var(--ink)' : 'var(--hair)'), background: on ? 'var(--ink)' : 'var(--surface)', color: on ? '#fff' : 'var(--ink-2)' }}>{t(it, en)}</MutationButton>;
         })}
       </div>
       <div className="t-meta" style={{ marginBottom: 8 }}>{t('Nota (facoltativa)', 'Note (optional)')}</div>
-      <textarea value={reasonNote} onChange={(e) => setReasonNote(e.target.value)} placeholder={t('Aggiungi un dettaglio…', 'Add a detail…')} rows={2}
+      <MutationTextarea value={reasonNote} onChange={(e) => setReasonNote(e.target.value)} placeholder={t('Aggiungi un dettaglio…', 'Add a detail…')} rows={2}
         style={{ width: '100%', border: '1px solid var(--hair)', borderRadius: 12, padding: '10px 12px', fontSize: 13.5, fontFamily: 'var(--sans)', resize: 'vertical', outline: 'none', boxSizing: 'border-box', background: 'var(--surface)' }} />
     </div>
   );
@@ -195,9 +200,9 @@ export default function ApptDetailModal({ appointment, onMutate, onClose }) {
         foot={
           <React.Fragment>
             <button className="dk-btn dk-btn--ghost" onClick={() => setFlow(null)}>{t('Indietro', 'Back')}</button>
-            <button className="dk-btn" disabled={busy} onClick={() => destroy('no-show')} style={{ background: 'var(--danger)', color: '#fff' }}>
+            <MutationButton className="dk-btn" disabled={busy} onClick={() => destroy('no-show')} style={{ background: 'var(--danger)', color: '#fff' }}>
               <Icon name="alert" size={16} color="#fff" />{t('Conferma no-show', 'Confirm no-show')}
-            </button>
+            </MutationButton>
           </React.Fragment>
         }>
         <div className="t-meta" style={{ marginBottom: 12 }}>{t('Cosa succederà', 'What will happen')}</div>
@@ -216,9 +221,9 @@ export default function ApptDetailModal({ appointment, onMutate, onClose }) {
         foot={
           <React.Fragment>
             <button className="dk-btn dk-btn--ghost" onClick={() => { setFlow(null); setReason(null); setReasonNote(''); }}>{t('Indietro', 'Back')}</button>
-            <button className="dk-btn" disabled={!reason || busy} onClick={() => destroy('cancel')} style={{ background: 'var(--danger)', color: '#fff', opacity: reason ? 1 : 0.4 }}>
+            <MutationButton className="dk-btn" disabled={!reason || busy} onClick={() => destroy('cancel')} style={{ background: 'var(--danger)', color: '#fff', opacity: reason ? 1 : 0.4 }}>
               <Icon name="x" size={16} color="#fff" />{t('Conferma cancellazione', 'Confirm cancellation')}
-            </button>
+            </MutationButton>
           </React.Fragment>
         }>
         <div className="t-meta" style={{ marginBottom: 12 }}>{t('Cosa succederà', 'What will happen')}</div>
@@ -283,12 +288,12 @@ export default function ApptDetailModal({ appointment, onMutate, onClose }) {
           {/* note edit → PUT /appointments/{id} */}
           <div>
             <div className="t-meta" style={{ marginBottom: 6 }}>{t('Nota appuntamento', 'Appointment note')}</div>
-            <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} placeholder={t('Aggiungi una nota…', 'Add a note…')}
+            <MutationTextarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} placeholder={t('Aggiungi una nota…', 'Add a note…')}
               style={{ width: '100%', border: '1px solid var(--hair)', borderRadius: 12, padding: '10px 12px', fontSize: 13.5, fontFamily: 'var(--sans)', resize: 'vertical', outline: 'none', boxSizing: 'border-box', background: 'var(--surface)' }} />
             {noteDirty && (
-              <button className="dk-btn dk-btn--soft" disabled={savingNote || !canWrite} style={{ height: 34, fontSize: 12.5, marginTop: 6 }} onClick={saveNote}>
+              <MutationButton className="dk-btn dk-btn--soft" disabled={savingNote || !canWrite} style={{ height: 34, fontSize: 12.5, marginTop: 6 }} onClick={saveNote}>
                 <Icon name="check" size={14} />{savingNote ? t('Salvataggio…', 'Saving…') : t('Salva nota', 'Save note')}
-              </button>
+              </MutationButton>
             )}
           </div>
 
@@ -349,25 +354,25 @@ export default function ApptDetailModal({ appointment, onMutate, onClose }) {
                         <span style={{ width: 8, height: 8, borderRadius: 99, background: color, flexShrink: 0 }} />
                         <span style={{ flex: 1, minWidth: 0, fontWeight: 600, fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{svcDisplayName(it)}</span>
                         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
-                          <NumInput integer min={5} value={it.duration_min} emptyValue=""
+                          <MutationNumInput integer min={5} value={it.duration_min} emptyValue=""
                             onChange={(v) => setItemDuration(it.key, v)} onBlur={() => clampItemDuration(it.key)}
                             aria-label={t('Durata in minuti', 'Duration in minutes')}
                             style={{ width: 48, border: '1px solid var(--hair)', borderRadius: 8, padding: '4px 6px', fontSize: 12.5, fontFamily: 'var(--sans)', textAlign: 'right', outline: 'none', background: 'var(--surface)', color: 'var(--ink)' }} />
                           <span className="t-sm" style={{ color: 'var(--muted)' }}>{t('min', 'min')}</span>
                         </div>
                         <span className="t-num" style={{ fontSize: 13, fontWeight: 700, flexShrink: 0, minWidth: 46, textAlign: 'right' }}>{fmtEur(Number(it.price), lang)}</span>
-                        <button className="dk-iconbtn" title={t('Rimuovi servizio', 'Remove service')} onClick={() => removeServiceItem(it.key)} style={{ width: 28, height: 28, borderRadius: 8, flexShrink: 0 }}>
+                        <MutationButton className="dk-iconbtn" title={t('Rimuovi servizio', 'Remove service')} onClick={() => removeServiceItem(it.key)} style={{ width: 28, height: 28, borderRadius: 8, flexShrink: 0 }}>
                           <Icon name="x" size={14} />
-                        </button>
+                        </MutationButton>
                       </div>
                       {isNew && eligible.length > 0 && (
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingLeft: 16 }}>
                           <Icon name="sparkle" size={12} color="var(--muted-2)" />
-                          <select value={it.operator_id ?? ''} onChange={(e) => setItemOperator(it.key, e.target.value ? Number(e.target.value) : null)}
+                          <MutationSelect value={it.operator_id ?? ''} onChange={(e) => setItemOperator(it.key, e.target.value ? Number(e.target.value) : null)}
                             style={{ border: '1px solid var(--hair)', borderRadius: 8, padding: '4px 6px', fontSize: 12, fontFamily: 'var(--sans)', background: 'var(--surface)', color: 'var(--ink-2)', outline: 'none', cursor: 'pointer' }}>
                             <option value="">{t('Prima disponibile', 'First available')}</option>
                             {eligible.map((op) => <option key={op.id} value={op.id}>{op.first_name}</option>)}
-                          </select>
+                          </MutationSelect>
                         </div>
                       )}
                     </div>
@@ -378,9 +383,9 @@ export default function ApptDetailModal({ appointment, onMutate, onClose }) {
               {/* add a service */}
               <div style={{ marginTop: 10 }}>
                 {!addingSvc ? (
-                  <button onClick={() => setAddingSvc(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', background: 'transparent', border: 'none', fontSize: 12.5, fontWeight: 700, color: 'var(--clay-ink)', padding: 0 }}>
+                  <MutationButton onClick={() => setAddingSvc(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer', background: 'transparent', border: 'none', fontSize: 12.5, fontWeight: 700, color: 'var(--clay-ink)', padding: 0 }}>
                     <Icon name="plus" size={14} color="var(--clay-ink)" />{t('Aggiungi servizio', 'Add service')}
-                  </button>
+                  </MutationButton>
                 ) : (
                   <div style={{ border: '1px dashed var(--line-strong)', borderRadius: 12, padding: 10 }}>
                     <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
@@ -390,11 +395,11 @@ export default function ApptDetailModal({ appointment, onMutate, onClose }) {
                     {activeServices.length ? (
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                         {activeServices.map((s) => (
-                          <button key={s.id} onClick={() => { addServiceItem(s.id); setAddingSvc(false); }} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 99, fontSize: 12, fontWeight: 600, cursor: 'pointer', border: '1px solid var(--hair)', background: 'var(--surface)', color: 'var(--ink-2)' }}>
+                          <MutationButton key={s.id} onClick={() => { addServiceItem(s.id); setAddingSvc(false); }} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 99, fontSize: 12, fontWeight: 600, cursor: 'pointer', border: '1px solid var(--hair)', background: 'var(--surface)', color: 'var(--ink-2)' }}>
                             <span style={{ width: 7, height: 7, borderRadius: 99, background: catColor(s.category_id) }} />
                             {lang === 'en' && s.name_en ? s.name_en : s.name_it}
                             <Icon name="plus" size={12} color="var(--muted-2)" />
-                          </button>
+                          </MutationButton>
                         ))}
                       </div>
                     ) : (
@@ -410,9 +415,9 @@ export default function ApptDetailModal({ appointment, onMutate, onClose }) {
                 <span className="t-num" style={{ fontSize: 17 }}>{fmtMoney(editTotal, lang)}</span>
               </div>
               {itemsDirty && (
-                <button className="dk-btn dk-btn--soft" disabled={savingItems || !editItems.length} onClick={saveItems} style={{ height: 36, fontSize: 12.5, marginTop: 10, width: '100%' }}>
+                <MutationButton className="dk-btn dk-btn--soft" disabled={savingItems || !editItems.length} onClick={saveItems} style={{ height: 36, fontSize: 12.5, marginTop: 10, width: '100%' }}>
                   <Icon name="check" size={14} />{savingItems ? t('Salvataggio…', 'Saving…') : t('Salva modifiche', 'Save changes')}
-                </button>
+                </MutationButton>
               )}
             </div>
           )}
@@ -421,21 +426,21 @@ export default function ApptDetailModal({ appointment, onMutate, onClose }) {
           {!terminal && canWrite && (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
               {appt.status === 'confirmed' && (
-                <button className="dk-btn dk-btn--clay" disabled={busy} style={{ gridColumn: '1 / -1', height: 48 }} onClick={checkIn}>
+                <MutationButton className="dk-btn dk-btn--clay" disabled={busy} style={{ gridColumn: '1 / -1', height: 48 }} onClick={checkIn}>
                   <Icon name="check" size={18} color="#fff" />{t('Check-in', 'Check in')}
-                </button>
+                </MutationButton>
               )}
               {appt.status === 'checked_in' && (
-                <button className="dk-btn dk-btn--clay" disabled={busy} style={{ gridColumn: '1 / -1', height: 48 }} onClick={startAppt}>
+                <MutationButton className="dk-btn dk-btn--clay" disabled={busy} style={{ gridColumn: '1 / -1', height: 48 }} onClick={startAppt}>
                   <Icon name="play" size={17} color="#fff" />{t('Inizia trattamento', 'Start treatment')}
-                </button>
+                </MutationButton>
               )}
-              <button className={'dk-btn ' + (appt.status === 'in_progress' ? 'dk-btn--clay' : 'dk-btn--ghost')} style={{ gridColumn: '1 / -1', height: appt.status === 'in_progress' ? 48 : 44 }} onClick={() => openModal('sell', { appointment: appt, onDone: onMutate })}>
+              <MutationButton className={'dk-btn ' + (appt.status === 'in_progress' ? 'dk-btn--clay' : 'dk-btn--ghost')} style={{ gridColumn: '1 / -1', height: appt.status === 'in_progress' ? 48 : 44 }} onClick={() => openModal('sell', { appointment: appt, onDone: onMutate })}>
                 <Icon name="wallet" size={17} color={appt.status === 'in_progress' ? '#fff' : undefined} />{t('Vai al checkout', 'Go to checkout')}
-              </button>
-              <button className="dk-btn dk-btn--soft" style={{ gridColumn: '1 / -1' }} onClick={() => setFlow('reschedule')}>
+              </MutationButton>
+              <MutationButton className="dk-btn dk-btn--soft" style={{ gridColumn: '1 / -1' }} onClick={() => setFlow('reschedule')}>
                 <Icon name="calendar" size={16} />{t('Riprogramma', 'Reschedule')}
-              </button>
+              </MutationButton>
             </div>
           )}
           {terminal && (
@@ -451,13 +456,13 @@ export default function ApptDetailModal({ appointment, onMutate, onClose }) {
       {/* downgraded destructive actions */}
       {!terminal && canWrite && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 18, paddingTop: 14, marginTop: 14, borderTop: '1px solid var(--hair)' }}>
-          <button onClick={() => { setFlow('noshow'); setReason(NOSHOW_REASONS[0][0]); setReasonNote(''); }} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: 'var(--muted)', background: 'transparent', border: 'none', cursor: 'pointer', padding: '6px 8px' }}>
+          <MutationButton onClick={() => { setFlow('noshow'); setReason(NOSHOW_REASONS[0][0]); setReasonNote(''); }} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: 'var(--muted)', background: 'transparent', border: 'none', cursor: 'pointer', padding: '6px 8px' }}>
             <Icon name="alert" size={15} color="var(--muted)" />No-show
-          </button>
+          </MutationButton>
           <span style={{ width: 1, height: 16, background: 'var(--hair)' }} />
-          <button onClick={() => { setFlow('cancel'); setReason(null); setReasonNote(''); }} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: 'var(--muted)', background: 'transparent', border: 'none', cursor: 'pointer', padding: '6px 8px' }}>
+          <MutationButton onClick={() => { setFlow('cancel'); setReason(null); setReasonNote(''); }} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: 'var(--muted)', background: 'transparent', border: 'none', cursor: 'pointer', padding: '6px 8px' }}>
             <Icon name="x" size={15} color="var(--muted)" />{t('Cancella appuntamento', 'Cancel appointment')}
-          </button>
+          </MutationButton>
         </div>
       )}
     </DkModal>
@@ -501,9 +506,9 @@ function RescheduleFlow({ appt, t, lang, fireToast, busy, setBusy, onBack, onClo
       foot={
         <React.Fragment>
           <button className="dk-btn dk-btn--ghost" onClick={onBack}>{t('Indietro', 'Back')}</button>
-          <button className="dk-btn dk-btn--clay" disabled={!selStart || busy} onClick={move}>
+          <MutationButton className="dk-btn dk-btn--clay" disabled={!selStart || busy} onClick={move}>
             <Icon name="calendar" size={16} color="#fff" />{t('Sposta qui', 'Move here')}{selStart ? ' · ' + timeLabel(minutesOfDay(selStart)) : ''}
-          </button>
+          </MutationButton>
         </React.Fragment>
       }>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, padding: '11px 14px', borderRadius: 12, border: '1px solid var(--hair)', background: 'var(--surface)' }}>
@@ -512,7 +517,7 @@ function RescheduleFlow({ appt, t, lang, fireToast, busy, setBusy, onBack, onClo
           <div className="t-meta" style={{ fontSize: 9.5, marginBottom: 1 }}>{t('Nuova data', 'New date')}</div>
           <div style={{ fontWeight: 700, fontSize: 13.5 }}>{fmtDateIt(date)}</div>
         </div>
-        <input type="date" value={date} min={todayStr()} onChange={(e) => setDate(e.target.value || todayStr())} style={{ border: '1px solid var(--hair)', borderRadius: 8, padding: '6px 8px', fontSize: 12.5, fontFamily: 'var(--sans)', outline: 'none', cursor: 'pointer', color: 'var(--ink)' }} />
+        <MutationInput type="date" value={date} min={todayStr()} onChange={(e) => setDate(e.target.value || todayStr())} style={{ border: '1px solid var(--hair)', borderRadius: 8, padding: '6px 8px', fontSize: 12.5, fontFamily: 'var(--sans)', outline: 'none', cursor: 'pointer', color: 'var(--ink)' }} />
       </div>
       <div className="t-meta" style={{ marginBottom: 9 }}>{t('Orari disponibili', 'Available times')}</div>
       {slots === null ? (
@@ -524,9 +529,9 @@ function RescheduleFlow({ appt, t, lang, fireToast, busy, setBusy, onBack, onClo
           {slots.map((s) => {
             const sel = s.start === selStart;
             return (
-              <button key={s.start} onClick={() => setSelStart(s.start)} className="tabnum" style={{ padding: '5px 9px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', border: '1.5px solid ' + (sel ? 'var(--ink)' : 'var(--hair)'), background: sel ? 'var(--ink)' : 'var(--surface)', color: sel ? '#fff' : 'var(--ink)' }}>
+              <MutationButton key={s.start} onClick={() => setSelStart(s.start)} className="tabnum" style={{ padding: '5px 9px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', border: '1.5px solid ' + (sel ? 'var(--ink)' : 'var(--hair)'), background: sel ? 'var(--ink)' : 'var(--surface)', color: sel ? '#fff' : 'var(--ink)' }}>
                 {timeLabel(minutesOfDay(s.start))}
-              </button>
+              </MutationButton>
             );
           })}
         </div>

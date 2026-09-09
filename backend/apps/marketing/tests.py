@@ -2,7 +2,7 @@ import json
 from datetime import timedelta
 from decimal import Decimal
 
-from django.test import TestCase
+from common.testing import SubscribedSalonTestCase as TestCase
 from django.utils import timezone
 from ninja.errors import HttpError
 

@@ -1,3 +1,5 @@
+import { MutationNumInput } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // parts.jsx — small building blocks shared across Servizi/Pacchetti cards & modals.
 import React from 'react';
 import { Icon, Avatar, NumInput } from '@youty/shared';
@@ -31,7 +33,7 @@ export function PriceBox({ value, onChange, width = 110 }) {
   return (
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: '1px solid var(--hair)', borderRadius: 10, padding: '0 12px', height: 42, background: 'var(--surface)', width }}>
       <span className="t-sm" style={{ color: 'var(--muted-2)', fontWeight: 600 }}>€</span>
-      <NumInput
+      <MutationNumInput
         min={0} value={value}
         onChange={onChange}
         style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: 15, fontWeight: 600, width: '100%' }}
@@ -45,7 +47,7 @@ export function PriceBox({ value, onChange, width = 110 }) {
 export function DurationInput({ value, onChange, min = 5 }) {
   return (
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: '1px solid var(--hair)', borderRadius: 10, padding: '0 12px', height: 42, background: 'var(--surface)', width: 120 }}>
-      <NumInput
+      <MutationNumInput
         integer min={min} value={value} onChange={onChange}
         style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: 15, fontWeight: 600, width: '100%' }}
       />
@@ -90,9 +92,9 @@ export function SearchToolbar({ q, setQ, placeholder, onAdd, addLabel, canAdd = 
       </div>
       {extra}
       {canAdd && (
-        <button className="dk-btn dk-btn--clay" onClick={onAdd} style={{ flexShrink: 0 }}>
+        <MutationButton className="dk-btn dk-btn--clay" onClick={onAdd} style={{ flexShrink: 0 }}>
           <Icon name="plus" size={17} color="#fff" />{addLabel}
-        </button>
+        </MutationButton>
       )}
     </div>
   );

@@ -1,7 +1,8 @@
+import { MutationButton } from '@youty/shared';
 // Shell.jsx — dashboard chrome: sidebar + topbar + section outlet + global hosts
 // (toast, modal dispatcher, drawer). Section agents NEVER edit this file.
 import React, { Suspense, lazy, useEffect, useState } from 'react';
-import { EmptyState, Icon } from '@youty/shared';
+import { EmptyState, Icon, PortalAccessNotice } from '@youty/shared';
 import { useDash } from '../ctx.jsx';
 import { SECTIONS } from '../sections/registry.js';
 import DkModals from '../modals/DkModals.jsx';
@@ -12,7 +13,7 @@ import Topbar from './Topbar.jsx';
 const AnalystDrawer = lazy(() => import('../sections/insight/AnalystDrawer.jsx'));
 
 export default function Shell() {
-  const { tab, drawer, setDrawer, toastProps, t, lang, session, fireToast } = useDash();
+  const { tab, drawer, setDrawer, toastProps, t, lang, session, fireToast, portalAccess, refreshPortalAccess, operationalAccess } = useDash();
 
   const [sideCollapsed, setSideCollapsed] = useState(() => {
     try { return localStorage.getItem('dk-side-collapsed') === '1'; } catch { return false; }
@@ -29,6 +30,7 @@ export default function Shell() {
 
       <div className="dk-main">
         <Topbar />
+        <PortalAccessNotice access={portalAccess} refresh={refreshPortalAccess} />
         <div className="dk-content" key={tab}>
           <Suspense fallback={<SectionSkeleton />}>
             {Section
@@ -40,7 +42,7 @@ export default function Shell() {
 
       {/* global AI FAB — insights ask is owner-only, so gate it */}
       {session?.is_owner && (
-        <button
+        <MutationButton
           type="button"
           className="press"
           aria-label={t('Chiedi a Youty', 'Ask Youty')}
@@ -59,7 +61,7 @@ export default function Shell() {
           }}
         >
           <Icon name="sparkle" size={22} />
-        </button>
+        </MutationButton>
       )}
 
       {/* global hosts */}

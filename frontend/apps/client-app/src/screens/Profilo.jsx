@@ -1,3 +1,5 @@
+import { MutationToggle } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // Profilo.jsx — identity + contacts (GET/PUT /api/auth/client/me), language
 // toggle, WhatsApp reminders toggle, waitlist summary, loyalty snapshot, logout.
 import React from 'react';
@@ -110,11 +112,11 @@ export default function Profilo() {
             <span className="t-sm" style={{ color: 'var(--muted)', flex: 1 }}>{t('Lingua', 'Language')}</span>
             <div style={{ display: 'flex', gap: 4, background: 'var(--paper-2)', borderRadius: 99, padding: 3 }}>
               {['it', 'en'].map((l) => (
-                <button key={l} className="press"
+                <MutationButton key={l} className="press"
                   onClick={() => { if (l !== lang) { setLang(l); saveMe({ lang: l }); } }}
                   style={{ padding: '5px 12px', borderRadius: 99, fontSize: 12, fontWeight: 700, background: lang === l ? 'var(--brand)' : 'transparent', color: lang === l ? 'var(--brand-on)' : 'var(--muted)' }}>
                   {l.toUpperCase()}
-                </button>
+                </MutationButton>
               ))}
             </div>
           </div>
@@ -122,7 +124,7 @@ export default function Profilo() {
             <Icon name="whatsapp" size={18} color="#3F9D58" />
             <span className="t-sm" style={{ color: 'var(--muted)', flex: 1 }}>{t('Promemoria WhatsApp', 'WhatsApp reminders')}</span>
             {me
-              ? <Toggle on={waOn} onChange={(v) => saveMe({ whatsapp_reminders: v }, () => fireToast({ msg: v ? t('Promemoria WhatsApp attivi', 'WhatsApp reminders on') : t('Promemoria WhatsApp disattivati', 'WhatsApp reminders off'), icon: 'check' }))} />
+              ? <MutationToggle on={waOn} onChange={(v) => saveMe({ whatsapp_reminders: v }, () => fireToast({ msg: v ? t('Promemoria WhatsApp attivi', 'WhatsApp reminders on') : t('Promemoria WhatsApp disattivati', 'WhatsApp reminders off'), icon: 'check' }))} />
               : <span className="skel" style={{ height: 28, width: 46, borderRadius: 99, display: 'inline-block' }} />}
           </div>
         </div>

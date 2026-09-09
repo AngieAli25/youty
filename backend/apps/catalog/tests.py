@@ -9,7 +9,7 @@ a mano — evita di dipendere da apps.accounts (fuori dal perimetro di questa ap
 from decimal import Decimal
 from types import SimpleNamespace
 
-from django.test import TestCase
+from common.testing import SubscribedSalonTestCase as TestCase
 from ninja.errors import HttpError
 
 from apps.core.models import ActivityLog, Salon

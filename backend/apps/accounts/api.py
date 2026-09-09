@@ -1,5 +1,6 @@
 """Endpoint /api/auth — login staff, team & ruoli, inviti, login OTP clienti."""
 
+from django.http import HttpResponse
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -9,6 +10,7 @@ from ninja.errors import HttpError
 
 from apps.core.models import Salon
 from apps.core.services import emit_event, log_activity
+from common.portal_access import business_operation, resolve_portal_access, PortalAccessOut
 from common.auth import (
     client_auth,
     create_client_tokens,
@@ -75,6 +77,7 @@ def _auth_payload(membership, tokens: dict | None = None) -> dict:
         "salon": {"id": salon.id, "name": salon.name, "slug": salon.slug},
         "scopes": sorted(membership.role.scopes or []) if membership.role else [],
         "is_owner": membership.is_owner,
+        "portal_access": resolve_portal_access(salon),
     }
     if tokens:
         out.update(tokens)
@@ -224,6 +227,7 @@ def list_members(request):
 
 
 @router.post("/members/{int:member_id}/role", auth=staff_auth, response=MemberOut)
+@business_operation
 def set_member_role(request, member_id: int, data: MemberRoleIn):
     ctx = request.auth
     require_scope(ctx, "team")
@@ -243,6 +247,7 @@ def set_member_role(request, member_id: int, data: MemberRoleIn):
 
 
 @router.delete("/members/{int:member_id}", auth=staff_auth, response=OkOut)
+@business_operation
 def remove_member(request, member_id: int):
     ctx = request.auth
     require_scope(ctx, "team")
@@ -272,6 +277,7 @@ def list_roles(request):
 
 
 @router.post("/roles", auth=staff_auth, response=RoleOut)
+@business_operation
 def create_role(request, data: RoleIn):
     ctx = request.auth
     require_scope(ctx, "team")
@@ -290,6 +296,7 @@ def create_role(request, data: RoleIn):
 
 
 @router.put("/roles/{int:role_id}", auth=staff_auth, response=RoleOut)
+@business_operation
 def update_role(request, role_id: int, data: RoleIn):
     ctx = request.auth
     require_scope(ctx, "team")
@@ -311,6 +318,7 @@ def update_role(request, role_id: int, data: RoleIn):
 
 
 @router.delete("/roles/{int:role_id}", auth=staff_auth, response=OkOut)
+@business_operation
 def delete_role(request, role_id: int):
     ctx = request.auth
     require_scope(ctx, "team")
@@ -334,6 +342,7 @@ def list_invitations(request):
 
 
 @router.post("/invitations", auth=staff_auth, response=InvitationOut)
+@business_operation
 def create_invitation(request, data: InvitationIn):
     ctx = request.auth
     require_scope(ctx, "team")
@@ -469,6 +478,7 @@ def client_me(request):
 
 
 @router.put("/client/me", auth=client_auth, response=ClientMeOut)
+@business_operation
 def client_update_me(request, data: ClientMeIn):
     client = request.auth.client
     updates = data.dict(exclude_unset=True)
@@ -482,3 +492,9 @@ def client_update_me(request, data: ClientMeIn):
         client.whatsapp_reminders = bool(updates["whatsapp_reminders"])
     client.save()
     return _client_profile(client)
+
+
+@router.get("/portal-access", auth=staff_auth, response=PortalAccessOut)
+def portal_access(request, response: HttpResponse):
+    response["Cache-Control"] = "no-store"
+    return resolve_portal_access(request.auth.salon)

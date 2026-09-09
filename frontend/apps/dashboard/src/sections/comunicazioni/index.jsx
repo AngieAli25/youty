@@ -1,3 +1,4 @@
+import { MutationButton } from '@youty/shared';
 // comunicazioni/index.jsx — editorial (discount-free) campaigns, backed by
 // GET/POST/PUT/DELETE /api/marketing/communications (+ /{id}/send via Yourang outbox).
 // Ported from prototype desktop-comunicazioni.jsx. The prototype's TYPE taxonomy
@@ -14,7 +15,7 @@ import { COM_STATUS_KEYS, audienceSummary, comStatusMeta, comWhenLabel } from '.
 const PAGE = 24;
 
 export default function ComunicazioniSection() {
-  const { t, lang, clientCategories, hasScope, fireToast } = useDash();
+  const { t, lang, clientCategories, hasScope, canMutate, fireToast } = useDash();
   const canWrite = hasScope('marketing');
 
   /* ---- list state ---- */
@@ -85,9 +86,9 @@ export default function ComunicazioniSection() {
           opts: [['all', t('Tutti', 'All')], ...COM_STATUS_KEYS.map((k) => [k, comStatusMeta(k, t).label])],
         }]} />
         {canWrite && (
-          <button className="dk-btn dk-btn--clay" onClick={() => setEdit('new')} style={{ flexShrink: 0 }}>
+          <MutationButton className="dk-btn dk-btn--clay" onClick={() => setEdit('new')} style={{ flexShrink: 0 }}>
             <Icon name="plus" size={17} color="#fff" />{t('Nuova comunicazione', 'New communication')}
-          </button>
+          </MutationButton>
         )}
       </div>
 
@@ -142,12 +143,12 @@ function ComCard({ comm, t, lang, clientCategories, canWrite, onOpen, onSend }) 
       {/* cover */}
       <div style={{ height: 96, background: img ? `center/cover url(${img})` : st.tint, display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-end', padding: 14, gap: 8 }}>
         {canWrite && comm.status !== 'sent' && (
-          <button
+          <MutationButton
             title={t('Invia…', 'Send…')}
             onClick={(e) => { e.stopPropagation(); onSend(); }}
             style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, fontWeight: 700, color: 'var(--clay-ink)', background: 'var(--surface)', border: '1px solid var(--hair)', padding: '4px 10px', borderRadius: 99, cursor: 'pointer' }}>
             <Icon name="send" size={12} color="var(--clay-ink)" />{t('Invia', 'Send')}
-          </button>
+          </MutationButton>
         )}
         <span style={{ fontSize: 11, fontWeight: 700, color: st.color, background: 'var(--surface)', padding: '4px 10px', borderRadius: 99 }}>{st.label}</span>
       </div>

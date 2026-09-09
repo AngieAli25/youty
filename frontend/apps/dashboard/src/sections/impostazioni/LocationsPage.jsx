@@ -1,3 +1,6 @@
+import { PortalFormGate } from '@youty/shared';
+import { MutationInput } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // LocationsPage.jsx — sedi CRUD on /api/core/locations.
 // Reads: any staff. Writes: owner-only (lock state otherwise).
 // Deleting the only location → 400 from the API, surfaced as toast.
@@ -8,7 +11,7 @@ import { useDash } from '../../ctx.jsx';
 import { inputCss, toastErr, LockNote } from './lib.jsx';
 
 export default function LocationsPage({ onBack }) {
-  const { t, session, reload, fireToast } = useDash();
+  const { t, session, operationalAccess, reload, fireToast } = useDash();
   const isOwner = !!session?.is_owner;
   const [list, setList] = useState(null); // null = loading
   const [edit, setEdit] = useState(null); // draft {id?, name, address, phone, is_default}
@@ -53,9 +56,9 @@ export default function LocationsPage({ onBack }) {
           <div className="t-sm" style={{ color: 'var(--muted)', marginTop: 2 }}>{t('Le sedi del salone. La sede predefinita è usata dove non specificato.', 'Your salon locations. The default one is used where not specified.')}</div>
         </div>
         {isOwner && (
-          <button className="dk-btn dk-btn--clay" onClick={() => setEdit({ name: '', address: '', phone: '', is_default: false })}>
+          <MutationButton className="dk-btn dk-btn--clay" onClick={() => setEdit({ name: '', address: '', phone: '', is_default: false })}>
             <Icon name="plus" size={16} color="#fff" />{t('Nuova sede', 'New location')}
-          </button>
+          </MutationButton>
         )}
       </div>
 
@@ -88,24 +91,24 @@ export default function LocationsPage({ onBack }) {
       )}
 
       {edit && (
-        <DkModal open onClose={() => setEdit(null)} width={440}
+        <PortalFormGate overlay framed preview={!!edit.id} onClose={() => setEdit(null)}><DkModal open onClose={() => setEdit(null)} width={440}
           title={edit.id ? t('Modifica sede', 'Edit location') : t('Nuova sede', 'New location')}
           foot={<React.Fragment>
-            {edit.id && <button className="dk-btn dk-btn--ghost" style={{ color: 'var(--danger)', borderColor: 'color-mix(in srgb, var(--danger) 40%, var(--hair))', marginRight: 'auto' }} onClick={() => del(edit.id)}><Icon name="x" size={16} color="var(--danger)" />{t('Elimina', 'Delete')}</button>}
+            {edit.id && <MutationButton className="dk-btn dk-btn--ghost" style={{ color: 'var(--danger)', borderColor: 'color-mix(in srgb, var(--danger) 40%, var(--hair))', marginRight: 'auto' }} onClick={() => del(edit.id)}><Icon name="x" size={16} color="var(--danger)" />{t('Elimina', 'Delete')}</MutationButton>}
             <button className="dk-btn dk-btn--ghost" onClick={() => setEdit(null)}>{t('Annulla', 'Cancel')}</button>
-            <button className="dk-btn dk-btn--clay" disabled={!edit.name.trim() || saving} onClick={save}><Icon name="check" size={17} color="#fff" />{t('Salva', 'Save')}</button>
+            <MutationButton className="dk-btn dk-btn--clay" disabled={!edit.name.trim() || saving} onClick={save}><Icon name="check" size={17} color="#fff" />{t('Salva', 'Save')}</MutationButton>
           </React.Fragment>}>
           <div className="t-meta" style={{ marginBottom: 8 }}>{t('Nome sede', 'Location name')}</div>
-          <input value={edit.name} autoFocus onChange={(e) => setEdit((d) => ({ ...d, name: e.target.value }))} placeholder={t('es. Firenze centro', 'e.g. Downtown')} style={{ ...inputCss, width: '100%', boxSizing: 'border-box', marginBottom: 14 }} />
+          <MutationInput value={edit.name} autoFocus onChange={(e) => setEdit((d) => ({ ...d, name: e.target.value }))} placeholder={t('es. Firenze centro', 'e.g. Downtown')} style={{ ...inputCss, width: '100%', boxSizing: 'border-box', marginBottom: 14 }} />
           <div className="t-meta" style={{ marginBottom: 8 }}>{t('Indirizzo', 'Address')}</div>
-          <input value={edit.address || ''} onChange={(e) => setEdit((d) => ({ ...d, address: e.target.value }))} placeholder={t('Via, numero, città', 'Street, number, city')} style={{ ...inputCss, width: '100%', boxSizing: 'border-box', marginBottom: 14 }} />
+          <MutationInput value={edit.address || ''} onChange={(e) => setEdit((d) => ({ ...d, address: e.target.value }))} placeholder={t('Via, numero, città', 'Street, number, city')} style={{ ...inputCss, width: '100%', boxSizing: 'border-box', marginBottom: 14 }} />
           <div className="t-meta" style={{ marginBottom: 8 }}>{t('Telefono', 'Phone')}</div>
-          <input value={edit.phone || ''} onChange={(e) => setEdit((d) => ({ ...d, phone: e.target.value }))} placeholder="+39 …" style={{ ...inputCss, width: '100%', boxSizing: 'border-box', marginBottom: 16 }} />
+          <MutationInput value={edit.phone || ''} onChange={(e) => setEdit((d) => ({ ...d, phone: e.target.value }))} placeholder="+39 …" style={{ ...inputCss, width: '100%', boxSizing: 'border-box', marginBottom: 16 }} />
           <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '11px 13px', background: 'var(--surface-2)', borderRadius: 11 }}>
-            <input type="checkbox" checked={!!edit.is_default} onChange={(e) => setEdit((d) => ({ ...d, is_default: e.target.checked }))} />
+            <MutationInput type="checkbox" checked={!!edit.is_default} onChange={(e) => setEdit((d) => ({ ...d, is_default: e.target.checked }))} />
             <span style={{ fontWeight: 600, fontSize: 13.5 }}>{t('Sede predefinita', 'Default location')}</span>
           </label>
-        </DkModal>
+        </DkModal></PortalFormGate>
       )}
     </div>
   );

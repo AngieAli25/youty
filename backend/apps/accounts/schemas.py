@@ -4,6 +4,8 @@ from uuid import UUID
 
 from ninja import Schema
 
+from common.portal_access import PortalAccessOut
+
 
 class OkOut(Schema):
     ok: bool = True
@@ -39,6 +41,7 @@ class SalonBriefOut(Schema):
 
 
 class MeOut(Schema):
+    portal_access: PortalAccessOut
     user: UserBriefOut
     salon: SalonBriefOut
     scopes: list[str]

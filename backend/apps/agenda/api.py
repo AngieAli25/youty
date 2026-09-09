@@ -16,6 +16,7 @@ from ninja.errors import HttpError
 
 from apps.core.models import Location, Salon
 from apps.core.services import log_activity
+from common.portal_access import business_operation
 from common.auth import client_auth, staff_auth
 from common.permissions import require_scope
 from common.utils import salon_get
@@ -256,6 +257,7 @@ def agenda_week(request, start: str):
 
 
 @router.post("/appointments", auth=staff_auth, response=AppointmentOut)
+@business_operation
 def create_appointment(request, data: AppointmentCreateIn):
     ctx = request.auth
     require_scope(ctx, "agenda")
@@ -278,6 +280,7 @@ def create_appointment(request, data: AppointmentCreateIn):
 
 
 @router.post("/appointments/{int:appointment_id}/move", auth=staff_auth, response=AppointmentOut)
+@business_operation
 def move_appointment(request, appointment_id: int, data: MoveIn):
     ctx = request.auth
     require_scope(ctx, "agenda")
@@ -295,6 +298,7 @@ def move_appointment(request, appointment_id: int, data: MoveIn):
 
 
 @router.post("/appointments/{int:appointment_id}/check-in", auth=staff_auth, response=AppointmentOut)
+@business_operation
 def check_in_appointment(request, appointment_id: int):
     ctx = request.auth
     require_scope(ctx, "agenda")
@@ -303,6 +307,7 @@ def check_in_appointment(request, appointment_id: int):
 
 
 @router.post("/appointments/{int:appointment_id}/start", auth=staff_auth, response=AppointmentOut)
+@business_operation
 def start_appointment(request, appointment_id: int):
     ctx = request.auth
     require_scope(ctx, "agenda")
@@ -311,6 +316,7 @@ def start_appointment(request, appointment_id: int):
 
 
 @router.post("/appointments/{int:appointment_id}/no-show", auth=staff_auth, response=AppointmentOut)
+@business_operation
 def no_show_appointment(request, appointment_id: int, data: ReasonIn):
     ctx = request.auth
     require_scope(ctx, "agenda")
@@ -321,6 +327,7 @@ def no_show_appointment(request, appointment_id: int, data: ReasonIn):
 
 
 @router.post("/appointments/{int:appointment_id}/cancel", auth=staff_auth, response=AppointmentOut)
+@business_operation
 def cancel_appointment(request, appointment_id: int, data: ReasonIn):
     ctx = request.auth
     require_scope(ctx, "agenda")
@@ -331,6 +338,7 @@ def cancel_appointment(request, appointment_id: int, data: ReasonIn):
 
 
 @router.put("/appointments/{int:appointment_id}", auth=staff_auth, response=AppointmentOut)
+@business_operation
 def update_appointment(request, appointment_id: int, data: AppointmentUpdateIn):
     """Modifica trattamenti e/o nota dell'appuntamento.
 
@@ -428,6 +436,7 @@ def list_pauses(request, date: str = "", operator_id: int = None):
 
 
 @router.post("/pauses", auth=staff_auth, response=PauseOut)
+@business_operation
 def create_pause(request, data: PauseIn):
     ctx = request.auth
     require_scope(ctx, "agenda")
@@ -453,6 +462,7 @@ def create_pause(request, data: PauseIn):
 
 
 @router.put("/pauses/{int:pause_id}", auth=staff_auth, response=PauseOut)
+@business_operation
 def update_pause(request, pause_id: int, data: PauseIn):
     ctx = request.auth
     require_scope(ctx, "agenda")
@@ -469,6 +479,7 @@ def update_pause(request, pause_id: int, data: PauseIn):
 
 
 @router.delete("/pauses/{int:pause_id}", auth=staff_auth, response=OkOut)
+@business_operation
 def delete_pause(request, pause_id: int):
     ctx = request.auth
     require_scope(ctx, "agenda")
@@ -492,6 +503,7 @@ def list_waitlist(request):
 
 
 @router.post("/waitlist/{int:entry_id}/contacted", auth=staff_auth, response=WaitlistOut)
+@business_operation
 def waitlist_contacted(request, entry_id: int):
     ctx = request.auth
     require_scope(ctx, "agenda")
@@ -597,6 +609,7 @@ def public_availability(request, salon: str, date: str, items: str):
 
 
 @router.post("/client/appointments", auth=client_auth, response=AppointmentOut)
+@business_operation
 def client_create_appointment(request, data: ClientAppointmentCreateIn):
     ctx = request.auth
     appointment = services.create_appointment(
@@ -610,6 +623,7 @@ def client_create_appointment(request, data: ClientAppointmentCreateIn):
 
 
 @router.post("/client/appointments/{int:appointment_id}/move", auth=client_auth, response=AppointmentOut)
+@business_operation
 def client_move_appointment(request, appointment_id: int, data: ClientMoveIn):
     ctx = request.auth
     appointment = salon_get(Appointment, ctx, appointment_id, client=ctx.client)
@@ -625,6 +639,7 @@ def client_move_appointment(request, appointment_id: int, data: ClientMoveIn):
 
 
 @router.post("/client/appointments/{int:appointment_id}/cancel", auth=client_auth, response=AppointmentOut)
+@business_operation
 def client_cancel_appointment(request, appointment_id: int):
     ctx = request.auth
     appointment = salon_get(Appointment, ctx, appointment_id, client=ctx.client)
@@ -649,6 +664,7 @@ def client_list_waitlist(request):
 
 
 @router.post("/client/waitlist", auth=client_auth, response=WaitlistOut)
+@business_operation
 def client_create_waitlist(request, data: WaitlistIn):
     ctx = request.auth
 
@@ -684,6 +700,7 @@ def client_create_waitlist(request, data: WaitlistIn):
 
 
 @router.delete("/client/waitlist/{int:entry_id}", auth=client_auth, response=OkOut)
+@business_operation
 def client_delete_waitlist(request, entry_id: int):
     ctx = request.auth
     entry = salon_get(WaitlistEntry, ctx, entry_id, client=ctx.client)

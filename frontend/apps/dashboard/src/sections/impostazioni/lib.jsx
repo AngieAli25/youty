@@ -1,3 +1,4 @@
+import { MutationNumInput } from '@youty/shared';
 // lib.jsx — local shared helpers for the impostazioni section.
 // NOTE: DkDrop / DkCondRow are LOCAL COPIES of the automazioni prototype builder
 // (desktop-automazioni.jsx). The automazioni section keeps its own copy: flag for
@@ -149,7 +150,7 @@ export function DkCondRow({ rule, onChange, onRemove, t, lang, fields }) {
           <DkDrop value={rule.cmp} onChange={(v) => onChange({ cmp: v })} options={CMP_NUM.map(([k, s]) => ({ value: k, label: s }))} narrow />
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, border: '1px solid var(--hair)', borderRadius: 9, padding: '0 10px', height: 36, background: 'var(--surface)' }}>
             {f.type === 'money' && <span className="t-sm" style={{ color: 'var(--muted-2)', fontWeight: 700 }}>€</span>}
-            <NumInput integer min={0} value={rule.value} onChange={(value) => onChange({ value })} style={{ width: 52, border: 'none', outline: 'none', background: 'transparent', fontSize: 14.5, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }} />
+            <MutationNumInput integer min={0} value={rule.value} onChange={(value) => onChange({ value })} style={{ width: 52, border: 'none', outline: 'none', background: 'transparent', fontSize: 14.5, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }} />
             {unitTxt && f.type !== 'money' && <span className="t-sm" style={{ color: 'var(--muted-2)', fontWeight: 700 }}>{unitTxt}</span>}
           </div>
         </React.Fragment>

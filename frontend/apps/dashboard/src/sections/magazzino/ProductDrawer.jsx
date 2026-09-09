@@ -1,3 +1,6 @@
+import { withPortalForm } from '@youty/shared';
+import { MutationInput } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // ProductDrawer.jsx — unified product card: create/edit form + movement log + quick load/unload.
 // Ported from the prototype's ProductDrawer (which superseded ProdEditModal); mock state →
 // POST/PUT /api/inventory/products, movements from GET /products/{id}/movements.
@@ -33,9 +36,9 @@ function CatColorControl({ cat, onCatColor, t }) {
     <div style={{ marginTop: 12, padding: 12, border: '1px solid var(--hair)', borderRadius: 10, background: 'var(--surface-2)' }}>
       <div className="t-meta" style={{ marginBottom: 8 }}>{t('Colore di', 'Colour of')} «{cat.name}»</div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-        <input type="color" value={swatch} onChange={(e) => commit(e.target.value)} title={t('Scegli colore', 'Pick colour')}
+        <MutationInput type="color" value={swatch} onChange={(e) => commit(e.target.value)} title={t('Scegli colore', 'Pick colour')}
           style={{ width: 38, height: 38, padding: 0, border: '1px solid var(--hair)', borderRadius: 9, background: 'var(--surface)', cursor: 'pointer' }} />
-        <input value={hex} onChange={(e) => setHex(e.target.value)} onBlur={(e) => commit(e.target.value)}
+        <MutationInput value={hex} onChange={(e) => setHex(e.target.value)} onBlur={(e) => commit(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); commit(e.target.value); } }}
           placeholder={CAT_FALLBACK} spellCheck={false} maxLength={7}
           style={{ width: 100, border: '1px solid var(--hair)', borderRadius: 9, outline: 'none', fontSize: 13.5, fontFamily: 'var(--mono, ui-monospace, monospace)', padding: '9px 10px', background: 'var(--surface)', textTransform: 'uppercase' }} />
@@ -43,7 +46,7 @@ function CatColorControl({ cat, onCatColor, t }) {
           {CAT_PRESETS.map((p) => {
             const on = p.toLowerCase() === hex.toLowerCase();
             return (
-              <button key={p} onClick={() => commit(p)} title={p}
+              <MutationButton key={p} onClick={() => commit(p)} title={p}
                 style={{ width: 22, height: 22, borderRadius: 99, cursor: 'pointer', background: p, border: '1px solid rgba(0,0,0,0.08)', boxShadow: on ? '0 0 0 2px var(--surface-2), 0 0 0 3px var(--ink)' : 'none' }} />
             );
           })}
@@ -106,7 +109,7 @@ function SupplierPicker({ suppliers, value, onChange, canWrite, t }) {
   );
 }
 
-export default function ProductDrawer({ prod, cats, suppliers, canWrite, onClose, onSaved, onDeleted, onAdj, onCatColor }) {
+function ProductDrawer({ prod, cats, suppliers, canWrite, onClose, onSaved, onDeleted, onAdj, onCatColor }) {
   const { t, lang, fireToast } = useDash();
   const isNew = !!prod._new;
   const [draft, setDraft] = useState(() => (isNew ? {
@@ -201,9 +204,9 @@ export default function ProductDrawer({ prod, cats, suppliers, canWrite, onClose
   return (
     <DkModal open onClose={onClose} title={isNew ? t('Nuovo prodotto', 'New product') : t('Scheda prodotto', 'Product card')} width={580}
       foot={<React.Fragment>
-        {!isNew && canWrite && <button className="dk-btn dk-btn--ghost" style={{ color: 'var(--danger)', borderColor: 'color-mix(in srgb, var(--danger) 40%, var(--hair))', marginRight: 'auto' }} onClick={del} disabled={busy}><Icon name="x" size={16} color="var(--danger)" />{t('Disattiva', 'Deactivate')}</button>}
+        {!isNew && canWrite && <MutationButton className="dk-btn dk-btn--ghost" style={{ color: 'var(--danger)', borderColor: 'color-mix(in srgb, var(--danger) 40%, var(--hair))', marginRight: 'auto' }} onClick={del} disabled={busy}><Icon name="x" size={16} color="var(--danger)" />{t('Disattiva', 'Deactivate')}</MutationButton>}
         <button className="dk-btn dk-btn--ghost" onClick={onClose}>{t('Annulla', 'Cancel')}</button>
-        {canWrite && <button className="dk-btn dk-btn--clay" disabled={!canSave} onClick={save}><Icon name="check" size={17} color="#fff" />{isNew ? t('Crea prodotto', 'Create product') : t('Salva modifiche', 'Save changes')}</button>}
+        {canWrite && <MutationButton className="dk-btn dk-btn--clay" disabled={!canSave} onClick={save}><Icon name="check" size={17} color="#fff" />{isNew ? t('Crea prodotto', 'Create product') : t('Salva modifiche', 'Save changes')}</MutationButton>}
       </React.Fragment>}>
 
       <input value={draft.name} onChange={(e) => set({ name: e.target.value })} placeholder={t('Nome prodotto', 'Product name')} disabled={!canWrite}
@@ -397,3 +400,5 @@ export default function ProductDrawer({ prod, cats, suppliers, canWrite, onClose
     </DkModal>
   );
 }
+
+export default withPortalForm(ProductDrawer, { preview: ({ prod }) => !!prod?.id });

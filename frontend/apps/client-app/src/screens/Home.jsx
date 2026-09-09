@@ -1,3 +1,4 @@
+import { MutationButton } from '@youty/shared';
 // Home.jsx — branded home: cover, greeting, next-appointment card with
 // status/deposit chips + actions, empty-state variant, salon footer.
 // Data: GET /api/agenda/client/appointments → upcoming[0].
@@ -68,9 +69,9 @@ export default function Home() {
             {t(`Scegli il servizio e l'orario da ${brand.name}. Ti bastano un minuto e il tuo numero.`,
                `Pick a service and time at ${brand.name}. It only takes a minute and your phone number.`)}
           </div>
-          <button className="btn btn--brand btn--block press" style={{ marginBottom: 18, height: 54 }} onClick={() => setView('prenota')}>
+          <MutationButton className="btn btn--brand btn--block press" style={{ marginBottom: 18, height: 54 }} onClick={() => setView('prenota')}>
             <Icon name="plus" size={18} color="var(--brand-on)" />{t('Prenota ora', 'Book now')}
-          </button>
+          </MutationButton>
           <SalonFooter brand={brand} t={t} />
         </div>
       </div>
@@ -132,10 +133,10 @@ function HomeLogged() {
                 {next.operator?.name && <Meta icon="user" text={next.operator.name} />}
               </div>
               {/* primary card action — Sposta */}
-              <button className="press" onClick={() => setView('sposta', { appt: next })}
+              <MutationButton className="press" onClick={() => setView('sposta', { appt: next })}
                 style={{ width: '100%', minHeight: 50, marginTop: 18, borderRadius: 'var(--r-pill)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: 'transparent', border: '1.5px solid var(--brand)', color: 'var(--brand-ink)', fontWeight: 700, fontSize: 15 }}>
                 <Icon name="calendar" size={17} color="var(--brand-ink)" />{t('Sposta appuntamento', 'Reschedule')}
-              </button>
+              </MutationButton>
               {/* quick icon actions */}
               <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
                 <button className="press" onClick={() => { downloadIcs(next, brand.name); fireToast({ msg: t('Evento aggiunto al calendario', 'Calendar event downloaded'), icon: 'check' }); }}
@@ -151,10 +152,10 @@ function HomeLogged() {
               </div>
               {/* cancel — discreet text link + policy note */}
               <div style={{ textAlign: 'center', marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--hair)' }}>
-                <button className="press" onClick={() => setView('annulla', { appt: next })}
+                <MutationButton className="press" onClick={() => setView('annulla', { appt: next })}
                   style={{ fontSize: 13, fontWeight: 600, color: 'var(--muted)', textDecoration: 'underline', textUnderlineOffset: 3 }}>
                   {t('Annulla appuntamento', 'Cancel appointment')}
-                </button>
+                </MutationButton>
                 <div className="t-sm" style={{ color: 'var(--muted-2)', marginTop: 6 }}>
                   {t('Sposti o annulli gratuitamente fino a 24h prima.', 'Reschedule or cancel free of charge up to 24h before.')}
                 </div>
@@ -177,9 +178,9 @@ function HomeLogged() {
         )}
 
         {/* UNICA CTA primaria piena */}
-        <button className="btn btn--brand btn--block press" style={{ marginBottom: 18, height: 54 }} onClick={() => setView('prenota')}>
+        <MutationButton className="btn btn--brand btn--block press" style={{ marginBottom: 18, height: 54 }} onClick={() => setView('prenota')}>
           <Icon name="plus" size={18} color="var(--brand-on)" />{next ? t('Prenota un appuntamento', 'Book an appointment') : t('Prenota ora', 'Book now')}
-        </button>
+        </MutationButton>
 
         <SalonFooter brand={brand} t={t} />
       </div>

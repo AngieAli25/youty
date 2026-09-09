@@ -1,3 +1,6 @@
+import { MutationToggle } from '@youty/shared';
+import { MutationNumInput } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // BookingsOptimPage.jsx — port of DkBookingsOptim mapped onto the REAL settings
 // fields: agenda_fill, slot_recovery, lastminute_discount_cap,
 // lastminute_monthly_budget, flexible_enabled, flexible_window_min,
@@ -16,18 +19,18 @@ const AoPills = ({ value, onChange, options, disabled }) => (
   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
     {options.map(([v, l]) => {
       const on = value === v;
-      return <button key={v} disabled={disabled} onClick={() => onChange(v)} style={{ padding: '8px 15px', borderRadius: 99, fontSize: 13, fontWeight: 600, cursor: disabled ? 'default' : 'pointer', whiteSpace: 'nowrap', border: '1px solid ' + (on ? 'var(--ink)' : 'var(--hair)'), background: on ? 'var(--ink)' : 'var(--surface)', color: on ? '#fff' : 'var(--ink-2)', transition: 'all 140ms', opacity: disabled && !on ? 0.55 : 1 }}>{l}</button>;
+      return <MutationButton key={v} disabled={disabled} onClick={() => onChange(v)} style={{ padding: '8px 15px', borderRadius: 99, fontSize: 13, fontWeight: 600, cursor: disabled ? 'default' : 'pointer', whiteSpace: 'nowrap', border: '1px solid ' + (on ? 'var(--ink)' : 'var(--hair)'), background: on ? 'var(--ink)' : 'var(--surface)', color: on ? '#fff' : 'var(--ink-2)', transition: 'all 140ms', opacity: disabled && !on ? 0.55 : 1 }}>{l}</MutationButton>;
     })}
   </div>
 );
 
 const AoStepper = ({ value, onChange, min = 0, max = 999, step = 5, suffix, disabled }) => (
   <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, border: '1px solid var(--hair)', borderRadius: 10, padding: '0 5px 0 10px', height: 40, background: 'var(--surface)', opacity: disabled ? 0.55 : 1 }}>
-    <NumInput integer min={min} max={max} value={value} disabled={disabled} onChange={onChange} style={{ width: 46, border: 'none', outline: 'none', background: 'transparent', fontSize: 15, fontWeight: 700, fontVariantNumeric: 'tabular-nums', textAlign: 'right' }} />
+    <MutationNumInput integer min={min} max={max} value={value} disabled={disabled} onChange={onChange} style={{ width: 46, border: 'none', outline: 'none', background: 'transparent', fontSize: 15, fontWeight: 700, fontVariantNumeric: 'tabular-nums', textAlign: 'right' }} />
     {suffix && <span className="t-sm" style={{ color: 'var(--muted-2)', fontWeight: 700, marginRight: 2 }}>{suffix}</span>}
     <div style={{ display: 'flex', flexDirection: 'column' }}>
-      <button disabled={disabled} onClick={() => onChange(Math.min(max, value + step))} style={{ border: 'none', background: 'transparent', cursor: disabled ? 'default' : 'pointer', padding: '1px 4px', lineHeight: 1, color: 'var(--muted)' }}><Icon name="chevD" size={12} color="var(--muted)" style={{ transform: 'rotate(180deg)' }} /></button>
-      <button disabled={disabled} onClick={() => onChange(Math.max(min, value - step))} style={{ border: 'none', background: 'transparent', cursor: disabled ? 'default' : 'pointer', padding: '1px 4px', lineHeight: 1, color: 'var(--muted)' }}><Icon name="chevD" size={12} color="var(--muted)" /></button>
+      <MutationButton disabled={disabled} onClick={() => onChange(Math.min(max, value + step))} style={{ border: 'none', background: 'transparent', cursor: disabled ? 'default' : 'pointer', padding: '1px 4px', lineHeight: 1, color: 'var(--muted)' }}><Icon name="chevD" size={12} color="var(--muted)" style={{ transform: 'rotate(180deg)' }} /></MutationButton>
+      <MutationButton disabled={disabled} onClick={() => onChange(Math.max(min, value - step))} style={{ border: 'none', background: 'transparent', cursor: disabled ? 'default' : 'pointer', padding: '1px 4px', lineHeight: 1, color: 'var(--muted)' }}><Icon name="chevD" size={12} color="var(--muted)" /></MutationButton>
     </div>
   </div>
 );
@@ -53,7 +56,7 @@ const AoCtrl = ({ icon, title, micro, how, children, t }) => {
 };
 
 export default function BookingsOptimPage({ onBack }) {
-  const { t, session, settings, reload, fireToast } = useDash();
+  const { t, session, operationalAccess, settings, reload, fireToast } = useDash();
   const isOwner = !!session?.is_owner;
   const s = settings || {};
 
@@ -155,7 +158,7 @@ export default function BookingsOptimPage({ onBack }) {
             {t('La sera prima, il sistema calcola se spostando solo chi ha aderito riesce a compattare la giornata. Se la cliente viene effettivamente spostata, riceve in automatico un coupon con la percentuale di sconto che imposti, valido sul prossimo appuntamento.', 'The evening before, the system calculates whether moving only those who opted in can compact the day. If the client is actually moved, she automatically receives a coupon with the discount percentage you set, valid on the next appointment.')}
           </React.Fragment>}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
-            <span style={{ opacity: ro ? 0.55 : 1, pointerEvents: ro ? 'none' : 'auto' }}><Toggle on={flexOn} onChange={setFlexOn} /></span>
+            <span style={{ opacity: ro ? 0.55 : 1, pointerEvents: ro ? 'none' : 'auto' }}><MutationToggle on={flexOn} onChange={setFlexOn} /></span>
             <span className="t-sm" style={{ fontWeight: 600, color: flexOn ? 'var(--ok)' : 'var(--muted)' }}>{flexOn ? t('Attivo', 'On') : t('Disattivato', 'Off')}</span>
           </div>
           {flexOn && (
@@ -197,7 +200,7 @@ export default function BookingsOptimPage({ onBack }) {
               </div>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, border: '1px solid var(--hair)', borderRadius: 10, padding: '0 12px', height: 40, background: 'var(--surface)', opacity: ro ? 0.55 : 1 }}>
                 <span className="t-sm" style={{ color: 'var(--muted-2)', fontWeight: 700 }}>€</span>
-                <NumInput integer min={0} value={budget} disabled={ro} onChange={setBudget} style={{ width: 56, border: 'none', outline: 'none', background: 'transparent', fontSize: 15, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }} />
+                <MutationNumInput integer min={0} value={budget} disabled={ro} onChange={setBudget} style={{ width: 56, border: 'none', outline: 'none', background: 'transparent', fontSize: 15, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }} />
               </div>
             </div>
           )}
@@ -222,9 +225,9 @@ export default function BookingsOptimPage({ onBack }) {
       </div>
 
       {isOwner && (
-        <button className="dk-btn dk-btn--clay" disabled={saving} style={{ width: '100%', marginTop: 24, marginBottom: 12, opacity: saving ? 0.6 : 1 }} onClick={save}>
+        <MutationButton className="dk-btn dk-btn--clay" disabled={saving} style={{ width: '100%', marginTop: 24, marginBottom: 12, opacity: saving ? 0.6 : 1 }} onClick={save}>
           <Icon name="check" size={17} color="#fff" />{saving ? t('Salvataggio…', 'Saving…') : t('Salva', 'Save')}
-        </button>
+        </MutationButton>
       )}
     </div>
   );

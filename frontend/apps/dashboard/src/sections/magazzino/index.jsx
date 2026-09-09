@@ -11,7 +11,7 @@ import FornitoriSub from './FornitoriSub.jsx';
 import StoricoSub from './StoricoSub.jsx';
 
 export default function MagazzinoSection() {
-  const { t, subTab, setSubTab, fireToast, hasScope } = useDash();
+  const { t, subTab, setSubTab, fireToast, hasScope, canMutate } = useDash();
   const sub = subTab || 'prodotti';
   const canWrite = hasScope('inventory');
 

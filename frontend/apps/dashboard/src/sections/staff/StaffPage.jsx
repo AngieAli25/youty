@@ -1,3 +1,7 @@
+import { useMutationAction } from '@youty/shared';
+import { MutationNumInput } from '@youty/shared';
+import { MutationInput } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // StaffPage — per-operator page (port of prototype DkStaffPage).
 // Tabs: Anagrafica (basics + colour + assignable services, PUT /api/staff/{id}),
 // Turni e ferie (weekly pattern PUT /{id}/shifts + absences CRUD),
@@ -14,7 +18,8 @@ import ShiftPattern from './ShiftPattern.jsx';
 import AbsenceCalendar from './AbsenceCalendar.jsx';
 
 export default function StaffPage({ id, onBack }) {
-  const { t, lang, services, reload, fireToast, hasScope, showRevenue, setSelClient, setTab, opPalette } = useDash();
+  const { t, lang, services, reload, fireToast, hasScope, canMutate, showRevenue, setSelClient, setTab, opPalette } = useDash();
+  const mutation = useMutationAction();
   const canTeam = hasScope('team');
   const rev = (v) => (showRevenue ? eur(v, lang) : '•••');
 
@@ -177,9 +182,9 @@ export default function StaffPage({ id, onBack }) {
           <Icon name="clock" size={13} color="var(--muted-2)" />{t('Timbrature e commissioni: fase 2', 'Time clock & commissions: phase 2')}
         </span>
         {canTeam && (
-          <button className="dk-btn dk-btn--clay" onClick={saveBasics} disabled={saving} style={{ opacity: saving ? 0.6 : 1 }}>
+          <MutationButton className="dk-btn dk-btn--clay" onClick={saveBasics} disabled={saving} style={{ opacity: saving ? 0.6 : 1 }}>
             <Icon name="check" size={17} color="#fff" />{saving ? t('Salvataggio…', 'Saving…') : t('Salva', 'Save')}
-          </button>
+          </MutationButton>
         )}
       </div>
 
@@ -204,21 +209,21 @@ export default function StaffPage({ id, onBack }) {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <label style={{ display: 'block' }}>
                   <div className="t-sm" style={{ color: 'var(--muted)', fontWeight: 600, marginBottom: 5 }}>{t('Nome', 'First name')}</div>
-                  <input value={form.first_name} disabled={!canTeam} onChange={(e) => setForm((f) => ({ ...f, first_name: e.target.value }))} style={inputCss} />
+                  <MutationInput value={form.first_name} disabled={!canTeam} onChange={(e) => setForm((f) => ({ ...f, first_name: e.target.value }))} style={inputCss} />
                 </label>
                 <label style={{ display: 'block' }}>
                   <div className="t-sm" style={{ color: 'var(--muted)', fontWeight: 600, marginBottom: 5 }}>{t('Cognome', 'Last name')}</div>
-                  <input value={form.last_name} disabled={!canTeam} onChange={(e) => setForm((f) => ({ ...f, last_name: e.target.value }))} style={inputCss} />
+                  <MutationInput value={form.last_name} disabled={!canTeam} onChange={(e) => setForm((f) => ({ ...f, last_name: e.target.value }))} style={inputCss} />
                 </label>
               </div>
               <label style={{ display: 'block' }}>
                 <div className="t-sm" style={{ color: 'var(--muted)', fontWeight: 600, marginBottom: 5 }}>{t('Ruolo', 'Role')}</div>
-                <input value={form.role_title} disabled={!canTeam} onChange={(e) => setForm((f) => ({ ...f, role_title: e.target.value }))} style={inputCss} />
+                <MutationInput value={form.role_title} disabled={!canTeam} onChange={(e) => setForm((f) => ({ ...f, role_title: e.target.value }))} style={inputCss} />
               </label>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <label style={{ display: 'block' }}>
                   <div className="t-sm" style={{ color: 'var(--muted)', fontWeight: 600, marginBottom: 5 }}>{t('Costo orario €', 'Hourly cost €')}</div>
-                  <NumInput min={0} value={form.hourly_cost} disabled={!canTeam} onChange={(hourly_cost) => setForm((f) => ({ ...f, hourly_cost }))} style={inputCss} />
+                  <MutationNumInput min={0} value={form.hourly_cost} disabled={!canTeam} onChange={(hourly_cost) => setForm((f) => ({ ...f, hourly_cost }))} style={inputCss} />
                 </label>
                 <div>
                   <div className="t-sm" style={{ color: 'var(--muted)', fontWeight: 600, marginBottom: 5 }}>{t('Iniziali', 'Initials')}</div>
@@ -230,7 +235,7 @@ export default function StaffPage({ id, onBack }) {
                   <div style={{ fontWeight: 600, fontSize: 14 }}>{t('Operatrice attiva', 'Active stylist')}</div>
                   <div className="t-sm" style={{ color: 'var(--muted)' }}>{t('Se disattivata non compare in agenda né nelle prenotazioni.', 'When inactive she disappears from the calendar and bookings.')}</div>
                 </div>
-                <button className={'swt press' + (form.active ? ' swt--on' : '')} disabled={!canTeam} onClick={() => canTeam && setForm((f) => ({ ...f, active: !f.active }))} aria-pressed={form.active} />
+                <MutationButton className={'swt press' + (form.active ? ' swt--on' : '')} disabled={!canTeam} onClick={() => canTeam && setForm((f) => ({ ...f, active: !f.active }))} aria-pressed={form.active} />
               </div>
             </div>
           </div>
@@ -240,13 +245,13 @@ export default function StaffPage({ id, onBack }) {
             <div className="t-sm" style={{ color: 'var(--muted)', marginBottom: 12 }}>{t('Identifica questa operatrice nell’agenda e nei report.', 'Identifies this stylist in the calendar and reports.')}</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
               <label title={t('Ruota dei colori', 'Colour wheel')} style={{ position: 'relative', width: 34, height: 34, borderRadius: 9, cursor: canTeam ? 'pointer' : 'default', overflow: 'hidden', flexShrink: 0, border: '1px solid var(--hair)', background: color }}>
-                <input type="color" value={color} disabled={!canTeam} onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))} style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }} />
+                <MutationInput type="color" value={color} disabled={!canTeam} onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))} style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }} />
               </label>
-              <HexInput value={color} onChange={(c) => canTeam && setForm((f) => ({ ...f, color: c }))} width={70} />
+              <HexInput disabled={!canMutate('team')} value={color} onChange={mutation((c) => canTeam && setForm((f) => ({ ...f, color: c })))} width={70} />
             </div>
             <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 8 }}>
               {opPalette.map((c) => (
-                <button key={c} onClick={() => canTeam && setForm((f) => ({ ...f, color: c }))} title={c} style={{ width: 24, height: 24, borderRadius: 6, background: c, cursor: canTeam ? 'pointer' : 'default', border: '1px solid var(--hair)', outline: color.toLowerCase() === c.toLowerCase() ? '2px solid var(--ink)' : 'none', outlineOffset: 1 }} />
+                <MutationButton key={c} onClick={() => canTeam && setForm((f) => ({ ...f, color: c }))} title={c} style={{ width: 24, height: 24, borderRadius: 6, background: c, cursor: canTeam ? 'pointer' : 'default', border: '1px solid var(--hair)', outline: color.toLowerCase() === c.toLowerCase() ? '2px solid var(--ink)' : 'none', outlineOffset: 1 }} />
               ))}
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 3, maxWidth: 280 }}>
@@ -255,7 +260,7 @@ export default function StaffPage({ id, onBack }) {
                   {row.map((c) => {
                     const sel = color.toLowerCase() === c.toLowerCase();
                     return (
-                      <button key={c} onClick={() => canTeam && setForm((f) => ({ ...f, color: c }))} title={c} style={{ width: 22, height: 22, borderRadius: 5, background: c, cursor: canTeam ? 'pointer' : 'default', border: '1px solid ' + (c.toUpperCase() === '#FFFFFF' ? 'var(--hair)' : 'transparent'), outline: sel ? '2px solid var(--ink)' : 'none', outlineOffset: 1, flexShrink: 0 }} />
+                      <MutationButton key={c} onClick={() => canTeam && setForm((f) => ({ ...f, color: c }))} title={c} style={{ width: 22, height: 22, borderRadius: 5, background: c, cursor: canTeam ? 'pointer' : 'default', border: '1px solid ' + (c.toUpperCase() === '#FFFFFF' ? 'var(--hair)' : 'transparent'), outline: sel ? '2px solid var(--ink)' : 'none', outlineOffset: 1, flexShrink: 0 }} />
                     );
                   })}
                 </div>
@@ -270,9 +275,9 @@ export default function StaffPage({ id, onBack }) {
               {services.map((s) => {
                 const on = form.service_ids.includes(s.id);
                 return (
-                  <button key={s.id} onClick={() => toggleSvc(s.id)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 12px', borderRadius: 99, fontSize: 12.5, fontWeight: 600, cursor: canTeam ? 'pointer' : 'default', border: '1px solid ' + (on ? 'var(--clay)' : 'var(--hair)'), background: on ? 'var(--clay)' : 'var(--surface)', color: on ? '#fff' : 'var(--ink-2)' }}>
+                  <MutationButton key={s.id} onClick={() => toggleSvc(s.id)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 12px', borderRadius: 99, fontSize: 12.5, fontWeight: 600, cursor: canTeam ? 'pointer' : 'default', border: '1px solid ' + (on ? 'var(--clay)' : 'var(--hair)'), background: on ? 'var(--clay)' : 'var(--surface)', color: on ? '#fff' : 'var(--ink-2)' }}>
                     {svcLabel(s, lang)}<Icon name={on ? 'check' : 'plus'} size={12} color={on ? '#fff' : 'var(--muted-2)'} />
-                  </button>
+                  </MutationButton>
                 );
               })}
             </div>

@@ -17,6 +17,9 @@ from apps.catalog.models import Package, Service, ServiceCategory
 from apps.clients.models import Client
 from apps.staff.models import Operator
 
+from common.portal_access import require_portal_access, PortalAccessDenied
+
+from .access_policy import require_sync_access, record_sync_gap
 from .client import YourangClient
 from .models import YourangConnection
 
@@ -102,9 +105,10 @@ class SyncReport:
 # ---- Clienti ↔ Contatti ----------------------------------------------------
 
 
-def sync_clients(conn: YourangConnection) -> SyncReport:
+def sync_clients(conn: YourangConnection, *, allow_backfill=False) -> SyncReport:
     """Riconcilia per telefono E.164: linkati→aggiorna, stesso telefono→linka,
     mancanti→crea; i clienti nativi non ancora su Yourang vengono spinti."""
+    require_sync_access(conn.salon, allow_backfill=allow_backfill)
     report = SyncReport()
     client = YourangClient(conn)
     salon = conn.salon
@@ -135,6 +139,7 @@ def sync_clients(conn: YourangConnection) -> SyncReport:
 
     # 2) Yourang → locale
     for rc in remote:
+        require_sync_access(salon, allow_backfill=allow_backfill)
         rid = str(rc.get("id") or "")
         phone = normalize_phone(rc.get("phone_number", ""))
         first = rc.get("first_name") or "Cliente"
@@ -176,6 +181,7 @@ def sync_clients(conn: YourangConnection) -> SyncReport:
 
     # 3) locali senza corrispondenza → push su Yourang
     for local in Client.objects.filter(salon=salon, is_active=True):
+        require_sync_access(salon, allow_backfill=allow_backfill)
         if local.yourang_contact_id:
             continue
         phone = normalize_phone(local.phone)
@@ -190,6 +196,9 @@ def sync_clients(conn: YourangConnection) -> SyncReport:
                     "email": local.email or None,
                 },
             )
+        except PortalAccessDenied as exc:
+            record_sync_gap(salon, "full_sync", exc.access["status"])
+            raise
         except Exception as exc:  # 403 senza scope contacts:write → degrada
             report.errors.append(f"push {phone}: {exc}")
             continue
@@ -204,7 +213,8 @@ def sync_clients(conn: YourangConnection) -> SyncReport:
 # ---- Servizi / Pacchetti → Catalogo ----------------------------------------
 
 
-def sync_services(conn: YourangConnection) -> SyncReport:
+def sync_services(conn: YourangConnection, *, allow_backfill=False) -> SyncReport:
+    require_sync_access(conn.salon, allow_backfill=allow_backfill)
     report = SyncReport()
     client = YourangClient(conn)
     salon = conn.salon
@@ -218,6 +228,7 @@ def sync_services(conn: YourangConnection) -> SyncReport:
         conn.save(update_fields=["catalogue_id"])
 
     for svc in Service.objects.filter(salon=salon, active=True).select_related("category"):
+        require_sync_access(salon, allow_backfill=allow_backfill)
         payload = {
             "name": svc.name_it or svc.name_en,
             "sku": f"service-{svc.id}",
@@ -228,6 +239,9 @@ def sync_services(conn: YourangConnection) -> SyncReport:
         }
         try:
             item = client.upsert_catalogue_item(svc.yourang_item_id or None, payload)
+        except PortalAccessDenied as exc:
+            record_sync_gap(salon, "full_sync", exc.access["status"])
+            raise
         except Exception as exc:
             report.errors.append(f"servizio {svc.id}: {exc}")
             continue
@@ -237,6 +251,7 @@ def sync_services(conn: YourangConnection) -> SyncReport:
         report.items += 1
 
     for pkg in Package.objects.filter(salon=salon, active=True):
+        require_sync_access(salon, allow_backfill=allow_backfill)
         payload = {
             "name": pkg.name,
             "sku": f"package-{pkg.id}",
@@ -248,6 +263,9 @@ def sync_services(conn: YourangConnection) -> SyncReport:
         }
         try:
             item = client.upsert_catalogue_item(pkg.yourang_item_id or None, payload)
+        except PortalAccessDenied as exc:
+            record_sync_gap(salon, "full_sync", exc.access["status"])
+            raise
         except Exception as exc:
             report.errors.append(f"pacchetto {pkg.id}: {exc}")
             continue
@@ -297,10 +315,12 @@ def _event_duration_min(data: dict, start) -> int:
 
 def import_event(conn: YourangConnection, event_id: str) -> Appointment | None:
     """Scarica un evento Yourang e fa upsert dell'Appointment (idempotente su id)."""
+    require_portal_access(conn.salon)
     salon = conn.salon
     data = YourangClient(conn).get_event(event_id)
     if not data:
         return None
+    require_portal_access(salon)
 
     operator = _default_operator(salon)
 
@@ -351,6 +371,42 @@ def import_event(conn: YourangConnection, event_id: str) -> Appointment | None:
 
 
 def cancel_event(conn: YourangConnection, event_id: str) -> None:
+    require_portal_access(conn.salon)
     Appointment.objects.filter(
         salon=conn.salon, yourang_event_id=str(event_id)
     ).update(status=Appointment.Status.CANCELLED)
+
+
+def import_contact(conn: YourangConnection, contact_id: str) -> Client | None:
+    """Apply only the contact named by a newly received signed notification.
+
+    This must never call full reconciliation: unrelated contacts skipped while
+    access was unavailable stay untouched after reactivation.
+    """
+    require_portal_access(conn.salon)
+    data = YourangClient(conn).get_contact(contact_id)
+    require_portal_access(conn.salon)
+    if str(data.get("id") or "") != contact_id:
+        raise ValueError("Unexpected Yourang contact identity")
+    salon = conn.salon
+    phone = normalize_phone(data.get("phone_number", ""))
+    local = Client.objects.filter(salon=salon, yourang_contact_id=contact_id).first()
+    if local is None and phone:
+        local = Client.objects.filter(salon=salon, phone=phone).first()
+        if local and local.yourang_contact_id and local.yourang_contact_id != contact_id:
+            raise ValueError("Contact already linked to a different Yourang identity")
+    if local is None:
+        if not phone:
+            return None
+        return Client.objects.create(
+            salon=salon, phone=phone, first_name=data.get("first_name") or "Cliente",
+            last_name=data.get("last_name") or "", email=data.get("email") or "",
+            yourang_contact_id=contact_id,
+        )
+    local.yourang_contact_id = contact_id
+    if data.get("email"):
+        local.email = data["email"]
+    if data.get("last_name"):
+        local.last_name = data["last_name"]
+    local.save(update_fields=["yourang_contact_id", "email", "last_name"])
+    return local

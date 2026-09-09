@@ -9,6 +9,7 @@ from ninja.errors import HttpError
 
 from apps.core.models import Location, Salon
 from apps.core.services import log_activity
+from common.portal_access import business_operation
 from common.auth import staff_auth
 from common.permissions import require_scope
 from common.utils import salon_get
@@ -158,6 +159,7 @@ def list_operators(request):
 
 
 @router.post("/", auth=staff_auth, response=OperatorOut)
+@business_operation
 def create_operator(request, data: OperatorIn):
     ctx = request.auth
     require_scope(ctx, "team")
@@ -181,6 +183,7 @@ def get_operator(request, operator_id: int):
 
 
 @router.put("/{int:operator_id}", auth=staff_auth, response=OperatorOut)
+@business_operation
 def update_operator(request, operator_id: int, data: OperatorIn):
     ctx = request.auth
     require_scope(ctx, "team")
@@ -197,6 +200,7 @@ def update_operator(request, operator_id: int, data: OperatorIn):
 
 
 @router.delete("/{int:operator_id}", auth=staff_auth, response=OkOut)
+@business_operation
 def delete_operator(request, operator_id: int):
     """Soft delete: l'operatrice resta in archivio (storico turni/vendite intatto)."""
     ctx = request.auth
@@ -218,6 +222,7 @@ def delete_operator(request, operator_id: int):
 
 
 @router.put("/{int:operator_id}/shifts", auth=staff_auth, response=list[WeeklyShiftOut])
+@business_operation
 def replace_shifts(request, operator_id: int, data: ShiftsReplaceIn):
     ctx = request.auth
     require_scope(ctx, "team")
@@ -260,6 +265,7 @@ def list_absences(request, operator_id: int):
 
 
 @router.post("/{int:operator_id}/absences", auth=staff_auth, response=AbsenceOut)
+@business_operation
 def create_absence(request, operator_id: int, data: AbsenceIn):
     ctx = request.auth
     require_scope(ctx, "team")
@@ -280,6 +286,7 @@ def create_absence(request, operator_id: int, data: AbsenceIn):
 
 
 @router.put("/{int:operator_id}/absences/{int:absence_id}", auth=staff_auth, response=AbsenceOut)
+@business_operation
 def update_absence(request, operator_id: int, absence_id: int, data: AbsenceIn):
     ctx = request.auth
     require_scope(ctx, "team")
@@ -305,6 +312,7 @@ def update_absence(request, operator_id: int, absence_id: int, data: AbsenceIn):
 
 
 @router.delete("/{int:operator_id}/absences/{int:absence_id}", auth=staff_auth, response=OkOut)
+@business_operation
 def delete_absence(request, operator_id: int, absence_id: int):
     ctx = request.auth
     require_scope(ctx, "team")

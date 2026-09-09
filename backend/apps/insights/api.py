@@ -4,6 +4,7 @@ from django.utils.dateparse import parse_date
 from ninja import Router
 from ninja.errors import HttpError
 
+from common.portal_access import business_operation
 from common.auth import staff_auth
 from common.permissions import require_owner
 
@@ -54,6 +55,7 @@ def get_occupancy_by_weekday(request, period: str = "month", date: str | None = 
 
 
 @router.post("/ask", auth=staff_auth)
+@business_operation
 def ask_youty(request, data: AskIn):
     require_owner(request.auth)
     raise HttpError(501, "Chiedi a Youty sarà disponibile nella fase 2")

@@ -1,3 +1,4 @@
+import { MutationButton } from '@youty/shared';
 // ClientProfile.jsx — full client profile (ported DkClientProfile): header with
 // contact actions, editable labels, KPI stats, deposit banner, language card
 // and the 5 tabs (Storico / Scheda tecnica / Note / Wallet / Consensi).
@@ -13,7 +14,7 @@ import WalletTab from './tabs/WalletTab.jsx';
 import ConsensiTab from './tabs/ConsensiTab.jsx';
 
 export default function ClientProfile({ clientId, onChanged, onDeleted }) {
-  const { t, lang, fireToast, hasScope, clientCategories, openModal } = useDash();
+  const { t, lang, fireToast, hasScope, canMutate, clientCategories, openModal } = useDash();
   const canWrite = hasScope('clients');
 
   const [c, setC] = useState(null);
@@ -145,9 +146,9 @@ export default function ClientProfile({ clientId, onChanged, onDeleted }) {
             : <button className="dk-btn dk-btn--ghost" onClick={() => fireToast({ msg: t('Nessuna email in anagrafica', 'No email on file'), icon: 'mail' })}><Icon name="mail" size={17} />Email</button>}
           <button className="dk-btn dk-btn--clay" title={t('La conversazione si gestisce su Yourang', 'The conversation is managed on Yourang')} onClick={() => fireToast({ msg: t('Apertura di Yourang…', 'Opening Yourang…'), icon: 'ext' })}><Icon name="ext" size={16} color="#fff" />Yourang</button>
           {canWrite && (
-            <button className="dk-iconbtn" title={t('Archivia cliente', 'Archive client')} onClick={() => setConfirmDel(true)} style={{ borderColor: 'color-mix(in srgb, var(--danger) 35%, var(--hair))' }}>
+            <MutationButton className="dk-iconbtn" title={t('Archivia cliente', 'Archive client')} onClick={() => setConfirmDel(true)} style={{ borderColor: 'color-mix(in srgb, var(--danger) 35%, var(--hair))' }}>
               <Icon name="x" size={16} color="var(--danger)" />
-            </button>
+            </MutationButton>
           )}
         </div>
       </div>
@@ -160,9 +161,9 @@ export default function ClientProfile({ clientId, onChanged, onDeleted }) {
             removeTitle={t('Rimuovi etichetta', 'Remove label')} />
         ))}
         {canWrite && (
-          <button onClick={() => setLabelPick((o) => !o)} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11.5, fontWeight: 700, color: 'var(--muted)', border: '1px dashed var(--line-strong)', background: 'transparent', padding: '4px 10px', borderRadius: 99, cursor: 'pointer' }}>
+          <MutationButton onClick={() => setLabelPick((o) => !o)} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11.5, fontWeight: 700, color: 'var(--muted)', border: '1px dashed var(--line-strong)', background: 'transparent', padding: '4px 10px', borderRadius: 99, cursor: 'pointer' }}>
             <Icon name="plus" size={11} color="var(--muted)" />{t('etichetta', 'label')}
-          </button>
+          </MutationButton>
         )}
         {labelPick && (
           <React.Fragment>
@@ -173,12 +174,12 @@ export default function ClientProfile({ clientId, onChanged, onDeleted }) {
                 {clientCategories.map((cat) => {
                   const on = assignedIds.includes(cat.id);
                   return (
-                    <button key={cat.id} className="dk-row" style={{ display: 'flex', alignItems: 'center', gap: 9, width: '100%', padding: '8px 9px', borderRadius: 8, textAlign: 'left', border: 'none', background: 'transparent' }}
+                    <MutationButton key={cat.id} className="dk-row" style={{ display: 'flex', alignItems: 'center', gap: 9, width: '100%', padding: '8px 9px', borderRadius: 8, textAlign: 'left', border: 'none', background: 'transparent' }}
                       onClick={() => updateClient({ category_ids: on ? assignedIds.filter((x) => x !== cat.id) : [...assignedIds, cat.id] })}>
                       <span style={{ width: 11, height: 11, borderRadius: 99, background: cat.color, flexShrink: 0 }} />
                       <span style={{ flex: 1, fontWeight: on ? 700 : 600, fontSize: 13.5, color: on ? 'var(--ink)' : 'var(--ink-2)' }}>{cat.name}</span>
                       {on && <Icon name="check" size={14} color="var(--clay-ink)" stroke={2.4} />}
-                    </button>
+                    </MutationButton>
                   );
                 })}
               </div>
@@ -226,9 +227,9 @@ export default function ClientProfile({ clientId, onChanged, onDeleted }) {
           {[['it', 'Italiano'], ['en', 'English']].map(([k, l]) => {
             const on = (c.lang || 'it') === k;
             return (
-              <button key={k} disabled={!canWrite}
+              <MutationButton key={k} disabled={!canWrite}
                 onClick={() => !on && updateClient({ lang: k }, { msg: k === 'en' ? t('Comunicazioni WhatsApp in inglese', 'WhatsApp messages set to English') : t('Comunicazioni WhatsApp in italiano', 'WhatsApp messages set to Italian'), icon: 'whatsapp' })}
-                style={{ padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: canWrite ? 'pointer' : 'default', border: 'none', background: on ? 'var(--surface)' : 'transparent', color: on ? 'var(--ink)' : 'var(--muted)', boxShadow: on ? 'var(--sh-card)' : 'none' }}>{l}</button>
+                style={{ padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: canWrite ? 'pointer' : 'default', border: 'none', background: on ? 'var(--surface)' : 'transparent', color: on ? 'var(--ink)' : 'var(--muted)', boxShadow: on ? 'var(--sh-card)' : 'none' }}>{l}</MutationButton>
             );
           })}
         </div>

@@ -1,3 +1,6 @@
+import { MutationNumInput } from '@youty/shared';
+import { withPortalForm } from '@youty/shared';
+import { MutationButton, MutationInput } from '@youty/shared';
 // SvcEditModal.jsx — create / edit a service (POST/PUT /api/catalog/services)
 // plus operator assignment, which lives on the OPERATOR side:
 // toggling a stylist = PUT /api/staff/{operator_id} with updated service_ids.
@@ -13,7 +16,7 @@ function catName(cat, lang) {
   return lang === 'en' && cat.name_en ? cat.name_en : cat.name_it;
 }
 
-export default function SvcEditModal({ service, categories, operators, canTeam, canPricing = true, onSave, onClose, onCats, onCatColor, t, lang }) {
+function SvcEditModal({ service, categories, operators, canTeam, canPricing = true, onSave, onClose, onCats, onCatColor, t, lang }) {
   const isNew = !service?.id;
   const [draft, setDraft] = useState(() => ({
     name_it: service?.name_it || '',
@@ -82,9 +85,9 @@ export default function SvcEditModal({ service, categories, operators, canTeam, 
       foot={(
         <React.Fragment>
           <button className="dk-btn dk-btn--ghost" onClick={onClose}>{t('Annulla', 'Cancel')}</button>
-          <button className="dk-btn dk-btn--clay" disabled={!canSave} style={{ opacity: canSave ? 1 : 0.5 }} onClick={submit}>
+          <MutationButton className="dk-btn dk-btn--clay" disabled={!canSave} style={{ opacity: canSave ? 1 : 0.5 }} onClick={submit}>
             <Icon name="check" size={17} color="#fff" />{saving ? t('Salvataggio…', 'Saving…') : t('Salva', 'Save')}
-          </button>
+          </MutationButton>
         </React.Fragment>
       )}
     >
@@ -137,11 +140,11 @@ export default function SvcEditModal({ service, categories, operators, canTeam, 
             {onCatColor && canPricing ? (
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
                 <label title={t('Ruota dei colori', 'Colour wheel')} style={{ position: 'relative', width: 30, height: 30, borderRadius: 8, overflow: 'hidden', cursor: 'pointer', border: '1px solid var(--hair)', background: catColor, flexShrink: 0 }}>
-                  <input type="color" value={/^#[0-9a-fA-F]{6}$/.test(catColor) ? catColor : '#E0E7FF'} onChange={(e) => setCatColorLocal(e.target.value)} onBlur={() => commitCatColor(catColor)} style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }} />
+                  <MutationInput type="color" value={/^#[0-9a-fA-F]{6}$/.test(catColor) ? catColor : '#E0E7FF'} onChange={(e) => setCatColorLocal(e.target.value)} onBlur={() => commitCatColor(catColor)} style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }} />
                 </label>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, border: '1px solid var(--hair)', borderRadius: 8, padding: '5px 8px', background: 'var(--surface)' }}>
                   <span style={{ color: 'var(--muted-2)', fontFamily: 'ui-monospace, monospace', fontWeight: 700, fontSize: 12.5 }}>#</span>
-                  <input value={String(catColor || '').replace('#', '').toUpperCase()} maxLength={6} placeholder="E0E7FF"
+                  <MutationInput value={String(catColor || '').replace('#', '').toUpperCase()} maxLength={6} placeholder="E0E7FF"
                     onChange={(e) => setCatColorLocal('#' + e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6))}
                     onBlur={() => commitCatColor('#' + String(catColor).replace('#', '').padEnd(6, '0').slice(0, 6))}
                     style={{ border: 'none', outline: 'none', background: 'transparent', fontFamily: 'ui-monospace, monospace', fontWeight: 700, fontSize: 12.5, width: 64, letterSpacing: '0.05em' }} />
@@ -155,7 +158,7 @@ export default function SvcEditModal({ service, categories, operators, canTeam, 
             <div style={{ display: 'flex', gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
               {CAT_SWATCHES.map((c) => {
                 const on = String(catColor || '').toLowerCase() === c.toLowerCase();
-                return <button key={c} type="button" onClick={() => { setCatColorLocal(c); commitCatColor(c); }} title={c} style={{ width: 22, height: 22, borderRadius: 6, background: c, cursor: 'pointer', border: '1px solid var(--hair)', outline: on ? '2px solid var(--ink)' : 'none', outlineOffset: 1 }} />;
+                return <MutationButton key={c} type="button" onClick={() => { setCatColorLocal(c); commitCatColor(c); }} title={c} style={{ width: 22, height: 22, borderRadius: 6, background: c, cursor: 'pointer', border: '1px solid var(--hair)', outline: on ? '2px solid var(--ink)' : 'none', outlineOffset: 1 }} />;
               })}
             </div>
           )}
@@ -186,7 +189,7 @@ export default function SvcEditModal({ service, categories, operators, canTeam, 
       </FRow>
       <FRow label={t('Ordine', 'Order')} hint={t('Posizione nella lista', 'Position in the list')}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: '1px solid var(--hair)', borderRadius: 10, padding: '0 12px', height: 42, background: 'var(--surface)', width: 92 }}>
-          <NumInput integer min={0} value={draft.order} onChange={(order) => set({ order })} style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: 15, fontWeight: 600, width: '100%' }} />
+          <MutationNumInput integer min={0} value={draft.order} onChange={(order) => set({ order })} style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: 15, fontWeight: 600, width: '100%' }} />
         </div>
       </FRow>
 
@@ -228,3 +231,5 @@ export default function SvcEditModal({ service, categories, operators, canTeam, 
     </DkModal>
   );
 }
+
+export default withPortalForm(SvcEditModal, { preview: ({ service }) => !!service?.id });

@@ -1,3 +1,5 @@
+import { withPortalForm } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // ComEditModal.jsx — composer for a Communication (title/body/cta/audience/schedule).
 // Not a registry modal (comunicazioni isn't in modals/registry.js) — rendered locally by
 // index.jsx as a plain <DkModal>. Owns its own save/delete API calls; the parent just
@@ -14,8 +16,8 @@ const inputCss = {
   width: '100%', boxSizing: 'border-box',
 };
 
-export default function ComEditModal({ comm, onClose, onSaved, onDeleted, onSend }) {
-  const { t, clientCategories, hasScope, fireToast } = useDash();
+function ComEditModal({ comm, onClose, onSaved, onDeleted, onSend }) {
+  const { t, clientCategories, hasScope, canMutate, fireToast } = useDash();
   const isNew = !comm;
   const canWrite = hasScope('marketing');
   const sent = !isNew && comm.status === 'sent';
@@ -161,20 +163,20 @@ export default function ComEditModal({ comm, onClose, onSaved, onDeleted, onSend
       foot={
         <React.Fragment>
           {!isNew && canWrite && (
-            <button className="dk-btn dk-btn--ghost" style={{ marginRight: 'auto', color: 'var(--danger)' }} onClick={del} disabled={deleting}>
+            <MutationButton className="dk-btn dk-btn--ghost" style={{ marginRight: 'auto', color: 'var(--danger)' }} onClick={del} disabled={deleting}>
               <Icon name="x" size={16} color="var(--danger)" />{t('Elimina', 'Delete')}
-            </button>
+            </MutationButton>
           )}
           <button className="dk-btn dk-btn--ghost" onClick={onClose}>{t('Annulla', 'Cancel')}</button>
           {!sent && canWrite && (
-            <button className="dk-btn dk-btn--ghost" disabled={!canSave || saving} onClick={saveThenSend}>
+            <MutationButton className="dk-btn dk-btn--ghost" disabled={!canSave || saving} onClick={saveThenSend}>
               <Icon name="send" size={16} />{t('Invia…', 'Send…')}
-            </button>
+            </MutationButton>
           )}
           {!locked && (
-            <button className="dk-btn dk-btn--clay" disabled={!canSave || saving} onClick={save}>
+            <MutationButton className="dk-btn dk-btn--clay" disabled={!canSave || saving} onClick={save}>
               <Icon name="check" size={17} color="#fff" />{t('Salva', 'Save')}
-            </button>
+            </MutationButton>
           )}
         </React.Fragment>
       }
@@ -311,3 +313,5 @@ export default function ComEditModal({ comm, onClose, onSaved, onDeleted, onSend
     </DkModal>
   );
 }
+
+export default withPortalForm(ComEditModal, { preview: ({ comm }) => !!comm?.id });

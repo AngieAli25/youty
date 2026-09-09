@@ -1,3 +1,5 @@
+import { withPortalForm, PortalFormBody } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // BrandDrawer.jsx — port of BrandManager. Brand colour (PUT /api/core/settings)
 // + logo upload (postForm POST /api/core/settings/logo). Owner-only writes;
 // polite lock state for non-owners. No logo-delete endpoint: "remove" only
@@ -9,8 +11,8 @@ import HexInput from '../../ui/HexInput.jsx';
 import { useDash } from '../../ctx.jsx';
 import { PaletteGrid, inputCss, toastErr, LockNote } from './lib.jsx';
 
-export default function BrandDrawer({ onClose }) {
-  const { t, session, salon, settings, reload, fireToast } = useDash();
+function BrandDrawer({ onClose }) {
+  const { t, session, operationalAccess, salon, settings, reload, fireToast } = useDash();
   const isOwner = !!session?.is_owner;
   const [color, setColor] = useState(settings?.brand_color || '#6366F1');
   const [openingHours, setOpeningHours] = useState(settings?.opening_hours || '');
@@ -59,7 +61,7 @@ export default function BrandDrawer({ onClose }) {
         <button className="dk-iconbtn" style={{ flexShrink: 0, marginLeft: 12 }} onClick={onClose}><Icon name="x" size={18} /></button>
       </div>
 
-      <div className="scroll" style={{ flex: 1, overflowY: 'auto', padding: '18px 22px 30px' }}>
+      <div className="scroll" style={{ flex: 1, overflowY: 'auto', padding: '18px 22px 30px' }}><PortalFormBody>
         {!isOwner && (
           <div style={{ marginBottom: 18 }}>
             <LockNote t={t} msg={t('Solo il titolare può modificare il brand. Visualizzazione in sola lettura.', 'Only the owner can edit the brand. Read-only view.')} />
@@ -141,11 +143,13 @@ export default function BrandDrawer({ onClose }) {
         </div>
 
         {isOwner && (
-          <button className="dk-btn dk-btn--clay" disabled={saving} style={{ width: '100%', opacity: saving ? 0.6 : 1 }} onClick={save}>
+          <MutationButton className="dk-btn dk-btn--clay" disabled={saving} style={{ width: '100%', opacity: saving ? 0.6 : 1 }} onClick={save}>
             <Icon name="check" size={17} color="#fff" />{saving ? t('Salvataggio…', 'Saving…') : t('Salva', 'Save')}
-          </button>
+          </MutationButton>
         )}
-      </div>
+      </PortalFormBody></div>
     </DkDrawer>
   );
 }
+
+export default withPortalForm(BrandDrawer, { preview: () => true });

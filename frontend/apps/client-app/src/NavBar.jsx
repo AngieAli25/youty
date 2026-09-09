@@ -1,3 +1,4 @@
+import { MutationButton } from '@youty/shared';
 // NavBar.jsx — bottom navigation (Home / Prenotazioni / Prenota FAB / Wallet / Profilo).
 import React from 'react';
 import { Icon } from '@youty/shared';
@@ -28,9 +29,9 @@ export default function NavBar() {
           if (it.center) {
             return (
               <div key={it.key} style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-                <button className="press" onClick={() => setView('prenota')} style={{ width: 54, height: 54, marginTop: -22, borderRadius: 18, background: 'var(--brand)', boxShadow: '0 8px 20px color-mix(in srgb, var(--brand) 45%, transparent)', display: 'grid', placeItems: 'center' }}>
+                <MutationButton className="press" onClick={() => setView('prenota')} style={{ width: 54, height: 54, marginTop: -22, borderRadius: 18, background: 'var(--brand)', boxShadow: '0 8px 20px color-mix(in srgb, var(--brand) 45%, transparent)', display: 'grid', placeItems: 'center' }}>
                   <Icon name="plus" size={26} color="var(--brand-on)" stroke={2.4} />
-                </button>
+                </MutationButton>
               </div>
             );
           }

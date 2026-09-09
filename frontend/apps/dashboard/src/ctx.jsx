@@ -1,7 +1,7 @@
 // ctx.jsx — DashboardProvider: session, base catalogs from the API, navigation,
 // modal/drawer/toast plumbing. Section agents CONSUME this via useDash() — never edit it.
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { api, staffAuth, useT, useToastHost } from '@youty/shared';
+import { api, staffAuth, useT, useToastHost, usePortalAccess, PortalAccessProvider } from '@youty/shared';
 
 const DashCtx = createContext(null);
 export const useDash = () => useContext(DashCtx);
@@ -15,6 +15,10 @@ export function DashboardProvider({ children }) {
   const [session, setSession] = useState(staffAuth.getSession());
   useEffect(() => staffAuth.subscribe(setSession), []);
   const hasScope = useCallback((scope) => staffAuth.hasScope(scope), [session]);
+  const { access: portalAccess, refresh: refreshPortalAccess, operationalAccess } = usePortalAccess({
+    identity: `${session?.user?.id}:${session?.salon?.id}`, path: '/api/auth/portal-access', initial: session?.portal_access,
+  });
+  const canMutate = useCallback((scope) => operationalAccess && staffAuth.hasScope(scope), [operationalAccess, session]);
 
   /* ---- base data (loaded once, reloadable per collection) ---- */
   const [salon, setSalon] = useState(null);                       // SalonOut {id,name,slug,locations,settings,...}
@@ -98,7 +102,7 @@ export function DashboardProvider({ children }) {
 
   const ctx = {
     t, lang, setLang,
-    session, hasScope,
+    session, hasScope, canMutate, portalAccess, refreshPortalAccess, operationalAccess,
     salon, settings, locations,
     operators, services, serviceCategories, clientCategories,
     reload,
@@ -116,7 +120,7 @@ export function DashboardProvider({ children }) {
   if (booting) return <BootSkeleton />;
   if (bootError) return <BootError message={bootError} onRetry={bootLoad} t={t} />;
 
-  return <DashCtx.Provider value={ctx}>{children}</DashCtx.Provider>;
+  return <PortalAccessProvider access={portalAccess} refresh={refreshPortalAccess}><DashCtx.Provider value={ctx}>{children}</DashCtx.Provider></PortalAccessProvider>;
 }
 
 /* ---- loading gate ---- */

@@ -1,3 +1,5 @@
+import { MutationNumInput } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // GiftCard.jsx — gift-card balance detail + "Regala una gift card" purchase
 // form (POST /api/marketing/client/gift-cards — unpaid, si paga in salone;
 // Stripe checkout arriverà in fase 2).
@@ -145,7 +147,7 @@ export default function GiftCard() {
                     );
                   })}
                 </div>
-                <NumInput className="ca-input" max={1000} placeholder={t('Altro importo (€)', 'Other amount (€)')}
+                <MutationNumInput className="ca-input" max={1000} placeholder={t('Altro importo (€)', 'Other amount (€)')}
                   value={custom} emptyValue="" onChange={setCustom} style={{ marginBottom: 14 }} />
                 {/* recipient */}
                 <div className="t-meta" style={{ marginBottom: 10 }}>{t('Per chi è?', 'Who is it for?')}</div>
@@ -158,10 +160,10 @@ export default function GiftCard() {
                     {t('La gift card si paga in salone. Il pagamento online arriverà presto.', 'The gift card is paid in the salon. Online payment is coming soon.')}
                   </div>
                 </div>
-                <button className="btn btn--brand btn--block press" disabled={!valid || busy} style={{ opacity: !valid || busy ? 0.5 : 1 }} onClick={buy}>
+                <MutationButton className="btn btn--brand btn--block press" disabled={!valid || busy} style={{ opacity: !valid || busy ? 0.5 : 1 }} onClick={buy}>
                   <Icon name="gift" size={17} color="var(--brand-on)" />
                   {busy ? t('Creazione…', 'Creating…') : t('Conferma', 'Confirm') + (valid ? ' · ' + fmtEur(value, lang) : '')}
-                </button>
+                </MutationButton>
                 <button className="btn btn--ghost btn--block press" style={{ marginTop: 10 }} onClick={() => setBuying(false)}>
                   {t('Annulla', 'Cancel')}
                 </button>

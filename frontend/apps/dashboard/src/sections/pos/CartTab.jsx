@@ -1,3 +1,7 @@
+import { MutationNumInput } from '@youty/shared';
+import { MutationSelect } from '@youty/shared';
+import { MutationInput } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // CartTab — "Prodotti": quick counter sale (walk-in POS), not tied to an appointment.
 // Products from GET /api/inventory/products (retail = sale_price), submit → POST /api/sales/pos.
 import React, { useEffect, useMemo, useState } from 'react';
@@ -194,7 +198,7 @@ export default function CartTab({ onGoHistory }) {
               const inCart = cart.find((l) => l.line_type === 'product' && l.product_id === p.id);
               const sm = stockMeta(p.stock_state, t);
               return (
-                <button key={p.id} onClick={() => addProduct(p)} className="dk-card"
+                <MutationButton key={p.id} onClick={() => addProduct(p)} className="dk-card"
                   style={{ padding: 16, textAlign: 'left', cursor: 'pointer', border: '1px solid ' + (inCart ? 'var(--clay)' : 'var(--hair)'), position: 'relative', transition: 'border-color 140ms' }}>
                   {inCart && <span style={{ position: 'absolute', top: 10, right: 10, minWidth: 22, height: 22, padding: '0 6px', borderRadius: 99, background: 'var(--clay)', color: '#fff', fontSize: 12, fontWeight: 700, display: 'grid', placeItems: 'center' }}>{inCart.qty}</span>}
                   <div style={{ width: 40, height: 40, borderRadius: 11, background: 'var(--clay-tint)', display: 'grid', placeItems: 'center', marginBottom: 12 }}>
@@ -207,7 +211,7 @@ export default function CartTab({ onGoHistory }) {
                       {Number(p.stock_qty)} {t('pz', 'pcs')}
                     </span>
                   </div>
-                </button>
+                </MutationButton>
               );
             })}
             {!prodList.length && <div className="t-sm" style={{ color: 'var(--muted-2)', gridColumn: '1 / -1', textAlign: 'center', padding: 32 }}>{t('Nessun prodotto trovato', 'No products found')}</div>}
@@ -225,14 +229,14 @@ export default function CartTab({ onGoHistory }) {
           </div>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 3, border: '1px solid var(--hair)', borderRadius: 10, padding: '8px 10px', background: 'var(--surface)', width: 86, boxSizing: 'border-box' }}>
             <span style={{ color: 'var(--muted-2)', fontWeight: 700 }}>€</span>
-            <NumInput min={1} value={giftAmt} onChange={setGiftAmt}
+            <MutationNumInput min={1} value={giftAmt} onChange={setGiftAmt}
               style={{ border: 'none', outline: 'none', background: 'transparent', fontFamily: 'ui-monospace, monospace', fontWeight: 700, fontSize: 14, width: '100%' }} />
           </div>
-          <input value={giftName} onChange={(e) => setGiftName(e.target.value)} placeholder={t('Destinatario (facolt.)', 'Recipient (optional)')}
+          <MutationInput value={giftName} onChange={(e) => setGiftName(e.target.value)} placeholder={t('Destinatario (facolt.)', 'Recipient (optional)')}
             style={{ border: '1px solid var(--hair)', borderRadius: 10, outline: 'none', fontSize: 13, fontWeight: 600, padding: '9px 12px', fontFamily: 'var(--sans)', background: 'var(--surface)', width: 160 }} />
-          <button className="dk-btn dk-btn--ghost" style={{ height: 38 }} disabled={!(round2(giftAmt) > 0)} onClick={addGiftCard}>
+          <MutationButton className="dk-btn dk-btn--ghost" style={{ height: 38 }} disabled={!(round2(giftAmt) > 0)} onClick={addGiftCard}>
             <Icon name="plus" size={15} />{t('Aggiungi', 'Add')}
-          </button>
+          </MutationButton>
         </div>
       </div>
 
@@ -291,29 +295,29 @@ export default function CartTab({ onGoHistory }) {
                     </div>
                     {l.line_type === 'product' && !l.is_gift && (
                       <div style={{ display: 'inline-flex', alignItems: 'center', gap: 1, border: '1px solid ' + (l.disc > 0 ? 'var(--clay)' : 'var(--hair)'), borderRadius: 7, padding: '2px 5px', background: 'var(--surface)', flexShrink: 0 }} title={t('Sconto riga', 'Line discount')}>
-                        <NumInput integer min={0} max={100} value={l.disc}
+                        <MutationNumInput integer min={0} max={100} value={l.disc}
                           onChange={(disc) => patchLine(l.key, { disc })}
                           style={{ width: 24, textAlign: 'right', border: 'none', outline: 'none', background: 'transparent', fontSize: 12, fontWeight: 700, fontFamily: 'ui-monospace, monospace' }} />
                         <span style={{ color: 'var(--muted-2)', fontWeight: 700, fontSize: 11 }}>%</span>
                       </div>
                     )}
                     {l.line_type === 'product' && (
-                      <button onClick={() => patchLine(l.key, { is_gift: !l.is_gift })} title={t('Ometti pagamento', 'Comp this item')} className="dk-iconbtn"
+                      <MutationButton onClick={() => patchLine(l.key, { is_gift: !l.is_gift })} title={t('Ometti pagamento', 'Comp this item')} className="dk-iconbtn"
                         style={{ width: 26, height: 26, flexShrink: 0, background: l.is_gift ? 'var(--ok-tint)' : 'transparent', borderRadius: 7 }}>
                         <Icon name="gift" size={14} color={l.is_gift ? 'var(--ok)' : 'var(--muted-2)'} />
-                      </button>
+                      </MutationButton>
                     )}
                     {l.line_type === 'product' ? (
                       <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-                        <button className="dk-iconbtn" style={{ width: 26, height: 26, fontSize: 16, fontWeight: 700, lineHeight: 1, color: 'var(--ink-2)' }}
+                        <MutationButton className="dk-iconbtn" style={{ width: 26, height: 26, fontSize: 16, fontWeight: 700, lineHeight: 1, color: 'var(--ink-2)' }}
                           onClick={() => (l.qty === 1 ? removeLine(l.key) : stepQty(l, -1))}>
                           {l.qty === 1 ? <Icon name="x" size={13} /> : '−'}
-                        </button>
+                        </MutationButton>
                         <span className="t-num" style={{ minWidth: 18, textAlign: 'center', fontWeight: 700, fontSize: 13.5 }}>{l.qty}</span>
-                        <button className="dk-iconbtn" style={{ width: 26, height: 26 }} onClick={() => stepQty(l, 1)}><Icon name="plus" size={13} /></button>
+                        <MutationButton className="dk-iconbtn" style={{ width: 26, height: 26 }} onClick={() => stepQty(l, 1)}><Icon name="plus" size={13} /></MutationButton>
                       </div>
                     ) : (
-                      <button className="dk-iconbtn" style={{ width: 26, height: 26, flexShrink: 0 }} onClick={() => removeLine(l.key)}><Icon name="x" size={13} /></button>
+                      <MutationButton className="dk-iconbtn" style={{ width: 26, height: 26, flexShrink: 0 }} onClick={() => removeLine(l.key)}><Icon name="x" size={13} /></MutationButton>
                     )}
                   </div>
                 );
@@ -323,10 +327,10 @@ export default function CartTab({ onGoHistory }) {
 
           {/* seller — credit for productivity */}
           <div className="t-meta" style={{ margin: '18px 0 8px' }}>{t('Operatrice · accredito vendita', 'Stylist · sale credit')}</div>
-          <select value={sellerId ?? ''} onChange={(e) => setSellerId(Number(e.target.value))}
+          <MutationSelect value={sellerId ?? ''} onChange={(e) => setSellerId(Number(e.target.value))}
             style={{ width: '100%', border: '1px solid var(--hair)', borderRadius: 10, outline: 'none', fontSize: 14, fontWeight: 600, padding: '10px 12px', fontFamily: 'var(--sans)', background: 'var(--surface)', cursor: 'pointer', color: 'var(--ink)' }}>
             {operators.map((o) => <option key={o.id} value={o.id}>{opName(o)}</option>)}
-          </select>
+          </MutationSelect>
           {seller && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginTop: 8 }}>
               <Avatar initials={seller.initials} size={22} color={opColors[seller.id]} />
@@ -340,13 +344,13 @@ export default function CartTab({ onGoHistory }) {
             {[0, 10, 15, 20].map((p) => {
               const on = globalDisc === p;
               return (
-                <button key={p} onClick={() => setGlobalDisc(p)} style={{ flex: 1, padding: '9px 0', borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: 'pointer', border: '1px solid ' + (on ? 'var(--clay)' : 'var(--hair)'), background: on ? 'var(--clay-tint)' : 'var(--surface)', color: on ? 'var(--clay-ink)' : 'var(--ink-2)' }}>
+                <MutationButton key={p} onClick={() => setGlobalDisc(p)} style={{ flex: 1, padding: '9px 0', borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: 'pointer', border: '1px solid ' + (on ? 'var(--clay)' : 'var(--hair)'), background: on ? 'var(--clay-tint)' : 'var(--surface)', color: on ? 'var(--clay-ink)' : 'var(--ink-2)' }}>
                   {p === 0 ? t('No', 'No') : p + '%'}
-                </button>
+                </MutationButton>
               );
             })}
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 2, border: '1px solid ' + (globalDisc && ![10, 15, 20].includes(globalDisc) ? 'var(--clay)' : 'var(--hair)'), borderRadius: 9, padding: '0 9px', height: 36, background: 'var(--surface)' }}>
-              <NumInput integer min={0} max={100} value={globalDisc}
+              <MutationNumInput integer min={0} max={100} value={globalDisc}
                 onChange={setGlobalDisc}
                 style={{ width: 34, textAlign: 'right', border: 'none', outline: 'none', background: 'transparent', fontSize: 13.5, fontWeight: 700, fontFamily: 'ui-monospace, monospace' }} />
               <span className="t-sm" style={{ color: 'var(--muted-2)', fontWeight: 700 }}>%</span>
@@ -361,11 +365,11 @@ export default function CartTab({ onGoHistory }) {
 
         {/* footer — solo il pulsante (il totale è in alto) */}
         <div style={{ flexShrink: 0, padding: '14px 20px 16px', borderTop: '1px solid var(--hair)', background: 'var(--surface)' }}>
-          <button className="dk-btn dk-btn--clay" style={{ width: '100%', height: 50, fontSize: 15, fontWeight: 700 }}
+          <MutationButton className="dk-btn dk-btn--clay" style={{ width: '100%', height: 50, fontSize: 15, fontWeight: 700 }}
             disabled={!cart.length || saving || !canSell || !!payErr} onClick={() => setConfirmOpen(true)}
             title={!canSell ? t('Permesso "vendite" mancante', 'Missing "sales" permission') : (payErr || undefined)}>
             <Icon name="check" size={19} color="#fff" />{t('Completa vendita', 'Complete sale')} · {money(total, lang)}
-          </button>
+          </MutationButton>
           <div className="t-sm" style={{ color: 'var(--muted-2)', marginTop: 9, textAlign: 'center' }}>
             {!canSell ? t('Serve il permesso "vendite" per incassare', 'The "sales" permission is required') : t('Registrazione non fiscale', 'Non-fiscal record')}
           </div>
@@ -378,9 +382,9 @@ export default function CartTab({ onGoHistory }) {
         foot={(
           <>
             <button className="dk-btn dk-btn--ghost" onClick={() => setConfirmOpen(false)} disabled={saving}>{t('Torna indietro', 'Go back')}</button>
-            <button className="dk-btn dk-btn--clay" onClick={complete} disabled={saving}>
+            <MutationButton className="dk-btn dk-btn--clay" onClick={complete} disabled={saving}>
               <Icon name="check" size={16} color="#fff" />{saving ? t('Registrazione…', 'Recording…') : t('Conferma', 'Confirm')}
-            </button>
+            </MutationButton>
           </>
         )}>
         <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 8 }}>

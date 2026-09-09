@@ -121,7 +121,7 @@ export default function PacchettiSub({ packages, loading, services, canEdit, onE
           <EmptyState
             icon="gift" title={t('Nessun pacchetto', 'No packages')}
             sub={q || filt !== 'all' ? t('Prova un altro filtro o termine di ricerca.', 'Try another filter or search term.') : t('Crea la prima offerta pacchetto.', 'Create your first package offer.')}
-            action={canEdit ? t('Nuovo pacchetto', 'New package') : undefined} onAction={onNew}
+            mutationAction action={canEdit ? t('Nuovo pacchetto', 'New package') : undefined} onAction={onNew}
           />
         </div>
       )}

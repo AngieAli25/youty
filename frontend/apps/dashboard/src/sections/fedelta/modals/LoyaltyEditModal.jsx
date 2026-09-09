@@ -1,3 +1,6 @@
+import { MutationNumInput } from '@youty/shared';
+import { withPortalForm } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 import React, { useState } from 'react';
 import { api, ApiError, Icon, Toggle, NumInput } from '@youty/shared';
 import { DkModal, HexInput } from '../../../ui/index.js';
@@ -10,7 +13,7 @@ import { LOYALTY_TYPES, EARN_METRICS, REWARD_TYPES, ENROLLMENTS, BONUS_KEYS, LOY
  * Prototype-only concepts with no API fields (audience tags/clients, custom icon,
  * membership fee €, earn "valid on services/products", free-text reward/description)
  * are omitted — listed as gaps in the section report. DELETE is a soft-deactivate. */
-export default function LoyaltyEditModal({ draft, setDraft, onClose, onSaved, onDeactivated, canWrite, t, lang, fireToast, services }) {
+function LoyaltyEditModal({ draft, setDraft, onClose, onSaved, onDeactivated, canWrite, t, lang, fireToast, services }) {
   const [saving, setSaving] = useState(false);
   const set = (patch) => setDraft((d) => ({ ...d, ...patch }));
   const isNew = !!draft._new;
@@ -80,12 +83,12 @@ export default function LoyaltyEditModal({ draft, setDraft, onClose, onSaved, on
       sub={t('Regole di accumulo e premio', 'Earning rules and reward')} width={820}
       foot={<React.Fragment>
         {!isNew && canWrite && draft.active && (
-          <button className="dk-btn dk-btn--ghost" style={{ color: 'var(--danger)', borderColor: 'color-mix(in srgb, var(--danger) 40%, var(--hair))', marginRight: 'auto' }} onClick={deactivate} disabled={saving}>
+          <MutationButton className="dk-btn dk-btn--ghost" style={{ color: 'var(--danger)', borderColor: 'color-mix(in srgb, var(--danger) 40%, var(--hair))', marginRight: 'auto' }} onClick={deactivate} disabled={saving}>
             <Icon name="x" size={16} color="var(--danger)" />{t('Disattiva', 'Deactivate')}
-          </button>
+          </MutationButton>
         )}
         <button className="dk-btn dk-btn--ghost" onClick={onClose}>{t('Annulla', 'Cancel')}</button>
-        {canWrite && <button className="dk-btn dk-btn--clay" disabled={!canSave || saving} onClick={save}><Icon name="check" size={17} color="#fff" />{t('Salva', 'Save')}</button>}
+        {canWrite && <MutationButton className="dk-btn dk-btn--clay" disabled={!canSave || saving} onClick={save}><Icon name="check" size={17} color="#fff" />{t('Salva', 'Save')}</MutationButton>}
       </React.Fragment>}>
 
       <input value={draft.name} onChange={(e) => set({ name: e.target.value })} placeholder={t('Nome programma', 'Program name')}
@@ -122,7 +125,7 @@ export default function LoyaltyEditModal({ draft, setDraft, onClose, onSaved, on
           <div>
             <div className="t-meta" style={{ marginBottom: 6 }}>{t('Punti per €1', 'Points per €1')}</div>
             <div style={numCss}>
-              <NumInput min={0} value={draft.earn_ratio} onChange={(earn_ratio) => set({ earn_ratio })}
+              <MutationNumInput min={0} value={draft.earn_ratio} onChange={(earn_ratio) => set({ earn_ratio })}
                 style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: 16, fontWeight: 700, width: 60 }} />
               <span className="t-sm" style={{ color: 'var(--muted-2)', fontWeight: 600 }}>pt/€</span>
             </div>
@@ -135,7 +138,7 @@ export default function LoyaltyEditModal({ draft, setDraft, onClose, onSaved, on
                 : isPts ? t('Punti per il premio', 'Points for reward') : t('Timbri per il premio', 'Stamps for reward')}
           </div>
           <div style={numCss}>
-            <NumInput integer min={1} value={draft.threshold} onChange={(threshold) => set({ threshold })}
+            <MutationNumInput integer min={1} value={draft.threshold} onChange={(threshold) => set({ threshold })}
               style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: 16, fontWeight: 700, width: 70 }} />
             <span className="t-sm" style={{ color: 'var(--muted-2)', fontWeight: 600 }}>{unit}</span>
           </div>
@@ -158,7 +161,7 @@ export default function LoyaltyEditModal({ draft, setDraft, onClose, onSaved, on
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={numCss}>
               {draft.reward_type !== 'discount_pct' && <span className="t-sm" style={{ color: 'var(--muted-2)', fontWeight: 700 }}>€</span>}
-              <NumInput min={0} max={draft.reward_type === 'discount_pct' ? 100 : undefined} value={draft.reward_value} onChange={(reward_value) => set({ reward_value })}
+              <MutationNumInput min={0} max={draft.reward_type === 'discount_pct' ? 100 : undefined} value={draft.reward_value} onChange={(reward_value) => set({ reward_value })}
                 style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: 16, fontWeight: 700, width: 64 }} />
               {draft.reward_type === 'discount_pct' && <span className="t-sm" style={{ color: 'var(--muted-2)', fontWeight: 700 }}>%</span>}
             </div>
@@ -247,3 +250,5 @@ export default function LoyaltyEditModal({ draft, setDraft, onClose, onSaved, on
     </DkModal>
   );
 }
+
+export default withPortalForm(LoyaltyEditModal, { preview: ({ draft }) => !!draft?.id });

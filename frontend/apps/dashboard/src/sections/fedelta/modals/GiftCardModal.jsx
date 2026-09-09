@@ -1,3 +1,6 @@
+import { MutationNumInput } from '@youty/shared';
+import { withPortalForm } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 import React, { useState } from 'react';
 import { api, ApiError, Icon, toDateStr, fmtEur, NumInput } from '@youty/shared';
 import { DkModal } from '../../../ui/index.js';
@@ -18,7 +21,7 @@ function monthsFromNowIso(months) {
  * (value, buyer_client_id?, recipient_client_id?, recipient_name, paid+paid_method,
  * delivery_date?, expires_at?). The code is generated server-side (prototype showed a locally
  * generated code — dropped). Expiry presets map to a concrete expires_at datetime. */
-export default function GiftCardModal({ onClose, onSaved, t, lang, fireToast, services = [] }) {
+function GiftCardModal({ onClose, onSaved, t, lang, fireToast, services = [] }) {
   const [saving, setSaving] = useState(false);
   const [type, setType] = useState('amount'); // amount | service (trattamento)
   const [value, setValue] = useState(50);
@@ -69,7 +72,7 @@ export default function GiftCardModal({ onClose, onSaved, t, lang, fireToast, se
       sub={t('Valore prepagato: registra pagamento e consegna', 'Prepaid value: record payment and delivery')} width={540}
       foot={<React.Fragment>
         <button className="dk-btn dk-btn--ghost" onClick={onClose}>{t('Annulla', 'Cancel')}</button>
-        <button className="dk-btn dk-btn--clay" disabled={!canSave || saving} onClick={save}><Icon name="check" size={17} color="#fff" />{t('Salva', 'Save')}</button>
+        <MutationButton className="dk-btn dk-btn--clay" disabled={!canSave || saving} onClick={save}><Icon name="check" size={17} color="#fff" />{t('Salva', 'Save')}</MutationButton>
       </React.Fragment>}>
 
       {/* tipo: importo monetario oppure trattamento (servizio dal catalogo esistente) */}
@@ -85,7 +88,7 @@ export default function GiftCardModal({ onClose, onSaved, t, lang, fireToast, se
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: '1px solid var(--hair)', borderRadius: 10, padding: '0 12px', height: 42, background: 'var(--surface)' }}>
               <span className="t-sm" style={{ color: 'var(--muted-2)', fontWeight: 700 }}>€</span>
-              <NumInput min={0} value={value} onChange={setValue} style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: 16, fontWeight: 700, width: 70 }} />
+              <MutationNumInput min={0} value={value} onChange={setValue} style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: 16, fontWeight: 700, width: 70 }} />
             </div>
             {[25, 50, 75, 100].map((v) => (
               <button key={v} onClick={() => setValue(v)} style={{ ...pillBtn(value === v), fontWeight: 700, padding: '8px 13px' }}>€{v}</button>
@@ -179,3 +182,5 @@ export default function GiftCardModal({ onClose, onSaved, t, lang, fireToast, se
     </DkModal>
   );
 }
+
+export default withPortalForm(GiftCardModal);

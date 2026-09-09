@@ -72,7 +72,7 @@ class YourangClient:
             "X-Yourang-Org": self.conn.yourang_org_id,
         }
         resp = httpx.request(
-            method, f"{_proxy_base()}/api{path}", headers=headers, timeout=TIMEOUT, **kwargs
+            method, f"{_proxy_base()}/api{path}", headers=headers, timeout=kwargs.pop("timeout", TIMEOUT), **kwargs
         )
         resp.raise_for_status()
         return resp
@@ -81,10 +81,21 @@ class YourangClient:
     def _data(resp: httpx.Response):
         return resp.json().get("data")
 
+    def portal_access(self) -> dict:
+        response = self._request("GET", "/portal-access/beauty", timeout=5.0)
+        payload = response.json()
+        if payload.get("ok") is not True or not isinstance(payload.get("data"), dict):
+            raise ValueError("Invalid portal access response")
+        return payload["data"]
+
     # -- contatti --
     def list_contacts(self, limit: int = 100, offset: int = 0) -> list[dict]:
         resp = self._request("GET", f"/contacts?limit={limit}&offset={offset}")
         return self._data(resp) or []
+
+    def get_contact(self, contact_id: str) -> dict:
+        response = self._request("GET", f"/contacts/{quote(contact_id, safe='')}")
+        return self._data(response) or {}
 
     def create_or_get_contact(self, phone: str, payload: dict) -> dict:
         """Crea il contatto; se il telefono esiste già lo recupera e basta.
@@ -94,6 +105,8 @@ class YourangClient:
         risponde 400 quando c'è già. Il '+' va percent-encodato nel path o
         verrebbe letto come spazio.
         """
+        from common.portal_access import require_portal_access
+        require_portal_access(self.conn.salon)
         try:
             resp = self._request(
                 "POST", "/contacts", json={**payload, "phone_number": phone}
@@ -106,10 +119,14 @@ class YourangClient:
 
     # -- cataloghi --
     def create_catalogue(self, name: str) -> dict:
+        from common.portal_access import require_portal_access
+        require_portal_access(self.conn.salon)
         resp = self._request("POST", "/catalogues", json={"name": name})
         return self._data(resp) or {}
 
     def upsert_catalogue_item(self, item_id: str | None, payload: dict) -> dict:
+        from common.portal_access import require_portal_access
+        require_portal_access(self.conn.salon)
         if item_id:
             resp = self._request("PUT", f"/catalogues/items/{item_id}", json=payload)
         else:

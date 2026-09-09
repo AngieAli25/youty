@@ -9,6 +9,8 @@ Convenzioni interne:
   -> list[tuple[int, int]] (minuti), già al netto di pause pranzo e assenze.
 """
 
+from common.portal_access import require_portal_access
+
 import datetime as dt
 from collections import defaultdict
 from decimal import Decimal
@@ -540,6 +542,7 @@ def create_appointment(
     location=None,
 ) -> Appointment:
     """Crea l'appuntamento rivalidando che lo slot sia libero (altrimenti 409)."""
+    require_portal_access(salon)
     resolved = resolve_items(salon, items, start, location=location)
 
     total_price = sum((service.price for service, _ in resolved), start=Decimal("0"))
@@ -594,6 +597,7 @@ def move_appointment(
     (previa verifica di idoneità). Rivalida lo slot escludendo l'appuntamento
     stesso; emette appointment.moved e slot.freed sul vecchio orario.
     """
+    require_portal_access(appointment.salon)
     _ensure_open(appointment)
     old_start = appointment.start
     old_operator_id = appointment.operator_id
@@ -652,6 +656,7 @@ def move_appointment(
 
 @transaction.atomic
 def check_in(appointment: Appointment, *, actor=None) -> Appointment:
+    require_portal_access(appointment.salon)
     _ensure_open(appointment)
     appointment.status = Appointment.Status.CHECKED_IN
     appointment.save(update_fields=["status", "updated_at"])
@@ -668,6 +673,7 @@ def check_in(appointment: Appointment, *, actor=None) -> Appointment:
 
 @transaction.atomic
 def start_appointment(appointment: Appointment, *, actor=None) -> Appointment:
+    require_portal_access(appointment.salon)
     _ensure_open(appointment)
     appointment.status = Appointment.Status.IN_PROGRESS
     appointment.save(update_fields=["status", "updated_at"])
@@ -684,6 +690,7 @@ def start_appointment(appointment: Appointment, *, actor=None) -> Appointment:
 @transaction.atomic
 def mark_no_show(appointment: Appointment, *, reason: str = "", actor=None) -> Appointment:
     """No-show: stato + deposito paid->forfeited. L'addebito Stripe è di sales."""
+    require_portal_access(appointment.salon)
     _ensure_open(appointment)
     appointment.status = Appointment.Status.NO_SHOW
     appointment.cancel_reason = reason or ""
@@ -712,6 +719,7 @@ def cancel_appointment(appointment: Appointment, *, reason: str = "", actor=None
 
     Deposito pagato: forfeited se tardivo, altrimenti refunded.
     """
+    require_portal_access(appointment.salon)
     _ensure_open(appointment)
     late = appointment.start - timezone.now() < dt.timedelta(
         hours=settings.CLIENT_MOVE_CANCEL_MIN_HOURS
@@ -749,6 +757,7 @@ def free_slot_event(appointment: Appointment, *, start=None, operator_id=None):
     Compatibilità: entry attiva, stesso servizio di uno degli item e operatrice
     non indicata oppure tra quelle coinvolte nell'appuntamento.
     """
+    require_portal_access(appointment.salon)
     start = start or appointment.start
     operator_id = operator_id or appointment.operator_id
     items = list(appointment.items.all())

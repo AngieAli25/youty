@@ -5,6 +5,7 @@ from ninja import Router
 from ninja.errors import HttpError
 
 from apps.core.services import emit_event, log_activity
+from common.portal_access import business_operation, background_allowed
 from common.auth import staff_auth
 from common.permissions import require_scope
 from common.utils import salon_get
@@ -85,6 +86,7 @@ def list_automations(request):
 
 
 @router.post("/", auth=staff_auth, response=AutomationOut)
+@business_operation
 def create_automation(request, data: AutomationIn):
     ctx = request.auth
     require_scope(ctx, "marketing")
@@ -101,6 +103,7 @@ def create_automation(request, data: AutomationIn):
 
 
 @router.put("/{int:automation_id}", auth=staff_auth, response=AutomationOut)
+@business_operation
 def update_automation(request, automation_id: int, data: AutomationIn):
     ctx = request.auth
     require_scope(ctx, "marketing")
@@ -120,6 +123,7 @@ def update_automation(request, automation_id: int, data: AutomationIn):
 
 
 @router.delete("/{int:automation_id}", auth=staff_auth, response=OkOut)
+@business_operation
 def delete_automation(request, automation_id: int):
     ctx = request.auth
     require_scope(ctx, "marketing")
@@ -141,6 +145,7 @@ def delete_automation(request, automation_id: int):
 
 
 @router.post("/{int:automation_id}/toggle", auth=staff_auth, response=AutomationOut)
+@business_operation
 def toggle_automation(request, automation_id: int):
     ctx = request.auth
     require_scope(ctx, "marketing")
@@ -183,6 +188,9 @@ def trigger_webhook(request, webhook_token: str):
     automation = Automation.objects.filter(webhook_token=token).select_related("salon").first()
     if automation is None:
         raise HttpError(404, "Automazione non trovata")
+
+    if not background_allowed(automation.salon, "automation_webhook"):
+        return {"ok": True, "automation_id": automation.id}
 
     try:
         payload = json.loads(request.body) if request.body else {}

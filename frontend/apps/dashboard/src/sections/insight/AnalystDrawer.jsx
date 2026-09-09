@@ -1,3 +1,5 @@
+import { withPortalForm, PortalFormBody } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // AnalystDrawer.jsx — "Ask Youty" chat drawer, ported from DkAnalyst in
 // desktop-insight.jsx. Rendered as ctx.drawer content (the shell wraps it in
 // <DkDrawer>) — this component owns no scrim/host chrome of its own.
@@ -15,7 +17,7 @@ const ASK_CHIPS = [
   { it: 'Quante clienti sono a rischio abbandono?', en: 'How many clients are at churn risk?' },
 ];
 
-export default function AnalystDrawer({ t, lang, fireToast, onClose, initialQuestion }) {
+function AnalystDrawer({ t, lang, fireToast, onClose, initialQuestion }) {
   const [msgs, setMsgs] = useState([]);
   const [typing, setTyping] = useState(false);
   const [text, setText] = useState('');
@@ -80,9 +82,9 @@ export default function AnalystDrawer({ t, lang, fireToast, onClose, initialQues
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {ASK_CHIPS.map((c, i) => (
-                <button key={i} className="dk-row" onClick={() => ask(c[lang] || c.it)} style={{ textAlign: 'left', padding: '12px 14px', borderRadius: 12, border: '1px solid var(--hair)', fontWeight: 600, fontSize: 13.5, display: 'flex', alignItems: 'center', gap: 9 }}>
+                <MutationButton key={i} className="dk-row" onClick={() => ask(c[lang] || c.it)} style={{ textAlign: 'left', padding: '12px 14px', borderRadius: 12, border: '1px solid var(--hair)', fontWeight: 600, fontSize: 13.5, display: 'flex', alignItems: 'center', gap: 9 }}>
                   <Icon name="search" size={14} color="var(--clay)" />{c[lang] || c.it}
-                </button>
+                </MutationButton>
               ))}
             </div>
           </div>
@@ -104,16 +106,16 @@ export default function AnalystDrawer({ t, lang, fireToast, onClose, initialQues
         </div>
       </div>
 
-      <div style={{ padding: '12px 18px 16px', borderTop: '1px solid var(--hair)' }}>
+      <div style={{ padding: '12px 18px 16px', borderTop: '1px solid var(--hair)' }}><PortalFormBody>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <div className="dk-search" style={{ flex: 1, width: 'auto', paddingRight: 6 }}>
             <input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && sendTyped()} placeholder={t('Scrivi una domanda…', 'Type a question…')} />
-            <button onClick={sendTyped} style={{ width: 32, height: 32, borderRadius: 99, background: text.trim() ? 'var(--clay)' : 'var(--paper-2)', display: 'grid', placeItems: 'center', cursor: 'pointer', flexShrink: 0 }}>
+            <MutationButton onClick={sendTyped} style={{ width: 32, height: 32, borderRadius: 99, background: text.trim() ? 'var(--clay)' : 'var(--paper-2)', display: 'grid', placeItems: 'center', cursor: 'pointer', flexShrink: 0 }}>
               <Icon name="send" size={15} color={text.trim() ? '#fff' : 'var(--muted-2)'} />
-            </button>
+            </MutationButton>
           </div>
         </div>
-      </div>
+      </PortalFormBody></div>
     </React.Fragment>
   );
 }
@@ -133,3 +135,5 @@ function PhaseTwoBubble({ msg, t }) {
     </div>
   );
 }
+
+export default withPortalForm(AnalystDrawer, { preview: () => true, framed: true, overlay: false });

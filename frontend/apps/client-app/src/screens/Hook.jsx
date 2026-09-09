@@ -1,3 +1,4 @@
+import { MutationButton } from '@youty/shared';
 // Hook.jsx — form pubblico di raccolta contatti del salone.
 // Vive su /<slug>/hook: nessuna sessione, nessun OTP, solo lascia i tuoi dati.
 // Il branding (logo, colore) è quello del salone, già caricato da ctx.
@@ -118,10 +119,10 @@ export default function Hook() {
               </span>
             </label>
 
-            <button className="btn btn--brand btn--block press" disabled={!canSend}
+            <MutationButton className="btn btn--brand btn--block press" disabled={!canSend}
               style={{ opacity: canSend ? 1 : 0.5 }} onClick={submit}>
               {busy ? t('Invio…', 'Sending…') : t('Invia', 'Send')}
-            </button>
+            </MutationButton>
           </React.Fragment>
         )}
       </div>

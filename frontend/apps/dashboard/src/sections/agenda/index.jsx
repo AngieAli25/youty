@@ -1,3 +1,6 @@
+import { useMutationAction } from '@youty/shared';
+import { MutationNumInput } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // Agenda — day/week/month calendar wired to /api/agenda/* (port of desktop-agenda.jsx)
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { api, ApiError, Avatar, Icon, timeLabel, toDateStr, todayStr, parseISO, NumInput } from '@youty/shared';
@@ -15,11 +18,12 @@ import GroupBookingDrawer from './modals/GroupBookingDrawer.jsx';
 
 export default function AgendaSection() {
   const {
-    t, lang, operators, services, serviceCategories, hasScope,
+    t, lang, operators, services, serviceCategories, hasScope, canMutate,
     openModal, modal, fireToast, opColors, setOpColor, opPalette,
     setTab, setDeepLink, showRevenue,
   } = useDash();
-  const canWrite = hasScope('agenda');
+  const canWrite = canMutate('agenda');
+  const mutation = useMutationAction();
 
   /* ---- navigation state ---- */
   const [date, setDate] = useState(todayStr());
@@ -113,7 +117,7 @@ export default function AgendaSection() {
   /* ---- new-appointment drawer (#5) + group booking (#6): live panels, agenda resta visibile ---- */
   const [newAppt, setNewAppt] = useState(null); // prefill | null
   const [groupOpen, setGroupOpen] = useState(false);
-  const openNewAppt = useCallback((prefill) => { if (canWrite) setNewAppt(prefill || {}); }, [canWrite]);
+  const openNewAppt = mutation((prefill) => { if (hasScope('agenda')) setNewAppt(prefill || {}); });
 
   /* ---- mutations (drag & drop, pauses) ---- */
   const [pending, setPending] = useState(null); // optimistic override { kind, id, startMin, opId, dur }
@@ -278,10 +282,10 @@ export default function AgendaSection() {
             </div>
           )}
           <div style={{ flex: 1 }} />
-          {canWrite && (
-            <button className="dk-btn dk-btn--soft" style={{ height: 40 }} onClick={() => setGroupOpen(true)} title={t('Prenota più clienti insieme', 'Book several clients together')}>
+          {hasScope('agenda') && (
+            <MutationButton className="dk-btn dk-btn--soft" style={{ height: 40 }} onClick={() => setGroupOpen(true)} title={t('Prenota più clienti insieme', 'Book several clients together')}>
               <Icon name="clients" size={16} />{t('Gruppo', 'Group')}
-            </button>
+            </MutationButton>
           )}
           {/* view selector: Giorno / Settimana / Mese */}
           <div style={{ display: 'flex', gap: 4, background: 'var(--surface)', border: '1px solid var(--hair)', borderRadius: 12, padding: 4 }}>
@@ -339,7 +343,7 @@ export default function AgendaSection() {
                 onHover={onHover}
                 onLeave={() => setHover(null)}
                 onOpenAppt={(a) => openModal('apptdetail', { appointment: a, onMutate: refetchAll })}
-                onSlotMenu={(opId, startMin, x, y) => { if (canWrite) setSlotMenu({ opId, startMin, x, y }); }}
+                onSlotMenu={mutation((opId, startMin, x, y) => { if (hasScope('agenda')) setSlotMenu({ opId, startMin, x, y }); })}
                 onMoveAppt={moveAppt}
                 onResizeItem={resizeItem}
                 onMovePause={movePause}
@@ -389,31 +393,31 @@ export default function AgendaSection() {
                   {[15, 30, 45, 60, 90, 120].map((d) => {
                     const on = (slotMenu.dur || 60) === d;
                     return (
-                      <button key={d} onClick={() => setSlotMenu((m) => ({ ...m, dur: d }))} style={{ padding: '8px 0', borderRadius: 8, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', border: '1px solid ' + (on ? 'var(--clay)' : 'var(--hair)'), background: on ? 'var(--clay-tint)' : 'var(--surface)', color: on ? 'var(--clay-ink)' : 'var(--ink-2)' }}>{d < 60 ? d + ' min' : (d / 60) + ' h'}</button>
+                      <MutationButton key={d} onClick={() => setSlotMenu((m) => ({ ...m, dur: d }))} style={{ padding: '8px 0', borderRadius: 8, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', border: '1px solid ' + (on ? 'var(--clay)' : 'var(--hair)'), background: on ? 'var(--clay-tint)' : 'var(--surface)', color: on ? 'var(--clay-ink)' : 'var(--ink-2)' }}>{d < 60 ? d + ' min' : (d / 60) + ' h'}</MutationButton>
                     );
                   })}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, padding: '0 2px' }}>
                   <span className="t-sm" style={{ color: 'var(--muted)', flex: 1 }}>{t('Personalizzata', 'Custom')}</span>
-                  <NumInput integer min={5} value={slotMenu.dur || 60} onChange={(dur) => setSlotMenu((m) => ({ ...m, dur }))} style={{ width: 64, textAlign: 'right', border: '1px solid var(--hair)', borderRadius: 8, padding: '6px 8px', fontSize: 13, fontWeight: 700, fontFamily: 'var(--mono, monospace)', outline: 'none' }} />
+                  <MutationNumInput integer min={5} value={slotMenu.dur || 60} onChange={(dur) => setSlotMenu((m) => ({ ...m, dur }))} style={{ width: 64, textAlign: 'right', border: '1px solid var(--hair)', borderRadius: 8, padding: '6px 8px', fontSize: 13, fontWeight: 700, fontFamily: 'var(--mono, monospace)', outline: 'none' }} />
                   <span className="t-sm" style={{ color: 'var(--muted-2)' }}>min</span>
                 </div>
                 <div className="t-sm" style={{ color: 'var(--muted-2)', marginBottom: 10, padding: '0 2px' }}>{timeLabel(slotMenu.startMin)}–{timeLabel(slotMenu.startMin + (slotMenu.dur || 60))}</div>
                 <div style={{ display: 'flex', gap: 6 }}>
                   <button className="dk-btn dk-btn--ghost" style={{ flex: 1, minWidth: 0, height: 36, padding: '0 6px', boxSizing: 'border-box' }} onClick={() => setSlotMenu((m) => ({ ...m, mode: null }))}>{t('Indietro', 'Back')}</button>
-                  <button className="dk-btn dk-btn--clay" style={{ flex: 1, minWidth: 0, height: 36, padding: '0 6px', boxSizing: 'border-box' }} onClick={() => addBreak(slotMenu.opId, slotMenu.startMin, slotMenu.dur || 60)}><Icon name="check" size={15} color="#fff" />{t('Aggiungi', 'Add')}</button>
+                  <MutationButton className="dk-btn dk-btn--clay" style={{ flex: 1, minWidth: 0, height: 36, padding: '0 6px', boxSizing: 'border-box' }} onClick={() => addBreak(slotMenu.opId, slotMenu.startMin, slotMenu.dur || 60)}><Icon name="check" size={15} color="#fff" />{t('Aggiungi', 'Add')}</MutationButton>
                 </div>
               </div>
             ) : (
               <React.Fragment>
-                <button className="dk-row" onClick={() => { const m = slotMenu; setSlotMenu(null); openNewAppt({ operatorId: m.opId, start: isoAtMin(date, m.startMin), date }); }} style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '9px 10px', borderRadius: 9, textAlign: 'left', border: 'none', background: 'transparent' }}>
+                <MutationButton className="dk-row" onClick={() => { const m = slotMenu; setSlotMenu(null); openNewAppt({ operatorId: m.opId, start: isoAtMin(date, m.startMin), date }); }} style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '9px 10px', borderRadius: 9, textAlign: 'left', border: 'none', background: 'transparent' }}>
                   <div style={{ width: 28, height: 28, borderRadius: 8, background: 'var(--clay-tint)', display: 'grid', placeItems: 'center', flexShrink: 0 }}><Icon name="plus" size={15} color="var(--clay-ink)" /></div>
                   <span style={{ fontWeight: 600, fontSize: 13.5 }}>{t('Nuovo appuntamento', 'New appointment')}</span>
-                </button>
-                <button className="dk-row" onClick={() => setSlotMenu((m) => ({ ...m, mode: 'break', dur: 60 }))} style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '9px 10px', borderRadius: 9, textAlign: 'left', border: 'none', background: 'transparent' }}>
+                </MutationButton>
+                <MutationButton className="dk-row" onClick={() => setSlotMenu((m) => ({ ...m, mode: 'break', dur: 60 }))} style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '9px 10px', borderRadius: 9, textAlign: 'left', border: 'none', background: 'transparent' }}>
                   <div style={{ width: 28, height: 28, borderRadius: 8, background: 'var(--surface-2)', display: 'grid', placeItems: 'center', flexShrink: 0 }}><Icon name="clock" size={15} color="var(--muted)" /></div>
                   <span style={{ fontWeight: 600, fontSize: 13.5 }}>{t('Aggiungi pausa', 'Add break')}</span>
-                </button>
+                </MutationButton>
               </React.Fragment>
             )}
           </div>

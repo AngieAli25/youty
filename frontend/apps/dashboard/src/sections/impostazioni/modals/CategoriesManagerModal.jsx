@@ -1,3 +1,5 @@
+import { withPortalForm } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // CategoriesManagerModal.jsx — port of CategoriesManager/CatEditModal (drawer UI)
 // over the three real category APIs. Opened with openModal('catsmgr', { kind }).
 //   clienti   → /api/clients/categories      {name, color, order}      (write: scope clients)
@@ -26,7 +28,7 @@ const catName = (c, kind, lang) => (KINDS[kind].bilingual ? ((lang === 'en' && c
 
 // Accepts both `kind` (servizi agent) and `scope` (clienti agent) for the initial tab.
 export default function CategoriesManagerModal({ onClose, kind: kindProp, scope: scopeProp }) {
-  const { t, lang, hasScope, reload, fireToast } = useDash();
+  const { t, lang, hasScope, canMutate, reload, fireToast } = useDash();
   const initialKind = kindProp ?? scopeProp;
   const [kind, setKind] = useState(initialKind && KINDS[initialKind] ? initialKind : 'clienti');
   const [lists, setLists] = useState({ clienti: null, servizi: null, magazzino: null });
@@ -127,7 +129,7 @@ export default function CategoriesManagerModal({ onClose, kind: kindProp, scope:
 
       <div className="scroll" style={{ flex: 1, overflowY: 'auto', padding: '18px 22px 30px' }}>
         {canWrite ? (
-          <button className="dk-btn dk-btn--clay" style={{ width: '100%', marginBottom: 16 }} onClick={() => setEdit(blank())}><Icon name="plus" size={16} color="#fff" />{t('Nuova categoria', 'New category')}</button>
+          <MutationButton className="dk-btn dk-btn--clay" style={{ width: '100%', marginBottom: 16 }} onClick={() => setEdit(blank())}><Icon name="plus" size={16} color="#fff" />{t('Nuova categoria', 'New category')}</MutationButton>
         ) : (
           <div style={{ marginBottom: 16 }}><LockNote t={t} msg={t('Non hai il permesso per modificare queste categorie.', 'You lack the permission to edit these categories.')} /></div>
         )}
@@ -139,10 +141,10 @@ export default function CategoriesManagerModal({ onClose, kind: kindProp, scope:
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {list.map((c, i) => (
-              <div key={c.id} className="dk-card dk-row" draggable={canWrite}
+              <div key={c.id} className="dk-card dk-row" draggable={canMutate(cfg.scope)}
                 onDragStart={(e) => { setDragIdx(i); e.dataTransfer.effectAllowed = 'move'; }}
                 onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }}
-                onDrop={(e) => { e.preventDefault(); if (canWrite && dragIdx !== null && dragIdx !== i) reorder(dragIdx, i); setDragIdx(null); }}
+                onDrop={(e) => { e.preventDefault(); if (canMutate(cfg.scope) && dragIdx !== null && dragIdx !== i) reorder(dragIdx, i); setDragIdx(null); }}
                 onDragEnd={() => setDragIdx(null)}
                 onClick={canWrite ? () => setEdit({ ...c }) : undefined}
                 style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '13px 14px', boxShadow: 'none', border: '1px solid ' + (dragIdx === i ? 'var(--clay)' : 'var(--hair)'), opacity: dragIdx === i ? 0.5 : 1, cursor: canWrite ? 'pointer' : 'default' }}>
@@ -151,8 +153,8 @@ export default function CategoriesManagerModal({ onClose, kind: kindProp, scope:
                 <span style={{ flex: 1, fontWeight: 600, fontSize: 14.5 }}>{catName(c, kind, lang)}</span>
                 {canWrite && (
                   <React.Fragment>
-                    <button className="dk-iconbtn" style={{ width: 30, height: 30, borderRadius: 8 }} onClick={(e) => { e.stopPropagation(); setEdit({ ...c }); }}><Icon name="edit" size={14} /></button>
-                    <button className="dk-iconbtn" style={{ width: 30, height: 30, borderRadius: 8 }} onClick={(e) => { e.stopPropagation(); del(c.id); }}><Icon name="x" size={14} color="var(--danger)" /></button>
+                    <MutationButton className="dk-iconbtn" style={{ width: 30, height: 30, borderRadius: 8 }} onClick={(e) => { e.stopPropagation(); setEdit({ ...c }); }}><Icon name="edit" size={14} /></MutationButton>
+                    <MutationButton className="dk-iconbtn" style={{ width: 30, height: 30, borderRadius: 8 }} onClick={(e) => { e.stopPropagation(); del(c.id); }}><Icon name="x" size={14} color="var(--danger)" /></MutationButton>
                   </React.Fragment>
                 )}
               </div>
@@ -167,14 +169,14 @@ export default function CategoriesManagerModal({ onClose, kind: kindProp, scope:
   );
 }
 
-function CatEditModal({ draft, setDraft, cfg, onSave, onDelete, onClose, t }) {
+function CatEditModalContent({ draft, setDraft, cfg, onSave, onDelete, onClose, t }) {
   const canSave = cfg.bilingual ? (draft.name_it || '').trim() : (draft.name || '').trim();
   return (
     <DkModal open onClose={onClose} title={draft._new ? t('Nuova categoria', 'New category') : t('Modifica categoria', 'Edit category')} width={440}
       foot={<React.Fragment>
-        {!draft._new && <button className="dk-btn dk-btn--ghost" style={{ color: 'var(--danger)', borderColor: 'color-mix(in srgb, var(--danger) 40%, var(--hair))', marginRight: 'auto' }} onClick={() => onDelete(draft.id)}><Icon name="x" size={16} color="var(--danger)" />{t('Elimina', 'Delete')}</button>}
+        {!draft._new && <MutationButton className="dk-btn dk-btn--ghost" style={{ color: 'var(--danger)', borderColor: 'color-mix(in srgb, var(--danger) 40%, var(--hair))', marginRight: 'auto' }} onClick={() => onDelete(draft.id)}><Icon name="x" size={16} color="var(--danger)" />{t('Elimina', 'Delete')}</MutationButton>}
         <button className="dk-btn dk-btn--ghost" onClick={onClose}>{t('Annulla', 'Cancel')}</button>
-        <button className="dk-btn dk-btn--clay" disabled={!canSave} onClick={() => canSave && onSave(draft)}><Icon name="check" size={17} color="#fff" />{t('Salva', 'Save')}</button>
+        <MutationButton className="dk-btn dk-btn--clay" disabled={!canSave} onClick={() => canSave && onSave(draft)}><Icon name="check" size={17} color="#fff" />{t('Salva', 'Save')}</MutationButton>
       </React.Fragment>}>
       {cfg.bilingual ? (
         <React.Fragment>
@@ -208,3 +210,5 @@ function CatEditModal({ draft, setDraft, cfg, onSave, onDelete, onClose, t }) {
     </DkModal>
   );
 }
+
+const CatEditModal = withPortalForm(CatEditModalContent, { preview: ({ draft }) => !!draft?.id });

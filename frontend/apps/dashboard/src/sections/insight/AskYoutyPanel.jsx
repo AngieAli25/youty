@@ -1,3 +1,6 @@
+import { MutationInput } from '@youty/shared';
+import { useMutationAction } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // AskYoutyPanel.jsx — right column of the Insight page: the gradient "Ask Youty"
 // bar (ports the prompt input from desktop-insight.jsx) + a single static card
 // explaining that AI-generated suggestions (the prototype's `INSIGHTS` mock cards)
@@ -8,10 +11,11 @@ import { Icon } from '@youty/shared';
 export default function AskYoutyPanel({ t, onOpenAnalyst }) {
   const [askText, setAskText] = useState('');
 
-  function submit() {
+  const mutation = useMutationAction();
+  const submit = mutation(() => {
     onOpenAnalyst(askText.trim() || undefined);
     setAskText('');
-  }
+  });
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -26,16 +30,16 @@ export default function AskYoutyPanel({ t, onOpenAnalyst }) {
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8, background: '#fff', borderRadius: 12, padding: '5px 5px 5px 14px', alignItems: 'center' }}>
-          <input
+          <MutationInput
             value={askText}
             onChange={(e) => setAskText(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') submit(); }}
             placeholder={t('es. Qual è il giorno più scarico?', 'e.g. Which day is quietest?')}
             style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontSize: 13.5, fontFamily: 'var(--sans)', minWidth: 0 }}
           />
-          <button onClick={submit} style={{ width: 34, height: 34, borderRadius: 99, background: 'var(--ink)', display: 'grid', placeItems: 'center', cursor: 'pointer', flexShrink: 0 }}>
+          <MutationButton onClick={submit} style={{ width: 34, height: 34, borderRadius: 99, background: 'var(--ink)', display: 'grid', placeItems: 'center', cursor: 'pointer', flexShrink: 0 }}>
             <Icon name="send" size={15} color="#fff" />
-          </button>
+          </MutationButton>
         </div>
       </div>
 

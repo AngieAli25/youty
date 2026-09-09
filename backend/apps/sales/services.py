@@ -10,6 +10,8 @@ dentro le funzioni, come da convenzione SPEC §1: le firme di riferimento sono
     marketing.services.accrue_loyalty(sale)
 """
 
+from common.portal_access import require_portal_access
+
 from decimal import ROUND_HALF_UP, Decimal
 
 from django.db import transaction
@@ -91,6 +93,7 @@ def finalize_sale(
                  qty, unit_price, discount_pct?, is_gift?, value?, recipient_name?}]}]
     payments = [{"method": cash|card|other|gift_card, "amount": Decimal, "gift_card_code"?: str}]
     """
+    require_portal_access(salon)
     deposit_deducted = Decimal(str(deposit_deducted or 0)).quantize(TWO_PLACES)
 
     prepared, total = _prepare_lines(blocks)

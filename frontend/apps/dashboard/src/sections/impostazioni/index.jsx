@@ -44,7 +44,7 @@ const Row = ({ icon, label, sub, value, onClick, first, locked, tag }) => (
 );
 
 export default function ImpostazioniSection() {
-  const { t, lang, setLang, session, hasScope, salon, settings, locations, openModal, fireToast, deepLink, setDeepLink } = useDash();
+  const { t, lang, setLang, session, hasScope, canMutate, salon, settings, locations, openModal, fireToast, deepLink, setDeepLink } = useDash();
   const isOwner = !!session?.is_owner;
   const canTeam = hasScope('team');
   const canLog = hasScope('activity_log');
@@ -198,11 +198,11 @@ export default function ImpostazioniSection() {
       <Group title={t('Account & team', 'Account & team')}>
         <Row first icon="user" label={t('Membri del team', 'Team members')}
           sub={canTeam ? t('Ruoli, accessi e inviti', 'Roles, access and invites') : t('Richiede il permesso Team', 'Requires the Team permission')}
-          locked={!canTeam}
+          locked={!hasScope("team")}
           onClick={canTeam ? () => setTeamOpen(true) : lockToast} />
         <Row icon="settings" label={t('Ruoli e permessi', 'Roles & permissions')}
           sub={canTeam ? t('Definisci cosa può fare ogni ruolo', 'Define what each role can do') : t('Richiede il permesso Team', 'Requires the Team permission')}
-          locked={!canTeam}
+          locked={!hasScope("team")}
           value={canTeam ? t('Gestisci', 'Manage') : undefined}
           onClick={canTeam ? () => setRolesOpen(true) : lockToast} />
         <Row icon="settings" label={t('Cambia password', 'Change password')}

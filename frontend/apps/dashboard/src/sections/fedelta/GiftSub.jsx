@@ -1,3 +1,4 @@
+import { MutationButton } from '@youty/shared';
 import React, { useEffect, useState } from 'react';
 import { api, ApiError, fmtEur, parseISO, Icon, EmptyState } from '@youty/shared';
 import { useDash } from '../../ctx.jsx';
@@ -18,7 +19,7 @@ function dateLabel(iso, lang) {
 }
 
 export default function GiftSub() {
-  const { t, lang, hasScope, fireToast, services } = useDash();
+  const { t, lang, hasScope, canMutate, fireToast, services } = useDash();
   const canWrite = hasScope('marketing');
 
   const [q, setQ] = useState('');
@@ -103,7 +104,7 @@ export default function GiftSub() {
           ))}
           <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-end', gap: 8, padding: '0 14px 0 18px', borderLeft: '1px solid var(--hair)' }}>
             {unpaidCount > 0 && <span style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--warn)', background: 'var(--warn-tint)', padding: '3px 10px', borderRadius: 99, whiteSpace: 'nowrap' }}>{unpaidCount} {t('da pagare', 'unpaid')}</span>}
-            {canWrite && <button className="dk-btn dk-btn--clay" onClick={() => setEdit({})} style={{ whiteSpace: 'nowrap' }}><Icon name="plus" size={17} color="#fff" />{t('Nuova gift card', 'New gift card')}</button>}
+            {canWrite && <MutationButton className="dk-btn dk-btn--clay" onClick={() => setEdit({})} style={{ whiteSpace: 'nowrap' }}><Icon name="plus" size={17} color="#fff" />{t('Nuova gift card', 'New gift card')}</MutationButton>}
           </div>
         </div>
       )}
@@ -190,9 +191,9 @@ export default function GiftSub() {
                     {g.expires_at ? t('Scade: ', 'Expires: ') + dateLabel(g.expires_at, lang) : t('Nessuna scadenza', 'No expiry')}
                   </span>
                   {due && canWrite && (
-                    <button className="dk-btn dk-btn--ghost" style={{ marginLeft: 'auto', height: 32, fontSize: 12.5 }} onClick={() => setMarkingId(markingId === g.id ? null : g.id)}>
+                    <MutationButton className="dk-btn dk-btn--ghost" style={{ marginLeft: 'auto', height: 32, fontSize: 12.5 }} onClick={() => setMarkingId(markingId === g.id ? null : g.id)}>
                       <Icon name="check" size={14} />{t('Segna pagata', 'Mark paid')}
-                    </button>
+                    </MutationButton>
                   )}
                   {markingId === g.id && (
                     <React.Fragment>
@@ -200,7 +201,7 @@ export default function GiftSub() {
                       <div className="dk-card" style={{ position: 'absolute', bottom: 'calc(100% + 6px)', right: 0, padding: 6, zIndex: 61, boxShadow: 'var(--sh-pop)', width: 170 }}>
                         <div className="t-meta" style={{ padding: '6px 10px 6px' }}>{t('Metodo', 'Method')}</div>
                         {Object.entries(PAY_METHOD_LABELS).map(([k, l]) => (
-                          <button key={k} className="dk-row" onClick={() => markPaid(g, k)} style={{ display: 'block', width: '100%', padding: '8px 10px', borderRadius: 9, textAlign: 'left', fontWeight: 600, fontSize: 13.5 }}>{l[lang]}</button>
+                          <MutationButton key={k} className="dk-row" onClick={() => markPaid(g, k)} style={{ display: 'block', width: '100%', padding: '8px 10px', borderRadius: 9, textAlign: 'left', fontWeight: 600, fontSize: 13.5 }}>{l[lang]}</MutationButton>
                         ))}
                       </div>
                     </React.Fragment>
@@ -212,7 +213,7 @@ export default function GiftSub() {
         </div>
       ) : (
         <EmptyState icon="gift" title={t('Nessuna gift card', 'No gift cards')} sub={t('Vendi la prima gift card.', 'Sell your first gift card.')}
-          action={canWrite ? t('Nuova gift card', 'New gift card') : null} onAction={() => setEdit({})} />
+          mutationAction action={canWrite ? t('Nuova gift card', 'New gift card') : null} onAction={() => setEdit({})} />
       )}
 
       {edit && (

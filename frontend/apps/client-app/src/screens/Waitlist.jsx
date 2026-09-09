@@ -1,3 +1,4 @@
+import { MutationButton } from '@youty/shared';
 // Waitlist.jsx — the client's active waitlist requests + leave + join CTA.
 // Data: GET /api/agenda/client/waitlist, DELETE /api/agenda/client/waitlist/{id}.
 import React from 'react';
@@ -69,10 +70,10 @@ export default function Waitlist() {
                     <span className="t-sm" style={{ color: 'var(--muted-2)' }}>
                       {t('In lista dal', 'On the list since')} {fmtDayMed(w.created_at, lang)}
                     </span>
-                    <button className="press" onClick={() => remove(w.id)} disabled={removing === w.id}
+                    <MutationButton className="press" onClick={() => remove(w.id)} disabled={removing === w.id}
                       style={{ fontSize: 13, fontWeight: 600, color: 'var(--danger)', opacity: removing === w.id ? 0.5 : 1 }}>
                       {removing === w.id ? t('Rimozione…', 'Removing…') : t('Rimuovi', 'Remove')}
-                    </button>
+                    </MutationButton>
                   </div>
                 </div>
               ))}
@@ -80,9 +81,9 @@ export default function Waitlist() {
           </React.Fragment>
         )}
 
-        <button className="btn btn--brand btn--block press" onClick={() => setView('waitlist-new')}>
+        <MutationButton className="btn btn--brand btn--block press" onClick={() => setView('waitlist-new')}>
           <Icon name="plus" size={17} color="var(--brand-on)" />{t('Aggiungiti alla lista', 'Join the list')}
-        </button>
+        </MutationButton>
       </div>
     </div>
   );

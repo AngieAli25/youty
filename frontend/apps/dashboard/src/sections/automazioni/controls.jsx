@@ -1,3 +1,4 @@
+import { MutationNumInput } from '@youty/shared';
 // controls.jsx — small local controls for the Automazioni builder.
 // NOTE for the integrator: DkDrop here (and DkCondRow in DkCondRow.jsx) are LOCAL
 // copies of prototype components also needed by the impostazioni section (deposit
@@ -47,7 +48,7 @@ export function DkStepper({ value, onChange }) {
   return (
     <div style={{ display: 'inline-flex', alignItems: 'center', border: '1px solid var(--hair)', borderRadius: 10, background: 'var(--surface)', overflow: 'hidden' }}>
       <button style={btn} onClick={dec} aria-label="−"><span style={{ fontSize: 19, fontWeight: 600, lineHeight: 1 }}>−</span></button>
-      <NumInput integer min={0} value={value} onChange={onChange} style={{ width: 44, textAlign: 'center', border: 'none', borderLeft: '1px solid var(--hair)', borderRight: '1px solid var(--hair)', outline: 'none', background: 'transparent', fontSize: 15, fontWeight: 700, height: 40, fontVariantNumeric: 'tabular-nums' }} />
+      <MutationNumInput integer min={0} value={value} onChange={onChange} style={{ width: 44, textAlign: 'center', border: 'none', borderLeft: '1px solid var(--hair)', borderRight: '1px solid var(--hair)', outline: 'none', background: 'transparent', fontSize: 15, fontWeight: 700, height: 40, fontVariantNumeric: 'tabular-nums' }} />
       <button style={btn} onClick={inc} aria-label="+"><span style={{ fontSize: 18, fontWeight: 600, lineHeight: 1 }}>+</span></button>
     </div>
   );

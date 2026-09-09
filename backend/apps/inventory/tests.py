@@ -1,7 +1,7 @@
 from decimal import Decimal
 from types import SimpleNamespace
 
-from django.test import TestCase
+from common.testing import SubscribedSalonTestCase as TestCase
 from ninja.errors import HttpError
 
 from apps.core.models import Salon

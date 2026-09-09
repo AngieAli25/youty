@@ -9,6 +9,10 @@
   "scripts": {
     "dev:dashboard": "npm run dev --workspace apps/dashboard",
     "dev:client": "npm run dev --workspace apps/client-app",
-    "build": "npm run build --workspace apps/dashboard && npm run build --workspace apps/client-app"
+    "build": "npm run build --workspace apps/dashboard && npm run build --workspace apps/client-app",
+    "test:portal-access": "node scripts/test-portal-access.mjs"
+  },
+  "devDependencies": {
+    "react-test-renderer": "^18.3.1"
   }
 }

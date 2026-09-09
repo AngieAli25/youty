@@ -1,3 +1,6 @@
+import { MutationNumInput } from '@youty/shared';
+import { withPortalForm } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 import React, { useState } from 'react';
 import { api, ApiError, fmtEur, Icon, NumInput } from '@youty/shared';
 import { DkModal } from '../../../ui/index.js';
@@ -9,7 +12,7 @@ import { COUPON_ORIGIN_META, COUPON_STATUS_META } from '../meta.js';
  * `value`, `expires_at` optional. The prototype's `gift` kind and services-restriction have no
  * API fields on Coupon — dropped here (see fedelta section report).
  * PUT only succeeds while status === 'active' (backend 422s otherwise) — read-only past that. */
-export default function CouponEditModal({ draft, setDraft, onClose, onSaved, onDeleted, onRedeemed, canWrite, t, lang, fireToast }) {
+function CouponEditModal({ draft, setDraft, onClose, onSaved, onDeleted, onRedeemed, canWrite, t, lang, fireToast }) {
   const [saving, setSaving] = useState(false);
   const set = (patch) => setDraft((d) => ({ ...d, ...patch }));
   const isNew = !!draft._new;
@@ -77,10 +80,10 @@ export default function CouponEditModal({ draft, setDraft, onClose, onSaved, onD
     <DkModal open onClose={onClose} title={isNew ? t('Nuovo coupon', 'New coupon') : t('Coupon', 'Coupon') + ' · ' + draft.code}
       sub={t('Valore, cliente e validità', 'Value, client and validity')} width={520}
       foot={<React.Fragment>
-        {!isNew && canWrite && <button className="dk-btn dk-btn--ghost" style={{ color: 'var(--danger)', borderColor: 'color-mix(in srgb, var(--danger) 40%, var(--hair))', marginRight: 'auto' }} onClick={del} disabled={saving}><Icon name="x" size={16} color="var(--danger)" />{t('Elimina', 'Delete')}</button>}
-        {!isNew && canWrite && draft.status === 'active' && <button className="dk-btn dk-btn--ghost" onClick={redeem} disabled={saving}>{t('Segna come utilizzato', 'Mark as redeemed')}</button>}
+        {!isNew && canWrite && <MutationButton className="dk-btn dk-btn--ghost" style={{ color: 'var(--danger)', borderColor: 'color-mix(in srgb, var(--danger) 40%, var(--hair))', marginRight: 'auto' }} onClick={del} disabled={saving}><Icon name="x" size={16} color="var(--danger)" />{t('Elimina', 'Delete')}</MutationButton>}
+        {!isNew && canWrite && draft.status === 'active' && <MutationButton className="dk-btn dk-btn--ghost" onClick={redeem} disabled={saving}>{t('Segna come utilizzato', 'Mark as redeemed')}</MutationButton>}
         <button className="dk-btn dk-btn--ghost" onClick={onClose}>{t('Chiudi', 'Close')}</button>
-        {(isNew || !locked) && canWrite && <button className="dk-btn dk-btn--clay" disabled={!canSave || saving} onClick={save}>{t('Salva', 'Save')}</button>}
+        {(isNew || !locked) && canWrite && <MutationButton className="dk-btn dk-btn--clay" disabled={!canSave || saving} onClick={save}>{t('Salva', 'Save')}</MutationButton>}
       </React.Fragment>}>
       {!isNew && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
@@ -100,7 +103,7 @@ export default function CouponEditModal({ draft, setDraft, onClose, onSaved, onD
           <div className="t-meta" style={{ marginBottom: 8 }}>{draft.kind === 'percent' ? t('Percentuale', 'Percentage') : t('Importo', 'Amount')}</div>
           <div style={numCss}>
             {draft.kind === 'amount' && <span className="t-sm" style={{ color: 'var(--muted-2)', fontWeight: 700 }}>€</span>}
-            <NumInput disabled={locked} min={0} integer={draft.kind === 'percent'} max={draft.kind === 'percent' ? 100 : undefined} value={draft.value} onChange={(value) => set({ value })} style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: 16, fontWeight: 700, width: 70 }} />
+            <MutationNumInput disabled={locked} min={0} integer={draft.kind === 'percent'} max={draft.kind === 'percent' ? 100 : undefined} value={draft.value} onChange={(value) => set({ value })} style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: 16, fontWeight: 700, width: 70 }} />
             {draft.kind === 'percent' && <span className="t-sm" style={{ color: 'var(--muted-2)', fontWeight: 700 }}>%</span>}
           </div>
         </div>
@@ -119,3 +122,5 @@ export default function CouponEditModal({ draft, setDraft, onClose, onSaved, onD
     </DkModal>
   );
 }
+
+export default withPortalForm(CouponEditModal, { preview: ({ draft }) => !!draft?.id });

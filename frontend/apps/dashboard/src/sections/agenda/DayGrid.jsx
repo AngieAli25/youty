@@ -1,3 +1,4 @@
+import { MutationButton } from '@youty/shared';
 // DayGrid — multi-operator day timeline 08:00–20:00.
 // Ogni SERVIZIO di una visita è un blocco a sé, nella colonna della sua operatrice,
 // all'orario concatenato dallo start della visita, colorato per categoria di servizio.
@@ -369,9 +370,9 @@ function PauseBlock({ p, startMin, dur, dragging, t, canWrite, onDown, onResizeD
       </div>
       <span className="tabnum" style={{ fontSize: 11, fontWeight: 500, color: 'var(--pewter-500, #6F6E74)', flexShrink: 0 }}>{timeLabel(startMin)}–{timeLabel(startMin + dur)}</span>
       {canWrite && (
-        <button onClick={(e) => { e.stopPropagation(); onRemove(); }} onPointerDown={(e) => e.stopPropagation()} title={t('Rimuovi pausa', 'Remove break')} style={{ position: 'absolute', top: 4, right: 4, width: 20, height: 20, borderRadius: 6, border: 'none', background: 'rgba(255,255,255,0.7)', cursor: 'pointer', display: bCompact ? 'none' : 'grid', placeItems: 'center', zIndex: 4 }}>
+        <MutationButton onClick={(e) => { e.stopPropagation(); onRemove(); }} onPointerDown={(e) => e.stopPropagation()} title={t('Rimuovi pausa', 'Remove break')} style={{ position: 'absolute', top: 4, right: 4, width: 20, height: 20, borderRadius: 6, border: 'none', background: 'rgba(255,255,255,0.7)', cursor: 'pointer', display: bCompact ? 'none' : 'grid', placeItems: 'center', zIndex: 4 }}>
           <Icon name="x" size={12} color="var(--pewter-500, #6F6E74)" />
-        </button>
+        </MutationButton>
       )}
       {canWrite && (
         <div onPointerDown={onResizeDown} title={t('Ridimensiona', 'Resize')} style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 12, cursor: 'ns-resize', display: 'grid', placeItems: 'center', touchAction: 'none' }}>

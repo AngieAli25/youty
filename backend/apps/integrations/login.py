@@ -22,9 +22,11 @@ from django.utils.text import slugify
 from apps.accounts.models import Membership, User
 from apps.core.models import Location, Salon, SalonSettings
 from common.auth import create_staff_tokens
+from common.portal_access import resolve_portal_access
 
 from . import client as yc
 from .models import YourangConnection
+from .access_policy import automatic_sync_allowed
 from .sync import _split_name, sync_clients, sync_services
 
 logger = logging.getLogger("youty.integrations")
@@ -75,6 +77,7 @@ def _session_payload(membership: Membership, tokens: dict) -> dict:
         "salon": {"id": salon.id, "name": salon.name, "slug": salon.slug},
         "scopes": sorted(membership.role.scopes or []) if membership.role else [],
         "is_owner": membership.is_owner,
+        "portal_access": resolve_portal_access(salon),
         **tokens,
     }
 
@@ -132,6 +135,8 @@ def login_with_link_code(code: str) -> dict:
     conn.last_error = ""
     conn.save()
     try:
+        if not automatic_sync_allowed(conn.salon, "login_sync"):
+            return _session_payload(_membership_for(salon, user), create_staff_tokens(user, salon))
         sync_clients(conn)
         sync_services(conn)
         conn.last_sync_at = timezone.now()

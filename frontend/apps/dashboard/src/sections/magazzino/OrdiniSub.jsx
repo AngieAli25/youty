@@ -1,3 +1,6 @@
+import { MutationTextarea } from '@youty/shared';
+import { MutationNumInput } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // OrdiniSub.jsx — purchase orders: GET /api/inventory/orders, generate drafts from
 // below-threshold products, edit draft lines (PUT, qty 0 deletes), send (POST /send),
 // receive with per-line quantities (POST /receive → discrepancies).
@@ -72,7 +75,7 @@ export default function OrdiniSub({ suppliers, allProds, canWrite, refreshShared
         <div className="t-sm" style={{ color: 'var(--muted)', flex: 1 }}>
           {t("Bozze d'ordine generate automaticamente dai prodotti sotto soglia, raggruppate per fornitore. Regola le quantità, invia con il metodo preferito o scarica il PDF da inoltrare.", 'Purchase-order drafts auto-generated from below-threshold products, grouped by supplier. Adjust quantities, send via the preferred method or download the PDF to forward.')}
         </div>
-        {canWrite && <button className="dk-btn dk-btn--clay" onClick={generate} disabled={generating} style={{ flexShrink: 0 }}><Icon name="refresh" size={16} color="#fff" />{t('Genera ordini', 'Generate orders')}</button>}
+        {canWrite && <MutationButton className="dk-btn dk-btn--clay" onClick={generate} disabled={generating} style={{ flexShrink: 0 }}><Icon name="refresh" size={16} color="#fff" />{t('Genera ordini', 'Generate orders')}</MutationButton>}
       </div>
 
       <div style={{ display: 'flex', gap: 7, marginBottom: 18, flexWrap: 'wrap' }}>
@@ -89,7 +92,7 @@ export default function OrdiniSub({ suppliers, allProds, canWrite, refreshShared
           <div style={{ padding: '40px 22px' }}>
             <EmptyState icon="check" title={statusF === 'all' ? t('Nessun ordine', 'No orders') : t('Nessun ordine in questo stato', 'No orders with this status')}
               sub={t('Genera le bozze dai prodotti sotto soglia.', 'Generate drafts from below-threshold products.')}
-              action={canWrite ? t('Genera ordini', 'Generate orders') : undefined} onAction={canWrite ? generate : undefined} />
+              mutationAction action={canWrite ? t('Genera ordini', 'Generate orders') : undefined} onAction={canWrite ? generate : undefined} />
           </div>
         </div>
       ) : (
@@ -269,9 +272,9 @@ function OrderCard({ order, prodById, supplier, salonName, canWrite, t, lang, fi
             {Object.entries(ORDER_METHODS).map(([k, meta]) => {
               const on = method === k;
               return (
-                <button key={k} onClick={() => canWrite && setMethod(k)} title={meta[lang]} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 12px', borderRadius: 8, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', border: 'none', background: on ? 'var(--surface)' : 'transparent', color: on ? 'var(--ink)' : 'var(--muted)', boxShadow: on ? 'var(--sh-card)' : 'none' }}>
+                <MutationButton key={k} onClick={() => canWrite && setMethod(k)} title={meta[lang]} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 12px', borderRadius: 8, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', border: 'none', background: on ? 'var(--surface)' : 'transparent', color: on ? 'var(--ink)' : 'var(--muted)', boxShadow: on ? 'var(--sh-card)' : 'none' }}>
                   <Icon name={meta.icon} size={15} color={on ? 'var(--clay-ink)' : 'var(--muted)'} />{meta[lang]}
-                </button>
+                </MutationButton>
               );
             })}
           </div>
@@ -284,15 +287,15 @@ function OrderCard({ order, prodById, supplier, salonName, canWrite, t, lang, fi
           <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '12px 20px', background: 'var(--clay-tint)' }}>
             <Icon name="box" size={16} color="var(--clay-ink)" />
             <span style={{ fontWeight: 700, fontSize: 13.5, color: 'var(--clay-ink)', flex: 1 }}>{t('Registra consegna · inserisci le quantità ricevute', 'Record delivery · enter received quantities')}</span>
-            <button onClick={() => setRecvCsv(recvCsv == null ? '' : null)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 11px', borderRadius: 8, border: '1px solid var(--clay)', background: 'var(--surface)', cursor: 'pointer', fontSize: 12.5, fontWeight: 700, color: 'var(--clay-ink)' }}><Icon name="arrowUp" size={14} color="var(--clay-ink)" />{t('Importa CSV', 'Import CSV')}</button>
+            <MutationButton onClick={() => setRecvCsv(recvCsv == null ? '' : null)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 11px', borderRadius: 8, border: '1px solid var(--clay)', background: 'var(--surface)', cursor: 'pointer', fontSize: 12.5, fontWeight: 700, color: 'var(--clay-ink)' }}><Icon name="arrowUp" size={14} color="var(--clay-ink)" />{t('Importa CSV', 'Import CSV')}</MutationButton>
           </div>
           {recvCsv != null && (
             <div style={{ padding: '12px 20px', borderBottom: '1px solid var(--hair)', background: 'var(--surface-2)' }}>
               <div className="t-sm" style={{ color: 'var(--muted)', marginBottom: 8 }}>{t('Una riga per prodotto: nome o SKU, quantità ricevuta — es. "Base coat, 10"', 'One row per product: name or SKU, received qty — e.g. "Base coat, 10"')}</div>
-              <textarea value={recvCsv} onChange={(e) => setRecvCsv(e.target.value)} rows={4} placeholder={'Base coat, 10\nGEL-RD-001, 12'} style={{ ...inputCss, fontFamily: 'var(--mono, monospace)', fontSize: 13, resize: 'vertical' }} />
+              <MutationTextarea value={recvCsv} onChange={(e) => setRecvCsv(e.target.value)} rows={4} placeholder={'Base coat, 10\nGEL-RD-001, 12'} style={{ ...inputCss, fontFamily: 'var(--mono, monospace)', fontSize: 13, resize: 'vertical' }} />
               <div style={{ display: 'flex', gap: 8, marginTop: 8, justifyContent: 'flex-end' }}>
                 <button className="dk-btn dk-btn--ghost" style={{ height: 34 }} onClick={() => setRecvCsv(null)}>{t('Annulla', 'Cancel')}</button>
-                <button className="dk-btn dk-btn--clay" style={{ height: 34 }} onClick={applyRecvCsv}><Icon name="check" size={15} color="#fff" />{t('Applica', 'Apply')}</button>
+                <MutationButton className="dk-btn dk-btn--clay" style={{ height: 34 }} onClick={applyRecvCsv}><Icon name="check" size={15} color="#fff" />{t('Applica', 'Apply')}</MutationButton>
               </div>
             </div>
           )}
@@ -309,7 +312,7 @@ function OrderCard({ order, prodById, supplier, salonName, canWrite, t, lang, fi
                   {l.sku && <div className="t-sm" style={{ color: 'var(--muted-2)' }}>{l.sku}</div>}
                 </div>
                 <div className="t-num" style={{ textAlign: 'right', fontSize: 13.5, color: 'var(--muted)' }}>{fmtQty(l.qty_ordered, lang)}</div>
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}><NumInput integer min={0} value={rq} onChange={(v) => setRecvQty(l.id, v)} style={{ ...inputCss, width: 66, textAlign: 'right', fontWeight: 700, fontFamily: 'var(--mono, monospace)', borderColor: 'var(--clay)' }} /></div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}><MutationNumInput integer min={0} value={rq} onChange={(v) => setRecvQty(l.id, v)} style={{ ...inputCss, width: 66, textAlign: 'right', fontWeight: 700, fontFamily: 'var(--mono, monospace)', borderColor: 'var(--clay)' }} /></div>
                 <div>{diff === 0
                   ? <span style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--ok)', display: 'inline-flex', alignItems: 'center', gap: 4 }}><Icon name="check" size={13} color="var(--ok)" stroke={2.4} />{t('Completo', 'Complete')}</span>
                   : <span style={{ fontSize: 11.5, fontWeight: 700, color: STOCK_META.low.color, background: STOCK_META.low.tint, padding: '2px 9px', borderRadius: 99, display: 'inline-flex', alignItems: 'center', gap: 4 }}><Icon name="alert" size={12} color={STOCK_META.low.color} />{diff > 0 ? '+' : ''}{diff} {diff > 0 ? t('in più', 'over') : t('mancanti', 'short')}</span>}
@@ -320,7 +323,7 @@ function OrderCard({ order, prodById, supplier, salonName, canWrite, t, lang, fi
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 20px', borderTop: '1px solid var(--hair)', background: 'var(--surface-2)' }}>
             <span className="t-sm" style={{ color: 'var(--muted)', flex: 1 }}>{t('Totale ricevuto', 'Total received')}: <b style={{ color: 'var(--ink)' }}>{recvTotal}</b> {t('unità', 'units')} · {t('alla conferma il magazzino viene aggiornato', 'on confirm the stock is updated')}</span>
             <button className="dk-btn dk-btn--ghost" onClick={() => { setReceiving(false); setRecv({}); setRecvCsv(null); }} style={{ flexShrink: 0 }}>{t('Annulla', 'Cancel')}</button>
-            <button className="dk-btn dk-btn--clay" onClick={confirmReceive} disabled={busy} style={{ flexShrink: 0 }}><Icon name="check" size={16} color="#fff" />{t('Conferma consegna', 'Confirm delivery')}</button>
+            <MutationButton className="dk-btn dk-btn--clay" onClick={confirmReceive} disabled={busy} style={{ flexShrink: 0 }}><Icon name="check" size={16} color="#fff" />{t('Conferma consegna', 'Confirm delivery')}</MutationButton>
           </div>
         </React.Fragment>
       ) : (
@@ -360,7 +363,7 @@ function OrderCard({ order, prodById, supplier, salonName, canWrite, t, lang, fi
                 </div>
                 <div className="t-num" style={{ textAlign: 'right', fontSize: 13, color: l.lowItem ? STOCK_META.low.color : 'var(--muted)', fontWeight: l.lowItem ? 700 : 500 }}>{l.stock != null ? `${fmtQty(l.stock, lang)}/${fmtQty(l.min, lang)}` : '—'}</div>
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <NumInput integer min={0} value={l.qty} disabled={!isDraft || !canWrite}
+                  <MutationNumInput integer min={0} value={l.qty} disabled={!isDraft || !canWrite}
                     onChange={(v) => setQtyDraft((d) => ({ ...d, [l.id]: v }))}
                     style={{ ...inputCss, width: 62, textAlign: 'right', fontWeight: 700, fontFamily: 'var(--mono, monospace)', borderColor: isDraft ? 'var(--clay)' : 'var(--hair)', background: isDraft && canWrite ? 'var(--surface)' : 'var(--surface-2)' }} />
                 </div>
@@ -368,7 +371,7 @@ function OrderCard({ order, prodById, supplier, salonName, canWrite, t, lang, fi
                 <div className="t-num" style={{ textAlign: 'right', fontSize: 13, color: 'var(--muted)' }}>{num(l.vat)}%</div>
                 <div className="t-num" style={{ textAlign: 'right', fontSize: 13.5, fontWeight: 700 }}>{fmtEur(mth.total, lang)}</div>
                 {isDraft && canWrite
-                  ? <button className="dk-iconbtn" style={{ width: 30, height: 30, borderRadius: 8 }} onClick={() => removeLine(l)} title={t('Rimuovi', 'Remove')}><Icon name="x" size={14} color="var(--muted)" /></button>
+                  ? <MutationButton className="dk-iconbtn" style={{ width: 30, height: 30, borderRadius: 8 }} onClick={() => removeLine(l)} title={t('Rimuovi', 'Remove')}><Icon name="x" size={14} color="var(--muted)" /></MutationButton>
                   : <span />}
               </div>
             );
@@ -383,14 +386,14 @@ function OrderCard({ order, prodById, supplier, salonName, canWrite, t, lang, fi
               <div><span className="t-meta">{t('Totale ordine', 'Order total')}</span><div className="t-num" style={{ fontSize: 19, marginTop: 2, fontWeight: 800 }}>{fmtEur(grandNet + grandVat, lang)}</div></div>
             </div>
             <button className="dk-btn dk-btn--ghost" onClick={onPdf} disabled={!lines.length} style={{ flexShrink: 0 }}><Icon name="arrowDn" size={16} />{t('Scarica PDF', 'Download PDF')}</button>
-            {isDraft && canWrite && dirty && <button className="dk-btn dk-btn--ghost" onClick={onSaveLines} disabled={busy} style={{ flexShrink: 0 }}><Icon name="check" size={16} />{t('Salva quantità', 'Save quantities')}</button>}
+            {isDraft && canWrite && dirty && <MutationButton className="dk-btn dk-btn--ghost" onClick={onSaveLines} disabled={busy} style={{ flexShrink: 0 }}><Icon name="check" size={16} />{t('Salva quantità', 'Save quantities')}</MutationButton>}
             {isDraft && canWrite && (
-              <button className="dk-btn dk-btn--clay" onClick={send} disabled={!lines.length || busy} style={{ flexShrink: 0 }}>
+              <MutationButton className="dk-btn dk-btn--clay" onClick={send} disabled={!lines.length || busy} style={{ flexShrink: 0 }}>
                 <Icon name={(ORDER_METHODS[method] || ORDER_METHODS.email).icon} size={16} color="#fff" />{t('Conferma e invia', 'Confirm & send')} · {(ORDER_METHODS[method] || ORDER_METHODS.email)[lang]}
-              </button>
+              </MutationButton>
             )}
             {isSent && canWrite && (
-              <button className="dk-btn dk-btn--clay" onClick={startReceive} style={{ flexShrink: 0 }}><Icon name="box" size={16} color="#fff" />{t('Registra consegna', 'Receive delivery')}</button>
+              <MutationButton className="dk-btn dk-btn--clay" onClick={startReceive} style={{ flexShrink: 0 }}><Icon name="box" size={16} color="#fff" />{t('Registra consegna', 'Receive delivery')}</MutationButton>
             )}
           </div>
         </React.Fragment>

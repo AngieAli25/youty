@@ -1,3 +1,6 @@
+import { MutationNumInput } from '@youty/shared';
+import { withPortalForm } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // NewOperatorModal — create operator form (POST /api/staff/). Rendered locally
 // by the staff section (not in the shell modal registry).
 import React, { useState } from 'react';
@@ -6,7 +9,7 @@ import { DkModal, HexInput } from '../../ui/index.js';
 import { useDash } from '../../ctx.jsx';
 import { GD_PALETTE, inputCss, svcLabel } from './lib.js';
 
-export default function NewOperatorModal({ onClose, onCreated }) {
+function NewOperatorModal({ onClose, onCreated }) {
   const { t, lang, services, locations, operators, reload, fireToast, opPalette } = useDash();
   const [form, setForm] = useState({
     first_name: '', last_name: '', role_title: '',
@@ -57,9 +60,9 @@ export default function NewOperatorModal({ onClose, onCreated }) {
       foot={
         <React.Fragment>
           <button className="dk-btn dk-btn--ghost" onClick={onClose}>{t('Annulla', 'Cancel')}</button>
-          <button className="dk-btn dk-btn--clay" onClick={save} disabled={!valid || saving} style={{ opacity: valid && !saving ? 1 : 0.55 }}>
+          <MutationButton className="dk-btn dk-btn--clay" onClick={save} disabled={!valid || saving} style={{ opacity: valid && !saving ? 1 : 0.55 }}>
             <Icon name="check" size={16} color="#fff" />{saving ? t('Salvataggio…', 'Saving…') : t('Crea', 'Create')}
-          </button>
+          </MutationButton>
         </React.Fragment>
       }>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -69,7 +72,7 @@ export default function NewOperatorModal({ onClose, onCreated }) {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 140px', gap: 12 }}>
           {field(t('Ruolo', 'Role'), <input value={form.role_title} onChange={(e) => set({ role_title: e.target.value })} placeholder={t('es. Hair stylist', 'e.g. Hair stylist')} style={inputCss} />)}
-          {field(t('Costo orario €', 'Hourly cost €'), <NumInput min={0} value={form.hourly_cost} onChange={(hourly_cost) => set({ hourly_cost })} style={inputCss} />)}
+          {field(t('Costo orario €', 'Hourly cost €'), <MutationNumInput min={0} value={form.hourly_cost} onChange={(hourly_cost) => set({ hourly_cost })} style={inputCss} />)}
         </div>
 
         <div>
@@ -111,3 +114,5 @@ export default function NewOperatorModal({ onClose, onCreated }) {
     </DkModal>
   );
 }
+
+export default withPortalForm(NewOperatorModal);

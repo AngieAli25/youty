@@ -1,3 +1,4 @@
+import { MutationButton } from '../portalAccess.jsx';
 // primitives.jsx — shared UI primitives ported from prototype components.jsx + shared.jsx
 import React, { useEffect } from 'react';
 import { Icon } from './Icon.jsx';
@@ -131,7 +132,8 @@ export function SectionLabel({ children, action, onAction }) {
   );
 }
 
-export function EmptyState({ icon, title, sub, action, onAction }) {
+export function EmptyState({ icon, title, sub, action, onAction, mutationAction = false }) {
+  const Action = mutationAction ? MutationButton : 'button';
   return (
     <div style={{ textAlign: 'center', padding: '40px 24px' }}>
       <div style={{ width: 64, height: 64, borderRadius: 20, background: 'var(--paper-2)', display: 'grid', placeItems: 'center', margin: '0 auto 16px' }}>
@@ -139,7 +141,7 @@ export function EmptyState({ icon, title, sub, action, onAction }) {
       </div>
       <div className="t-title" style={{ marginBottom: 6 }}>{title}</div>
       {sub && <div className="t-body" style={{ color: 'var(--muted)', maxWidth: 240, margin: '0 auto 16px' }}>{sub}</div>}
-      {action && <button className="btn btn--clay press" onClick={onAction} style={{ margin: '0 auto' }}>{action}</button>}
+      {action && <Action className="btn btn--clay press" onClick={onAction} style={{ margin: '0 auto' }}>{action}</Action>}
     </div>
   );
 }

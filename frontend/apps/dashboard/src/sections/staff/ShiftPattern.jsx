@@ -1,3 +1,5 @@
+import { withPortalForm } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // ShiftPattern — recurring weekly shift editor (port of the "Pattern settimanale
 // ricorrente" card in prototype DkStaffPage). Times are edited as "9–19" text and
 // converted to minutes-from-midnight (WeeklyShiftIn) on save; multi-week rotation
@@ -6,7 +8,7 @@ import React from 'react';
 import { Icon } from '@youty/shared';
 import { WEEKDAYS, currentWeekIndex, emptyWeek, inputCss } from './lib.js';
 
-export default function ShiftPattern({ weeks, setWeeks, onSave, saving, canEdit, t }) {
+function ShiftPattern({ weeks, setWeeks, onSave, saving, canEdit, t }) {
   const dayInput = { ...inputCss, padding: '8px 11px' };
   const curIdx = currentWeekIndex(weeks.length);
 
@@ -70,11 +72,13 @@ export default function ShiftPattern({ weeks, setWeeks, onSave, saving, canEdit,
             <Icon name="plus" size={15} color="var(--clay-ink)" />{t('Aggiungi settimana', 'Add week')}
           </button>
           <span style={{ flex: 1 }} />
-          <button className="dk-btn dk-btn--clay" onClick={onSave} disabled={saving} style={{ height: 40, opacity: saving ? 0.6 : 1 }}>
+          <MutationButton className="dk-btn dk-btn--clay" onClick={onSave} disabled={saving} style={{ height: 40, opacity: saving ? 0.6 : 1 }}>
             <Icon name="check" size={15} color="#fff" />{saving ? t('Salvataggio…', 'Saving…') : t('Salva turni', 'Save shifts')}
-          </button>
+          </MutationButton>
         </div>
       )}
     </div>
   );
 }
+
+export default withPortalForm(ShiftPattern, { preview: () => true, framed: false, overlay: false });

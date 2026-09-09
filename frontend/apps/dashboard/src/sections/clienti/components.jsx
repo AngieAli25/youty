@@ -1,3 +1,4 @@
+import { MutationButton } from '@youty/shared';
 // components.jsx — small presentational pieces shared inside the clienti section.
 import React from 'react';
 import { Icon } from '@youty/shared';
@@ -35,9 +36,9 @@ export function CatChip({ cat, sm, onRemove, removeTitle }) {
       <span style={{ width: sm ? 7 : 8, height: sm ? 7 : 8, borderRadius: 99, background: cat.color || 'var(--muted-2)', boxShadow: '0 0 0 1px rgba(0,0,0,0.06) inset' }} />
       {cat.name}
       {onRemove && (
-        <button onClick={onRemove} title={removeTitle} style={{ width: 16, height: 16, borderRadius: 99, display: 'grid', placeItems: 'center', cursor: 'pointer', background: 'rgba(0,0,0,0.08)', border: 'none' }}>
+        <MutationButton onClick={onRemove} title={removeTitle} style={{ width: 16, height: 16, borderRadius: 99, display: 'grid', placeItems: 'center', cursor: 'pointer', background: 'rgba(0,0,0,0.08)', border: 'none' }}>
           <Icon name="x" size={10} color="var(--ink-2)" stroke={2.6} />
-        </button>
+        </MutationButton>
       )}
     </span>
   );
@@ -72,10 +73,10 @@ export function ConfirmModal({ title, sub, body, confirmLabel, danger = true, bu
     <DkModal open onClose={onClose} title={title} sub={sub} width={420}
       foot={<React.Fragment>
         <button className="dk-btn dk-btn--ghost" onClick={onClose}>{t('Annulla', 'Cancel')}</button>
-        <button className="dk-btn dk-btn--clay" disabled={busy} onClick={onConfirm}
+        <MutationButton className="dk-btn dk-btn--clay" disabled={busy} onClick={onConfirm}
           style={danger ? { background: 'var(--danger)', borderColor: 'var(--danger)', opacity: busy ? 0.6 : 1 } : { opacity: busy ? 0.6 : 1 }}>
           <Icon name={danger ? 'alert' : 'check'} size={16} color="#fff" />{confirmLabel}
-        </button>
+        </MutationButton>
       </React.Fragment>}>
       <div className="t-body" style={{ color: 'var(--ink-2)', lineHeight: 1.5, padding: '4px 0 10px' }}>{body}</div>
     </DkModal>

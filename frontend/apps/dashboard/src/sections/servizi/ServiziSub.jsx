@@ -1,3 +1,5 @@
+import { MutationButton } from '@youty/shared';
+import { MutationToggle } from '@youty/shared';
 // ServiziSub.jsx — services grouped by category, one card per service.
 import React, { useState } from 'react';
 import { Icon, Toggle, fmtEur, fmtDur, EmptyState } from '@youty/shared';
@@ -101,9 +103,9 @@ export default function ServiziSub({ services, loading, categories, operators, c
                       {alt && <div className="t-sm" style={{ color: 'var(--muted-2)', marginTop: 2 }}>{alt}</div>}
                     </div>
                     {canEdit && (
-                      <button className="dk-iconbtn" style={{ width: 32, height: 32, borderRadius: 9, flexShrink: 0 }} onClick={(e) => { e.stopPropagation(); onEdit(s); }}>
+                      <MutationButton className="dk-iconbtn" style={{ width: 32, height: 32, borderRadius: 9, flexShrink: 0 }} onClick={(e) => { e.stopPropagation(); onEdit(s); }}>
                         <Icon name="edit" size={14} />
-                      </button>
+                      </MutationButton>
                     )}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 16 }}>
@@ -119,7 +121,7 @@ export default function ServiziSub({ services, loading, categories, operators, c
                     </span>
                     {canEdit && (
                       <div onClick={(e) => e.stopPropagation()}>
-                        <Toggle on={s.active} onChange={(v) => onToggleActive(s, v)} />
+                        <MutationToggle on={s.active} onChange={(v) => onToggleActive(s, v)} />
                       </div>
                     )}
                   </div>

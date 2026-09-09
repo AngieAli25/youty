@@ -197,6 +197,8 @@ YOURANG_PROXY_API_KEY = os.getenv("YOURANG_PROXY_API_KEY", "")
 # Segreto con cui il proxy firma la SUA ri-emissione dei webhook verso di noi.
 # Fail-closed: senza questo, POST /yourang/webhook rifiuta tutto.
 YOURANG_PROXY_WEBHOOK_SECRET = os.getenv("YOURANG_PROXY_WEBHOOK_SECRET", "")
+# Existing marketplace purchase flow; set for the brand serving this deployment.
+YOURANG_MARKETPLACE_URL = os.getenv("YOURANG_MARKETPLACE_URL", "")
 # Origine della dashboard (per redirect_uri del popup OAuth).
 FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")
 

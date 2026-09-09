@@ -1,3 +1,4 @@
+import { MutationButton } from '@youty/shared';
 // ProdottiSub.jsx — paginated product table from GET /api/inventory/products.
 // Filters (q, category_id, supplier_id, brand, usage, stock_state) are server-side;
 // the server already sorts below-threshold products first.
@@ -117,8 +118,8 @@ export default function ProdottiSub({ cats, suppliers, allProds, canWrite, refre
         onAdd={canWrite ? () => setSelProd({ _new: true }) : undefined} addLabel={t('Nuovo prodotto', 'New product')}
         extra={<React.Fragment>
           <GroupedFilterMenu t={t} groups={filterGroups} />
-          {canWrite && <button className="dk-btn dk-btn--ghost" onClick={() => setScaricoOpen(true)} style={{ flexShrink: 0 }}><Icon name="arrowDn" size={16} />{t('Scarico manuale', 'Manual issue')}</button>}
-          {canWrite && <button className="dk-btn dk-btn--ghost" onClick={() => setRestock(true)} style={{ flexShrink: 0 }}><Icon name="box" size={16} />{t('Carico merce', 'Receive stock')}</button>}
+          {canWrite && <MutationButton className="dk-btn dk-btn--ghost" onClick={() => setScaricoOpen(true)} style={{ flexShrink: 0 }}><Icon name="arrowDn" size={16} />{t('Scarico manuale', 'Manual issue')}</MutationButton>}
+          {canWrite && <MutationButton className="dk-btn dk-btn--ghost" onClick={() => setRestock(true)} style={{ flexShrink: 0 }}><Icon name="box" size={16} />{t('Carico merce', 'Receive stock')}</MutationButton>}
         </React.Fragment>} />
 
       {/* table */}
@@ -154,11 +155,11 @@ export default function ProdottiSub({ cats, suppliers, allProds, canWrite, refre
                     </div>
                     <div className="t-num" style={{ fontSize: 14 }}>{eur0(qtyN * unitCost(p), lang, fmtEur)}</div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 7 }} onClick={(e) => e.stopPropagation()}>
-                      <button className="dk-iconbtn" disabled={!canWrite} style={{ width: 30, height: 30, borderRadius: 9, fontSize: 19, fontWeight: 600, border: '1px solid var(--hair)', opacity: canWrite ? 1 : 0.4 }} onClick={() => setAdj({ prod: p, type: 'scarico' })} title={t('Scarico', 'Issue')}>−</button>
+                      <MutationButton className="dk-iconbtn" disabled={!canWrite} style={{ width: 30, height: 30, borderRadius: 9, fontSize: 19, fontWeight: 600, border: '1px solid var(--hair)', opacity: canWrite ? 1 : 0.4 }} onClick={() => setAdj({ prod: p, type: 'scarico' })} title={t('Scarico', 'Issue')}>−</MutationButton>
                       <span className="t-num" style={{ fontSize: 14.5, minWidth: 24, textAlign: 'center' }}>{fmtQty(qtyN, lang)}</span>
-                      <button className="dk-iconbtn" disabled={!canWrite} style={{ width: 30, height: 30, borderRadius: 9, fontSize: 19, fontWeight: 600, border: 'none', background: 'var(--clay)', color: '#fff', opacity: canWrite ? 1 : 0.4 }} onClick={() => setAdj({ prod: p, type: 'carico' })} title={t('Carico', 'Receive')}>+</button>
+                      <MutationButton className="dk-iconbtn" disabled={!canWrite} style={{ width: 30, height: 30, borderRadius: 9, fontSize: 19, fontWeight: 600, border: 'none', background: 'var(--clay)', color: '#fff', opacity: canWrite ? 1 : 0.4 }} onClick={() => setAdj({ prod: p, type: 'carico' })} title={t('Carico', 'Receive')}>+</MutationButton>
                     </div>
-                    <button className="dk-iconbtn" style={{ width: 32, height: 32, borderRadius: 9 }} onClick={(e) => { e.stopPropagation(); setSelProd(p); }}><Icon name="edit" size={15} /></button>
+                    <MutationButton className="dk-iconbtn" style={{ width: 32, height: 32, borderRadius: 9 }} onClick={(e) => { e.stopPropagation(); setSelProd(p); }}><Icon name="edit" size={15} /></MutationButton>
                   </div>
                 );
               })}

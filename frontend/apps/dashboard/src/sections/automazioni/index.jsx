@@ -1,3 +1,5 @@
+import { MutationToggle } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // Automazioni — two-pane section (prototype DkAuto port, API-backed).
 // Left: rules from GET /api/automations/ (toggle POST /{id}/toggle, delete with
 // confirm). Right: builder (POST / PUT /api/automations/). Events, condition
@@ -10,7 +12,7 @@ import Builder from './Builder.jsx';
 import { eventIcon, offsetPhrase, catLabel } from './catalog.js';
 
 export default function AutomazioniSection() {
-  const { t, lang, fireToast, hasScope } = useDash();
+  const { t, lang, fireToast, hasScope, canMutate } = useDash();
   const canWrite = hasScope('marketing');
 
   const [rules, setRules] = useState(null);      // null = loading
@@ -108,9 +110,9 @@ export default function AutomazioniSection() {
               <div className="t-body" style={{ color: 'var(--muted)', marginTop: 4 }}>{t('Decidi quando partono e a chi. Canale e messaggio su Yourang.', 'Decide when they fire and to whom. Channel and message on Yourang.')}</div>
             </div>
             {canWrite && !loading && (
-              <button className="dk-btn dk-btn--clay" style={{ height: 38, padding: '0 14px', fontSize: 13.5, flexShrink: 0 }} onClick={() => setSel('new')}>
+              <MutationButton className="dk-btn dk-btn--clay" style={{ height: 38, padding: '0 14px', fontSize: 13.5, flexShrink: 0 }} onClick={() => setSel('new')}>
                 <Icon name="plus" size={15} color="#fff" />{t('Nuova', 'New')}
-              </button>
+              </MutationButton>
             )}
           </div>
         </div>
@@ -130,7 +132,7 @@ export default function AutomazioniSection() {
               icon="bolt"
               title={t('Nessuna automazione', 'No automations')}
               sub={t('Crea la prima regola: evento, tempi e filtri.', 'Create your first rule: event, timing and filters.')}
-              action={canWrite ? t('Nuova automazione', 'New automation') : undefined}
+              mutationAction action={canWrite ? t('Nuova automazione', 'New automation') : undefined}
               onAction={() => setSel('new')}
             />
           ) : (
@@ -155,11 +157,11 @@ export default function AutomazioniSection() {
                       )}
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
-                      <Toggle on={r.active} onChange={() => toggle(r)} />
+                      <MutationToggle on={r.active} onChange={() => toggle(r)} />
                       {canWrite && (
-                        <button className="dk-iconbtn" title={t('Elimina', 'Delete')} onClick={() => setConfirmDel(r)} style={{ width: 28, height: 28, borderRadius: 8, color: 'var(--muted)' }}>
+                        <MutationButton className="dk-iconbtn" title={t('Elimina', 'Delete')} onClick={() => setConfirmDel(r)} style={{ width: 28, height: 28, borderRadius: 8, color: 'var(--muted)' }}>
                           <Icon name="x" size={14} />
-                        </button>
+                        </MutationButton>
                       )}
                     </div>
                   </div>
@@ -195,9 +197,9 @@ export default function AutomazioniSection() {
         foot={(
           <React.Fragment>
             <button className="dk-btn dk-btn--ghost" disabled={deleting} onClick={() => setConfirmDel(null)}>{t('Annulla', 'Cancel')}</button>
-            <button className="dk-btn dk-btn--primary" disabled={deleting} onClick={doDelete} style={{ background: 'var(--danger)', opacity: deleting ? 0.6 : 1 }}>
+            <MutationButton className="dk-btn dk-btn--primary" disabled={deleting} onClick={doDelete} style={{ background: 'var(--danger)', opacity: deleting ? 0.6 : 1 }}>
               {deleting ? t('Eliminazione…', 'Deleting…') : t('Elimina', 'Delete')}
-            </button>
+            </MutationButton>
           </React.Fragment>
         )}
       >

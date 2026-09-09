@@ -1,3 +1,4 @@
+import { MutationButton } from '@youty/shared';
 // Pacchetti.jsx — public packages with included services + price and the
 // phone-only booking CTA (as prototype).
 // Data: GET /api/catalog/public/packages (+ public services to compute the
@@ -102,10 +103,10 @@ export default function Pacchetti() {
           <DashedEmpty>
             {t('Nessun pacchetto disponibile al momento: torna a trovarci presto!', 'No packages available right now: check back soon!')}
             <div style={{ marginTop: 12 }}>
-              <button className="press" onClick={() => setView('prenota')}
+              <MutationButton className="press" onClick={() => setView('prenota')}
                 style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '10px 18px', borderRadius: 99, background: 'var(--brand-tint)', color: 'var(--brand-ink)', fontWeight: 700, fontSize: 13.5 }}>
                 <Icon name="calendar" size={15} color="var(--brand-ink)" />{t('Prenota un servizio singolo', 'Book a single service')}
-              </button>
+              </MutationButton>
             </div>
           </DashedEmpty>
         )}

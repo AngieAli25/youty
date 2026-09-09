@@ -1,3 +1,4 @@
+import { MutationButton } from '@youty/shared';
 // clienti/index.jsx — CLIENTI section: category summary cards + searchable,
 // filterable, paginated client list (left) and full client profile (right).
 // Ported from desktop-clienti.jsx (DkClienti) onto the real API.
@@ -138,8 +139,8 @@ export default function ClientiSection() {
               </span>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 {(seg !== 'all' || relFilt !== 'all') && <button onClick={() => { setSeg('all'); setRelFilt('all'); }} style={{ cursor: 'pointer', fontSize: 12.5, fontWeight: 700, color: 'var(--clay-ink)', background: 'transparent', border: 'none' }}>{t('Azzera', 'Clear')}</button>}
-                <button className="dk-btn dk-btn--ghost" style={{ height: 34, fontSize: 12.5, padding: '0 11px' }} onClick={() => openModal('bulkimport')}><Icon name="arrowDn" size={15} />{t('Importa', 'Import')}</button>
-                <button className="dk-btn dk-btn--clay" style={{ height: 34, fontSize: 12.5, padding: '0 13px' }} onClick={() => openModal('newclient')}><Icon name="plus" size={15} color="#fff" />{t('Nuovo', 'New')}</button>
+                <MutationButton className="dk-btn dk-btn--ghost" style={{ height: 34, fontSize: 12.5, padding: '0 11px' }} onClick={() => openModal('bulkimport')}><Icon name="arrowDn" size={15} />{t('Importa', 'Import')}</MutationButton>
+                <MutationButton className="dk-btn dk-btn--clay" style={{ height: 34, fontSize: 12.5, padding: '0 13px' }} onClick={() => openModal('newclient')}><Icon name="plus" size={15} color="#fff" />{t('Nuovo', 'New')}</MutationButton>
               </div>
             </div>
           </div>

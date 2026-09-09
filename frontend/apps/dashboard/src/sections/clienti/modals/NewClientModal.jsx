@@ -1,3 +1,5 @@
+import { withPortalForm } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // NewClientModal — manual client entry → POST /api/clients/ (consents,
 // categories, language included). An optional initial note becomes the first
 // client note. Ported from the prototype; the separate "WhatsApp phone" field
@@ -10,7 +12,7 @@ import { useDash } from '../../../ctx.jsx';
 import { Field } from '../components.jsx';
 import { inputCss } from '../helpers.js';
 
-export default function NewClientModal({ onClose }) {
+function NewClientModal({ onClose }) {
   const { t, clientCategories, fireToast, setSelClient, setTab, tab } = useDash();
   const [f, setF] = useState({
     first: '', last: '', phone: '', wa: true, email: '', birthday: '',
@@ -63,9 +65,9 @@ export default function NewClientModal({ onClose }) {
     <DkModal open onClose={onClose} title={t('Nuovo cliente', 'New client')} sub={t('Inserimento manuale in anagrafica', 'Manual entry')} width={520}
       foot={<React.Fragment>
         <button className="dk-btn dk-btn--ghost" onClick={onClose}>{t('Annulla', 'Cancel')}</button>
-        <button className="dk-btn dk-btn--clay" disabled={!canSave} style={{ opacity: canSave ? 1 : 0.4 }} onClick={save}>
+        <MutationButton className="dk-btn dk-btn--clay" disabled={!canSave} style={{ opacity: canSave ? 1 : 0.4 }} onClick={save}>
           <Icon name="check" size={17} color="#fff" />{saving ? t('Creo…', 'Creating…') : t('Crea cliente', 'Create client')}
-        </button>
+        </MutationButton>
       </React.Fragment>}>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
         <Field label={t('Nome', 'First name')}><input value={f.first} onChange={(e) => set('first', e.target.value)} style={inputCss} autoFocus /></Field>
@@ -135,3 +137,5 @@ export default function NewClientModal({ onClose }) {
     </DkModal>
   );
 }
+
+export default withPortalForm(NewClientModal);

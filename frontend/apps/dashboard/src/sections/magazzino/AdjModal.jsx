@@ -1,3 +1,5 @@
+import { withPortalForm } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // AdjModal.jsx — quick load / unload with reason (ported from the prototype AdjModal).
 // carico  → POST /products/{id}/load   (multipart: qty, reason, optional invoice file)
 // scarico → POST /products/{id}/unload (qty, kind ∈ internal_use/adjustment/transfer, reason)
@@ -24,7 +26,7 @@ export const SCARICO_REASONS = [
   { it: 'Danneggiato o scaduto',  en: 'Damaged or expired',  kind: 'adjustment' },
 ];
 
-export default function AdjModal({ prod, type, onClose, onDone }) {
+function AdjModal({ prod, type, onClose, onDone }) {
   const { t, lang, fireToast, operators } = useDash();
   const isScarico = type === 'scarico';
   const reasons = isScarico ? SCARICO_REASONS : CARICO_REASONS;
@@ -67,7 +69,7 @@ export default function AdjModal({ prod, type, onClose, onDone }) {
     <DkModal open onClose={onClose} title={isScarico ? t('Scarico prodotto', 'Issue product') : t('Carico rapido', 'Quick restock')} sub={prod.name} width={440}
       foot={<React.Fragment>
         <button className="dk-btn dk-btn--ghost" onClick={onClose}>{t('Annulla', 'Cancel')}</button>
-        <button className="dk-btn dk-btn--clay" disabled={!canConfirm} onClick={confirm}><Icon name="check" size={16} color="#fff" />{t('Conferma', 'Confirm')}</button>
+        <MutationButton className="dk-btn dk-btn--clay" disabled={!canConfirm} onClick={confirm}><Icon name="check" size={16} color="#fff" />{t('Conferma', 'Confirm')}</MutationButton>
       </React.Fragment>}>
 
       <div className="t-meta" style={{ marginBottom: 8 }}>{t('Causale', 'Reason')}</div>
@@ -132,3 +134,5 @@ export default function AdjModal({ prod, type, onClose, onDone }) {
     </DkModal>
   );
 }
+
+export default withPortalForm(AdjModal);

@@ -121,7 +121,7 @@ class ClientAuth(HttpBearer):
 
         client = (
             Client.objects.select_related("salon")
-            .filter(id=payload["sub"], is_active=True)
+            .filter(id=payload["sub"], salon_id=payload.get("salon"), is_active=True)
             .first()
         )
         if client is None:

@@ -1,3 +1,6 @@
+import { PortalFormGate } from '@youty/shared';
+import { MutationInput } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // FornitoriSub.jsx — supplier directory: CRUD on /api/inventory/suppliers.
 // DELETE returns 400 when the supplier still has products/orders attached → toast.
 import React, { useState } from 'react';
@@ -14,9 +17,9 @@ function MethodPills({ value, onChange, t, lang }) {
       {Object.entries(ORDER_METHODS).map(([k, m]) => {
         const on = value === k;
         return (
-          <button key={k} onClick={() => onChange(k)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 13px', borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: 'pointer', border: '1px solid ' + (on ? 'var(--clay)' : 'var(--hair)'), background: on ? 'var(--clay-tint)' : 'var(--surface)', color: on ? 'var(--clay-ink)' : 'var(--ink-2)' }}>
+          <MutationButton key={k} onClick={() => onChange(k)} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 13px', borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: 'pointer', border: '1px solid ' + (on ? 'var(--clay)' : 'var(--hair)'), background: on ? 'var(--clay-tint)' : 'var(--surface)', color: on ? 'var(--clay-ink)' : 'var(--ink-2)' }}>
             <Icon name={m.icon} size={14} color={on ? 'var(--clay-ink)' : 'var(--muted)'} />{m[lang]}
-          </button>
+          </MutationButton>
         );
       })}
     </div>
@@ -28,13 +31,13 @@ function SupplierForm({ draft, setDraft, t, lang }) {
   return (
     <React.Fragment>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
-        <div style={{ gridColumn: '1 / -1' }}><div className="t-meta" style={{ marginBottom: 5 }}>{t('Nome', 'Name')}</div><input value={draft.name} onChange={(e) => set({ name: e.target.value })} style={inputCss} /></div>
-        <div><div className="t-meta" style={{ marginBottom: 5 }}>Email</div><input value={draft.email} onChange={(e) => set({ email: e.target.value })} placeholder="ordini@fornitore.it" style={inputCss} /></div>
-        <div><div className="t-meta" style={{ marginBottom: 5 }}>{t('Telefono', 'Phone')}</div><input value={draft.phone} onChange={(e) => set({ phone: e.target.value })} placeholder="+39 …" style={inputCss} /></div>
-        <div style={{ gridColumn: '1 / -1' }}><div className="t-meta" style={{ marginBottom: 5 }}>{t('Indirizzo', 'Address')}</div><input value={draft.address} onChange={(e) => set({ address: e.target.value })} placeholder={t('Via, civico, città, CAP', 'Street, city, ZIP')} style={inputCss} /></div>
-        <div><div className="t-meta" style={{ marginBottom: 5 }}>{t('Partita IVA', 'VAT no.')}</div><input value={draft.vat_number} onChange={(e) => set({ vat_number: e.target.value })} placeholder="IT01234567890" style={inputCss} /></div>
-        <div><div className="t-meta" style={{ marginBottom: 5 }}>{t('Codice SDI / PEC', 'SDI code / PEC')}</div><input value={draft.sdi_pec} onChange={(e) => set({ sdi_pec: e.target.value })} placeholder="es. ABCDEFG" style={inputCss} /></div>
-        <div style={{ gridColumn: '1 / -1' }}><div className="t-meta" style={{ marginBottom: 5 }}>{t('Note', 'Notes')}</div><input value={draft.notes} onChange={(e) => set({ notes: e.target.value })} placeholder={t('es. ordine minimo, tempi di consegna…', 'e.g. minimum order, lead times…')} style={inputCss} /></div>
+        <div style={{ gridColumn: '1 / -1' }}><div className="t-meta" style={{ marginBottom: 5 }}>{t('Nome', 'Name')}</div><MutationInput value={draft.name} onChange={(e) => set({ name: e.target.value })} style={inputCss} /></div>
+        <div><div className="t-meta" style={{ marginBottom: 5 }}>Email</div><MutationInput value={draft.email} onChange={(e) => set({ email: e.target.value })} placeholder="ordini@fornitore.it" style={inputCss} /></div>
+        <div><div className="t-meta" style={{ marginBottom: 5 }}>{t('Telefono', 'Phone')}</div><MutationInput value={draft.phone} onChange={(e) => set({ phone: e.target.value })} placeholder="+39 …" style={inputCss} /></div>
+        <div style={{ gridColumn: '1 / -1' }}><div className="t-meta" style={{ marginBottom: 5 }}>{t('Indirizzo', 'Address')}</div><MutationInput value={draft.address} onChange={(e) => set({ address: e.target.value })} placeholder={t('Via, civico, città, CAP', 'Street, city, ZIP')} style={inputCss} /></div>
+        <div><div className="t-meta" style={{ marginBottom: 5 }}>{t('Partita IVA', 'VAT no.')}</div><MutationInput value={draft.vat_number} onChange={(e) => set({ vat_number: e.target.value })} placeholder="IT01234567890" style={inputCss} /></div>
+        <div><div className="t-meta" style={{ marginBottom: 5 }}>{t('Codice SDI / PEC', 'SDI code / PEC')}</div><MutationInput value={draft.sdi_pec} onChange={(e) => set({ sdi_pec: e.target.value })} placeholder="es. ABCDEFG" style={inputCss} /></div>
+        <div style={{ gridColumn: '1 / -1' }}><div className="t-meta" style={{ marginBottom: 5 }}>{t('Note', 'Notes')}</div><MutationInput value={draft.notes} onChange={(e) => set({ notes: e.target.value })} placeholder={t('es. ordine minimo, tempi di consegna…', 'e.g. minimum order, lead times…')} style={inputCss} /></div>
       </div>
       <div className="t-meta" style={{ marginBottom: 6 }}>{t("Metodo d'ordine preferito", 'Preferred order method')}</div>
       <MethodPills value={draft.order_method} onChange={(v) => set({ order_method: v })} t={t} lang={lang} />
@@ -106,16 +109,16 @@ export default function FornitoriSub({ suppliers, allProds, canWrite, refreshSha
     <React.Fragment>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
         <div className="t-sm" style={{ color: 'var(--muted)', flex: 1 }}>{t("Anagrafica fornitori. Modificando qui un contatto (es. l'email), l'aggiornamento si applica automaticamente a tutti i prodotti di quel fornitore.", 'Supplier directory. Editing a contact here (e.g. the email) automatically applies to all products from that supplier.')}</div>
-        {canWrite && <button className="dk-btn dk-btn--clay" style={{ flexShrink: 0 }} onClick={() => setAddOpen(true)}><Icon name="plus" size={16} color="#fff" />{t('Nuovo fornitore', 'New supplier')}</button>}
+        {canWrite && <MutationButton className="dk-btn dk-btn--clay" style={{ flexShrink: 0 }} onClick={() => setAddOpen(true)}><Icon name="plus" size={16} color="#fff" />{t('Nuovo fornitore', 'New supplier')}</MutationButton>}
       </div>
 
       {addOpen && (
         <div className="dk-card" style={{ padding: 18, marginBottom: 14, border: '1px solid var(--clay)' }}>
           <div className="t-meta" style={{ marginBottom: 12 }}>{t('Nuovo fornitore', 'New supplier')}</div>
-          <SupplierForm draft={nw} setDraft={setNw} t={t} lang={lang} />
+          <PortalFormGate><SupplierForm draft={nw} setDraft={setNw} t={t} lang={lang} /></PortalFormGate>
           <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 14 }}>
             <button className="dk-btn dk-btn--ghost" onClick={() => { setAddOpen(false); setNw(EMPTY); }}>{t('Annulla', 'Cancel')}</button>
-            <button className="dk-btn dk-btn--clay" disabled={!nw.name.trim() || busy} onClick={addSupplier}><Icon name="check" size={16} color="#fff" />{t('Crea', 'Create')}</button>
+            <MutationButton className="dk-btn dk-btn--clay" disabled={!nw.name.trim() || busy} onClick={addSupplier}><Icon name="check" size={16} color="#fff" />{t('Crea', 'Create')}</MutationButton>
           </div>
         </div>
       )}
@@ -145,16 +148,16 @@ export default function FornitoriSub({ suppliers, allProds, canWrite, refreshSha
                   )}
                   {!isEdit && s.notes && <div className="t-sm" style={{ color: 'var(--muted-2)', marginTop: 4 }}>{s.notes}</div>}
                 </div>
-                {!isEdit && canWrite && <button className="dk-btn dk-btn--ghost" style={{ flexShrink: 0 }} onClick={() => openEdit(s)}><Icon name="edit" size={15} />{t('Modifica', 'Edit')}</button>}
+                {!isEdit && canWrite && <MutationButton className="dk-btn dk-btn--ghost" style={{ flexShrink: 0 }} onClick={() => openEdit(s)}><Icon name="edit" size={15} />{t('Modifica', 'Edit')}</MutationButton>}
               </div>
               {isEdit && draft && (
                 <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--hair)' }}>
-                  <SupplierForm draft={draft} setDraft={setDraft} t={t} lang={lang} />
+                  <PortalFormGate><SupplierForm draft={draft} setDraft={setDraft} t={t} lang={lang} /></PortalFormGate>
                   <div className="t-sm" style={{ color: 'var(--muted-2)', margin: '12px 0' }}>{t(`La modifica si applicherà a ${n} prodotti di questo fornitore.`, `Changes will apply to ${n} products from this supplier.`)}</div>
                   <div style={{ display: 'flex', gap: 8 }}>
-                    <button className="dk-btn dk-btn--ghost" style={{ color: 'var(--danger)', borderColor: 'color-mix(in srgb, var(--danger) 40%, var(--hair))', marginRight: 'auto' }} disabled={busy} onClick={() => del(s)}><Icon name="x" size={15} color="var(--danger)" />{t('Elimina', 'Delete')}</button>
+                    <MutationButton className="dk-btn dk-btn--ghost" style={{ color: 'var(--danger)', borderColor: 'color-mix(in srgb, var(--danger) 40%, var(--hair))', marginRight: 'auto' }} disabled={busy} onClick={() => del(s)}><Icon name="x" size={15} color="var(--danger)" />{t('Elimina', 'Delete')}</MutationButton>
                     <button className="dk-btn dk-btn--ghost" onClick={() => { setEditId(null); setDraft(null); }}>{t('Annulla', 'Cancel')}</button>
-                    <button className="dk-btn dk-btn--clay" disabled={!draft.name.trim() || busy} onClick={() => saveEdit(s)}><Icon name="check" size={16} color="#fff" />{t('Salva', 'Save')}</button>
+                    <MutationButton className="dk-btn dk-btn--clay" disabled={!draft.name.trim() || busy} onClick={() => saveEdit(s)}><Icon name="check" size={16} color="#fff" />{t('Salva', 'Save')}</MutationButton>
                   </div>
                 </div>
               )}
@@ -165,7 +168,7 @@ export default function FornitoriSub({ suppliers, allProds, canWrite, refreshSha
           <div className="dk-card" style={{ overflow: 'hidden' }}>
             <div style={{ padding: '40px 22px' }}>
               <EmptyState icon="box" title={t('Nessun fornitore', 'No suppliers')} sub={t('Aggiungi un fornitore per gestire prodotti e ordini.', 'Add a supplier to manage products and orders.')}
-                action={canWrite ? t('Nuovo fornitore', 'New supplier') : undefined} onAction={canWrite ? () => setAddOpen(true) : undefined} />
+                mutationAction action={canWrite ? t('Nuovo fornitore', 'New supplier') : undefined} onAction={canWrite ? () => setAddOpen(true) : undefined} />
             </div>
           </div>
         )}

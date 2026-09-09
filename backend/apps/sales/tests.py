@@ -7,7 +7,7 @@ che finalize_sale li invochi con gli argomenti giusti, come da SPEC §8.
 from decimal import Decimal
 from unittest.mock import patch
 
-from django.test import TestCase
+from common.testing import SubscribedSalonTestCase as TestCase
 from ninja.errors import HttpError
 
 from apps.clients.models import Client

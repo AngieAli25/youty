@@ -1,3 +1,4 @@
+import { withPortalForm } from '@youty/shared';
 // PaymentsPanel — single or split payment editor, shared by the POS cart and the SellModal.
 // Controlled: `value` is the payments model from lib.js (emptyPayments()), `onChange` updates it.
 // Split rows must add up to `due` (the API 422s otherwise) — shows a live match indicator.
@@ -5,7 +6,7 @@ import React from 'react';
 import { Icon } from '@youty/shared';
 import { money, payMethods, round2, sanitizeAmtInput, toNum } from './lib.js';
 
-export default function PaymentsPanel({ value: v, onChange, due, t, lang, compact = false }) {
+function PaymentsPanel({ value: v, onChange, due, t, lang, compact = false }) {
   const methods = payMethods(t);
   const set = (patch) => onChange({ ...v, ...patch });
   const setRow = (i, patch) => set({ rows: v.rows.map((r, j) => (j === i ? { ...r, ...patch } : r)) });
@@ -110,3 +111,5 @@ export default function PaymentsPanel({ value: v, onChange, due, t, lang, compac
     </div>
   );
 }
+
+export default withPortalForm(PaymentsPanel, { preview: () => true, framed: false, overlay: false });

@@ -1,3 +1,4 @@
+import { MutationButton } from '@youty/shared';
 // TechSheetTab.jsx — profile tab: list of immutable technical sheets +
 // inline creation form (GET/POST /api/clients/{id}/sheets).
 import React, { useEffect, useState } from 'react';
@@ -6,7 +7,7 @@ import { useDash } from '../../../ctx.jsx';
 import { TechSheetCard, TechSheetForm } from '../TechSheet.jsx';
 
 export default function TechSheetTab({ c }) {
-  const { t, fireToast, hasScope } = useDash();
+  const { t, fireToast, hasScope, canMutate } = useDash();
   const canWrite = hasScope('clients');
   const [sheets, setSheets] = useState(null);
   const [adding, setAdding] = useState(false);
@@ -42,7 +43,7 @@ export default function TechSheetTab({ c }) {
         <div style={{ flex: 1 }}>
           <div className="t-sm" style={{ color: 'var(--muted)' }}>{t('Registro tecnico per trattamento. Una scheda per visita, con timestamp e sola lettura una volta salvata.', 'Technical record per treatment. One sheet per visit, timestamped and read-only once saved.')}</div>
         </div>
-        {canWrite && <button className="dk-btn dk-btn--clay" style={{ flexShrink: 0 }} onClick={() => setAdding(true)}><Icon name="plus" size={16} color="#fff" />{t('Nuova scheda', 'New sheet')}</button>}
+        {canWrite && <MutationButton className="dk-btn dk-btn--clay" style={{ flexShrink: 0 }} onClick={() => setAdding(true)}><Icon name="plus" size={16} color="#fff" />{t('Nuova scheda', 'New sheet')}</MutationButton>}
       </div>
       {sheets == null ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>

@@ -1,3 +1,5 @@
+import { withPortalForm } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // SendConfirmModal.jsx — confirm dialog for POST /api/marketing/communications/{id}/send.
 // Sends now, or schedules (optional scheduled_at): either way the event is queued in the
 // outbox and the actual WhatsApp delivery is handled by Yourang.
@@ -13,7 +15,7 @@ const inputCss = {
   width: '100%', boxSizing: 'border-box',
 };
 
-export default function SendConfirmModal({ comm, onClose, onSent }) {
+function SendConfirmModal({ comm, onClose, onSent }) {
   const { t, clientCategories, fireToast } = useDash();
   const [mode, setMode] = useState(comm.scheduled_at ? 'schedule' : 'now'); // 'now' | 'schedule'
   const [when, setWhen] = useState(isoToDtLocal(comm.scheduled_at));
@@ -65,10 +67,10 @@ export default function SendConfirmModal({ comm, onClose, onSent }) {
       foot={
         <React.Fragment>
           <button className="dk-btn dk-btn--ghost" onClick={onClose}>{t('Annulla', 'Cancel')}</button>
-          <button className="dk-btn dk-btn--clay" disabled={!canConfirm || sending} onClick={confirm}>
+          <MutationButton className="dk-btn dk-btn--clay" disabled={!canConfirm || sending} onClick={confirm}>
             <Icon name="send" size={16} color="#fff" />
             {mode === 'schedule' ? t('Programma', 'Schedule') : t('Invia ora', 'Send now')}
-          </button>
+          </MutationButton>
         </React.Fragment>
       }
     >
@@ -115,3 +117,5 @@ export default function SendConfirmModal({ comm, onClose, onSent }) {
     </DkModal>
   );
 }
+
+export default withPortalForm(SendConfirmModal);

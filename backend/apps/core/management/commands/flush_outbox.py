@@ -9,6 +9,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from apps.core.models import OutboxEvent
+from common.portal_access import background_allowed
 
 
 class Command(BaseCommand):
@@ -16,6 +17,11 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         pending = OutboxEvent.objects.filter(status=OutboxEvent.Status.PENDING)
+        for event in pending.exclude(event_type="client.otp").select_related("salon").iterator():
+            if not background_allowed(event.salon, event.event_type):
+                event.status = OutboxEvent.Status.FAILED
+                event.last_error = "portal_access_blocked: skipped; do not replay"
+                event.save(update_fields=["status", "last_error"])
         if not settings.YOURANG_API_URL:
             self.stdout.write(self.style.WARNING(
                 f"YOURANG_API_URL non configurato — {pending.count()} eventi restano in coda."

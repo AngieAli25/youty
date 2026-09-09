@@ -1,3 +1,5 @@
+import { withPortalForm } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // TechSheet.jsx — technical sheet card (read-only: sheets are IMMUTABLE on the
 // API, no update/delete route) and creation form. Shared by the profile tab
 // and the registry TechSheetModal. Prototype TECH_FIELDS mapped onto the
@@ -51,7 +53,7 @@ export function TechSheetCard({ sheet, defaultOpen }) {
   );
 }
 
-export function TechSheetForm({ clientId, appointmentId = null, defaultCategory, onSaved, onCancel }) {
+function TechSheetFormContent({ clientId, appointmentId = null, defaultCategory, onSaved, onCancel }) {
   const { t, lang, serviceCategories, fireToast } = useDash();
   const fields = TECH_FIELDS(t);
   const catOptions = serviceCategories.map((sc) => (lang === 'en' && sc.name_en) ? sc.name_en : sc.name_it);
@@ -121,10 +123,12 @@ export function TechSheetForm({ clientId, appointmentId = null, defaultCategory,
       </div>
       <div style={{ display: 'flex', gap: 10, marginTop: 22 }}>
         <button className="dk-btn dk-btn--ghost" style={{ flex: 1 }} onClick={onCancel}>{t('Annulla', 'Cancel')}</button>
-        <button className="dk-btn dk-btn--clay" style={{ flex: 1, opacity: canSave && !saving ? 1 : 0.4 }} disabled={!canSave || saving} onClick={save}>
+        <MutationButton className="dk-btn dk-btn--clay" style={{ flex: 1, opacity: canSave && !saving ? 1 : 0.4 }} disabled={!canSave || saving} onClick={save}>
           <Icon name="check" size={16} color="#fff" />{saving ? t('Salvo…', 'Saving…') : t('Salva scheda', 'Save sheet')}
-        </button>
+        </MutationButton>
       </div>
     </div>
   );
 }
+
+export const TechSheetForm = withPortalForm(TechSheetFormContent, { framed: false, overlay: false });

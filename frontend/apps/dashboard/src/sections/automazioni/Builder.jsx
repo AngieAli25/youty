@@ -1,3 +1,5 @@
+import { withPortalForm } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // Builder.jsx — right pane: create / edit one automation rule.
 // Maps 1:1 onto AutomationIn: name, event, offset_direction/offset_value/offset_unit,
 // send_time (null = right away), conditions {op, rules:[{field,cmp,value}]},
@@ -45,7 +47,7 @@ const QUICK = [
   { id: 'all', label: { it: 'Tutti', en: 'All' }, rule: null },
 ];
 
-export default function Builder({ rule, catalog, canWrite, onSaved }) {
+function Builder({ rule, catalog, canWrite, onSaved }) {
   const { t, lang, fireToast, clientCategories } = useDash();
   const [draft, setDraft] = useState(() => initDraft(rule, catalog));
   const [saving, setSaving] = useState(false);
@@ -128,9 +130,9 @@ export default function Builder({ rule, catalog, canWrite, onSaved }) {
           <span style={{ fontSize: 13, fontWeight: 700, color: draft.active ? 'var(--ok)' : 'var(--muted)' }}>{draft.active ? t('Attiva', 'Active') : t('In pausa', 'Paused')}</span>
           <Toggle on={draft.active} onChange={(v) => canWrite && set('active', v)} />
           {canWrite && (
-            <button className="dk-btn dk-btn--primary" disabled={saving} onClick={save} style={{ opacity: saving ? 0.6 : 1 }}>
+            <MutationButton className="dk-btn dk-btn--primary" disabled={saving} onClick={save} style={{ opacity: saving ? 0.6 : 1 }}>
               {saving ? t('Salvataggio…', 'Saving…') : t('Salva', 'Save')}
-            </button>
+            </MutationButton>
           )}
         </div>
       </div>
@@ -330,3 +332,5 @@ export default function Builder({ rule, catalog, canWrite, onSaved }) {
     </div>
   );
 }
+
+export default withPortalForm(Builder, { preview: ({ rule }) => !!rule?.id, framed: false, overlay: false });

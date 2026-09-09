@@ -10,6 +10,7 @@ from ninja.errors import HttpError
 from ninja.pagination import LimitOffsetPagination, paginate
 
 from apps.core.services import log_activity
+from common.portal_access import business_operation
 from common.auth import client_auth, staff_auth
 from common.permissions import require_scope
 from common.utils import salon_get
@@ -74,6 +75,7 @@ def list_coupons(
 
 
 @router.post("/coupons", auth=staff_auth, response=CouponOut)
+@business_operation
 def create_coupon(request, data: CouponIn):
     ctx = request.auth
     require_scope(ctx, "marketing")
@@ -100,6 +102,7 @@ def create_coupon(request, data: CouponIn):
 
 
 @router.put("/coupons/{int:coupon_id}", auth=staff_auth, response=CouponOut)
+@business_operation
 def update_coupon(request, coupon_id: int, data: CouponIn):
     ctx = request.auth
     require_scope(ctx, "marketing")
@@ -124,6 +127,7 @@ def update_coupon(request, coupon_id: int, data: CouponIn):
 
 
 @router.delete("/coupons/{int:coupon_id}", auth=staff_auth, response=OkOut)
+@business_operation
 def delete_coupon(request, coupon_id: int):
     ctx = request.auth
     require_scope(ctx, "marketing")
@@ -140,6 +144,7 @@ def delete_coupon(request, coupon_id: int):
 
 
 @router.post("/coupons/{int:coupon_id}/redeem", auth=staff_auth, response=CouponOut)
+@business_operation
 def redeem_coupon(request, coupon_id: int, data: CouponRedeemIn):
     ctx = request.auth
     require_scope(ctx, "marketing")
@@ -209,6 +214,7 @@ def list_gift_cards(
 
 
 @router.post("/gift-cards", auth=staff_auth, response=GiftCardOut)
+@business_operation
 def create_gift_card_staff(request, data: GiftCardIn):
     ctx = request.auth
     require_scope(ctx, "marketing")
@@ -247,6 +253,7 @@ def create_gift_card_staff(request, data: GiftCardIn):
 
 
 @router.post("/gift-cards/{int:card_id}/mark-paid", auth=staff_auth, response=GiftCardOut)
+@business_operation
 def mark_gift_card_paid(request, card_id: int, data: MarkPaidIn):
     ctx = request.auth
     require_scope(ctx, "marketing")
@@ -291,6 +298,7 @@ def _apply_program_data(program: LoyaltyProgram, ctx, data: LoyaltyProgramIn):
 
 
 @router.post("/loyalty-programs", auth=staff_auth, response=LoyaltyProgramOut)
+@business_operation
 def create_loyalty_program(request, data: LoyaltyProgramIn):
     ctx = request.auth
     require_scope(ctx, "marketing")
@@ -306,6 +314,7 @@ def create_loyalty_program(request, data: LoyaltyProgramIn):
 
 
 @router.put("/loyalty-programs/{int:program_id}", auth=staff_auth, response=LoyaltyProgramOut)
+@business_operation
 def update_loyalty_program(request, program_id: int, data: LoyaltyProgramIn):
     ctx = request.auth
     require_scope(ctx, "marketing")
@@ -321,6 +330,7 @@ def update_loyalty_program(request, program_id: int, data: LoyaltyProgramIn):
 
 
 @router.delete("/loyalty-programs/{int:program_id}", auth=staff_auth, response=OkOut)
+@business_operation
 def delete_loyalty_program(request, program_id: int):
     """Disattivazione (soft): i saldi punti dei clienti restano consultabili."""
     ctx = request.auth
@@ -362,6 +372,7 @@ def list_communications(request, status: str = ""):
 
 
 @router.post("/communications", auth=staff_auth, response=CommunicationOut)
+@business_operation
 def create_communication(request, data: CommunicationIn):
     ctx = request.auth
     require_scope(ctx, "marketing")
@@ -377,6 +388,7 @@ def create_communication(request, data: CommunicationIn):
 
 
 @router.put("/communications/{int:comm_id}", auth=staff_auth, response=CommunicationOut)
+@business_operation
 def update_communication(request, comm_id: int, data: CommunicationIn):
     ctx = request.auth
     require_scope(ctx, "marketing")
@@ -397,6 +409,7 @@ def update_communication(request, comm_id: int, data: CommunicationIn):
 
 
 @router.delete("/communications/{int:comm_id}", auth=staff_auth, response=OkOut)
+@business_operation
 def delete_communication(request, comm_id: int):
     ctx = request.auth
     require_scope(ctx, "marketing")
@@ -413,6 +426,7 @@ def delete_communication(request, comm_id: int):
 
 
 @router.post("/communications/{int:comm_id}/send", auth=staff_auth, response=CommunicationOut)
+@business_operation
 def send_communication_endpoint(request, comm_id: int, data: CommunicationSendIn):
     ctx = request.auth
     require_scope(ctx, "marketing")
@@ -467,6 +481,7 @@ def client_wallet(request):
 
 
 @router.post("/client/gift-cards", auth=client_auth, response=GiftCardOut)
+@business_operation
 def client_create_gift_card(request, data: ClientGiftCardIn):
     """Acquisto gift card dall'app: nasce unpaid, pagamento in salone
     (Stripe checkout in fase 2)."""

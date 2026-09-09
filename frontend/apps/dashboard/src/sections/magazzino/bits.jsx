@@ -1,3 +1,5 @@
+import { MutationNumInput } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // bits.jsx — small UI pieces shared by the Magazzino sub-tabs (ported from the prototype).
 import React, { useEffect, useState } from 'react';
 import { Icon, NumInput } from '@youty/shared';
@@ -30,7 +32,7 @@ export function SearchToolbar({ q, setQ, placeholder, onAdd, addLabel, extra }) 
         {q && <button className="press" onClick={() => setQ('')} style={{ cursor: 'pointer', display: 'grid', placeItems: 'center' }}><Icon name="x" size={15} color="var(--muted-2)" /></button>}
       </div>
       {extra}
-      {onAdd && <button className="dk-btn dk-btn--clay" onClick={onAdd} style={{ flexShrink: 0 }}><Icon name="plus" size={17} color="#fff" />{addLabel}</button>}
+      {onAdd && <MutationButton className="dk-btn dk-btn--clay" onClick={onAdd} style={{ flexShrink: 0 }}><Icon name="plus" size={17} color="#fff" />{addLabel}</MutationButton>}
     </div>
   );
 }
@@ -39,7 +41,7 @@ export function SearchToolbar({ q, setQ, placeholder, onAdd, addLabel, extra }) 
 export function NumBox({ value, onChange, suffix, width = 92, disabled }) {
   return (
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: '1px solid var(--hair)', borderRadius: 10, padding: '0 12px', height: 42, background: disabled ? 'var(--surface-2)' : 'var(--surface)', width }}>
-      <NumInput integer min={0} value={value} disabled={disabled} onChange={onChange} style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: 15, fontWeight: 600, width: '100%' }} />
+      <MutationNumInput integer min={0} value={value} disabled={disabled} onChange={onChange} style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: 15, fontWeight: 600, width: '100%' }} />
       {suffix && <span className="t-sm" style={{ color: 'var(--muted-2)', fontWeight: 600 }}>{suffix}</span>}
     </div>
   );
@@ -49,7 +51,7 @@ export function NumBox({ value, onChange, suffix, width = 92, disabled }) {
 export function MoneyBox({ value, onChange, suffix = '€', width = '100%', disabled }) {
   return (
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, border: '1px solid var(--hair)', borderRadius: 10, padding: '0 12px', height: 42, background: disabled ? 'var(--surface-2)' : 'var(--surface)', width }}>
-      <NumInput
+      <MutationNumInput
         min={0} value={value} disabled={disabled} onChange={onChange}
         style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: 15, fontWeight: 600, width: '100%' }}
       />

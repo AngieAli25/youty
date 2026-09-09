@@ -4,7 +4,8 @@ import shutil
 import tempfile
 
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase, override_settings
+from django.test import override_settings
+from common.testing import SubscribedSalonTestCase as TestCase
 
 from common.auth import create_staff_tokens
 from common.conditions import evaluate

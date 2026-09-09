@@ -1,3 +1,4 @@
+import { MutationButton } from '@youty/shared';
 // StaffGrid — operator cards with today's availability, month revenue, today's clients.
 // Port of prototype DkStaff grid; data = ctx operators (GET /api/staff/ → OperatorStatusOut).
 import React, { useEffect, useState } from 'react';
@@ -7,7 +8,7 @@ import { todayStatus, opName, eur } from './lib.js';
 import NewOperatorModal from './NewOperatorModal.jsx';
 
 export default function StaffGrid({ onOpen }) {
-  const { t, lang, operators, reload, showRevenue, hasScope, opColors } = useDash();
+  const { t, lang, operators, reload, showRevenue, hasScope, canMutate, opColors } = useDash();
   const [newOpen, setNewOpen] = useState(false);
   const canTeam = hasScope('team');
 
@@ -21,9 +22,9 @@ export default function StaffGrid({ onOpen }) {
           <div className="t-meta">{t('Team', 'Team')} · {operators.length} {t('operatrici', 'stylists')}</div>
         </div>
         {canTeam && (
-          <button className="dk-btn dk-btn--clay" onClick={() => setNewOpen(true)}>
+          <MutationButton className="dk-btn dk-btn--clay" onClick={() => setNewOpen(true)}>
             <Icon name="plus" size={16} color="#fff" />{t('Nuova operatrice', 'New stylist')}
-          </button>
+          </MutationButton>
         )}
       </div>
 

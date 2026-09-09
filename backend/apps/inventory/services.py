@@ -5,6 +5,8 @@ direttamente; si crea sempre uno `StockMovement` e lo stock viene aggiornato
 atomicamente con `F()` sotto `select_for_update`.
 """
 
+from common.portal_access import require_portal_access
+
 from decimal import Decimal
 
 from django.db import transaction
@@ -32,6 +34,7 @@ def apply_movement(
     negativo (HttpError 422 "Giacenza insufficiente"). Ritorna lo StockMovement
     creato; `product.stock_qty` viene ricaricata dal DB.
     """
+    require_portal_access(product.salon)
     qty = Decimal(str(qty))
     if qty == 0:
         raise HttpError(422, "La quantità non può essere zero")
@@ -62,6 +65,7 @@ def deduct_stock_for_sale(sale):
     Anche le righe omaggio (is_gift=True) scalano la giacenza: il prodotto
     esce comunque dal magazzino.
     """
+    require_portal_access(sale.salon)
     movements = []
     lines = sale.lines.filter(line_type="product", product__isnull=False).select_related("product")
     for line in lines:
@@ -86,6 +90,7 @@ def generate_draft_orders(salon, author=None):
     Se esiste già una bozza per il fornitore, le righe vengono aggiunte lì.
     Ritorna la lista degli ordini creati/aggiornati.
     """
+    require_portal_access(salon)
     products = (
         Product.objects.filter(salon=salon, active=True, stock_qty__lte=F("min_threshold"))
         .exclude(
@@ -129,6 +134,7 @@ def receive_order(order, lines_data, author=None):
     Stato finale: received se tutte le righe combaciano, altrimenti partial.
     Ritorna (order, discrepancies).
     """
+    require_portal_access(order.salon)
     if order.status in (PurchaseOrder.Status.RECEIVED, PurchaseOrder.Status.PARTIAL):
         raise HttpError(400, "Ordine già ricevuto")
     received_by_id = {int(row["id"]): Decimal(str(row["qty_received"])) for row in lines_data}

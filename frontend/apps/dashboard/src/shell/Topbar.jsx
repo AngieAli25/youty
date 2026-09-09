@@ -1,3 +1,4 @@
+import { MutationButton } from '@youty/shared';
 // Topbar.jsx — real date, section title, client search, notifications, "Nuova" menu, avatar.
 import React, { useState } from 'react';
 import { Avatar, EmptyState, Icon, fmtDateIt } from '@youty/shared';
@@ -54,10 +55,10 @@ export default function Topbar() {
 
       {/* "Nuova" quick-create menu */}
       <div style={{ position: 'relative' }}>
-        <button className="dk-btn dk-btn--clay" onClick={() => setNewMenu((o) => !o)}>
+        <MutationButton className="dk-btn dk-btn--clay" onClick={() => setNewMenu((o) => !o)}>
           <Icon name="plus" size={18} color="#fff" />{t('Nuova', 'New')}
           <Icon name="chevD" size={15} color="#fff" style={{ marginLeft: 2, transform: newMenu ? 'rotate(180deg)' : 'none', transition: 'transform 140ms' }} />
-        </button>
+        </MutationButton>
         {newMenu && (
           <React.Fragment>
             <div onClick={() => setNewMenu(false)} style={{ position: 'fixed', inset: 0, zIndex: 70 }} />
@@ -66,14 +67,14 @@ export default function Topbar() {
                 { icon: 'calendar', title: t('Nuovo appuntamento', 'New appointment'), sub: t('Prenotazione telefonica in agenda', 'Phone booking in the agenda'), act: () => openModal('newappt') },
                 { icon: 'user', title: t('Nuovo cliente', 'New client'), sub: t('Inserimento manuale in anagrafica', 'Manual entry in the client book'), act: () => openModal('newclient') },
               ].map((o, i) => (
-                <button key={i} className="dk-row" onClick={() => { setNewMenu(false); o.act(); }} style={{ display: 'flex', alignItems: 'center', gap: 11, width: '100%', padding: '11px 11px', borderRadius: 10, textAlign: 'left' }}>
+                <MutationButton key={i} className="dk-row" onClick={() => { setNewMenu(false); o.act(); }} style={{ display: 'flex', alignItems: 'center', gap: 11, width: '100%', padding: '11px 11px', borderRadius: 10, textAlign: 'left' }}>
                   <div style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--clay-tint)', display: 'grid', placeItems: 'center', flexShrink: 0 }}><Icon name={o.icon} size={18} color="var(--clay-ink)" /></div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 700, fontSize: 14 }}>{o.title}</div>
                     <div className="t-sm" style={{ color: 'var(--muted)' }}>{o.sub}</div>
                   </div>
                   <Icon name="chevR" size={15} color="var(--faint)" />
-                </button>
+                </MutationButton>
               ))}
             </div>
           </React.Fragment>

@@ -12,7 +12,7 @@ import PkgEditModal from './PkgEditModal.jsx';
 export default function ServiziSection() {
   const {
     t, lang, subTab, setSubTab, serviceCategories, operators,
-    reload, fireToast, hasScope, openModal,
+    reload, fireToast, hasScope, canMutate, openModal,
   } = useDash();
 
   const sub = subTab || 'servizi';

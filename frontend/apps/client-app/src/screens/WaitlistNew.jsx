@@ -1,3 +1,4 @@
+import { MutationButton } from '@youty/shared';
 // WaitlistNew.jsx — join the waiting list: service picker (public catalog) +
 // time preference (any/morning/afternoon/weekend/exact days+time).
 // POST /api/agenda/client/waitlist {service_id, preference, exact_days, exact_time}.
@@ -131,10 +132,10 @@ export default function WaitlistNew() {
       </div>
       <div style={{ flex: 1 }} />
       <StickyCta>
-        <button className="btn btn--brand btn--block press" disabled={!canSubmit || busy} style={{ opacity: canSubmit && !busy ? 1 : 0.4 }} onClick={submit}>
+        <MutationButton className="btn btn--brand btn--block press" disabled={!canSubmit || busy} style={{ opacity: canSubmit && !busy ? 1 : 0.4 }} onClick={submit}>
           <Icon name="check" size={18} color="var(--brand-on)" />
           {busy ? t('Invio…', 'Sending…') : t('Conferma richiesta', 'Confirm request')}
-        </button>
+        </MutationButton>
       </StickyCta>
     </div>
   );

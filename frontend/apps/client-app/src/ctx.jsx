@@ -1,7 +1,7 @@
 // ctx.jsx — AppProvider for the client web app: branding boot, session, view routing.
 // Screen agents CONSUME this via useApp() — never edit it.
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { api, clientAuth, mediaUrl, SALON_SLUG, useT, useToastHost } from '@youty/shared';
+import { api, clientAuth, mediaUrl, usePortalAccess, PortalAccessProvider, SALON_SLUG, useT, useToastHost } from '@youty/shared';
 import { makeBrand } from './theme.js';
 
 /* Il salone servito da questa pagina è il primo segmento del path
@@ -45,6 +45,19 @@ export function AppProvider({ children }) {
   const [session, setSession] = useState(clientAuth.getSession());
   useEffect(() => clientAuth.subscribe(setSession), []);
   const client = session?.client || null;
+  // Clear prior-account drafts on logout/account change, while preserving the
+  // guest booking draft when its existing OTP flow establishes a session.
+  const screenOwner = useRef(client?.id || null);
+  const screenGeneration = useRef(0);
+  const nextOwner = client?.id || null;
+  if (screenOwner.current !== nextOwner) {
+    if (screenOwner.current !== null) screenGeneration.current++;
+    screenOwner.current = nextOwner;
+  }
+  const { access: portalAccess, refresh: refreshPortalAccess, operationalAccess } = usePortalAccess({
+    identity: `${SALON_SLUG}:${session?.client?.id || ''}`,
+    path: `/api/core/public/portal-access?salon=${encodeURIComponent(SALON_SLUG)}`, publicAccess: true,
+  });
 
   /* ---- login overlay a richiesta (l'app non ha più un gate d'ingresso) ---- */
   const [authOpen, setAuthOpen] = useState(false);
@@ -75,11 +88,11 @@ export function AppProvider({ children }) {
   const ctx = {
     t, lang, setLang,
     brand, reloadBrand: loadBrand, brandError,
-    session, client,
+    session, client, portalAccess, refreshPortalAccess, operationalAccess,
     authOpen, openAuth, closeAuth,
     fireToast, toastProps,
     view, setView, viewParams,
   };
 
-  return <AppCtx.Provider value={ctx}>{children}</AppCtx.Provider>;
+  return <PortalAccessProvider access={portalAccess} refresh={refreshPortalAccess} publicAccess><AppCtx.Provider value={ctx}><React.Fragment key={`${SALON_SLUG}:${screenGeneration.current}`}>{children}</React.Fragment></AppCtx.Provider></PortalAccessProvider>;
 }

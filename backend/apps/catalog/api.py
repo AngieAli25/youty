@@ -14,6 +14,7 @@ from ninja.errors import HttpError
 
 from apps.core.models import Salon
 from apps.core.services import log_activity
+from common.portal_access import business_operation
 from common.auth import staff_auth
 from common.permissions import require_scope
 from common.utils import salon_get
@@ -51,6 +52,7 @@ def list_categories(request):
 
 
 @router.post("/categories", auth=staff_auth, response=CategoryOut)
+@business_operation
 def create_category(request, data: CategoryIn):
     ctx = request.auth
     require_scope(ctx, "pricing")
@@ -66,6 +68,7 @@ def create_category(request, data: CategoryIn):
 
 
 @router.put("/categories/{int:category_id}", auth=staff_auth, response=CategoryOut)
+@business_operation
 def update_category(request, category_id: int, data: CategoryIn):
     ctx = request.auth
     require_scope(ctx, "pricing")
@@ -84,6 +87,7 @@ def update_category(request, category_id: int, data: CategoryIn):
 
 
 @router.delete("/categories/{int:category_id}", auth=staff_auth, response=OkOut)
+@business_operation
 def delete_category(request, category_id: int):
     ctx = request.auth
     require_scope(ctx, "pricing")
@@ -104,6 +108,7 @@ def delete_category(request, category_id: int):
 
 
 @router.post("/categories/reorder", auth=staff_auth, response=list[CategoryOut])
+@business_operation
 def reorder_categories(request, data: ReorderIn):
     ctx = request.auth
     require_scope(ctx, "pricing")
@@ -143,6 +148,7 @@ def list_services(request, category_id: Optional[int] = None, active: Optional[b
 
 
 @router.post("/services", auth=staff_auth, response=ServiceOut)
+@business_operation
 def create_service(request, data: ServiceIn):
     ctx = request.auth
     require_scope(ctx, "pricing")
@@ -160,6 +166,7 @@ def create_service(request, data: ServiceIn):
 
 
 @router.put("/services/{int:service_id}", auth=staff_auth, response=ServiceOut)
+@business_operation
 def update_service(request, service_id: int, data: ServiceIn):
     ctx = request.auth
     require_scope(ctx, "pricing")
@@ -189,6 +196,7 @@ def update_service(request, service_id: int, data: ServiceIn):
 
 
 @router.delete("/services/{int:service_id}", auth=staff_auth, response=OkOut)
+@business_operation
 def delete_service(request, service_id: int):
     ctx = request.auth
     require_scope(ctx, "pricing")
@@ -235,6 +243,7 @@ def list_packages(request):
 
 
 @router.post("/packages", auth=staff_auth, response=PackageOut)
+@business_operation
 def create_package(request, data: PackageIn):
     ctx = request.auth
     require_scope(ctx, "pricing")
@@ -253,6 +262,7 @@ def create_package(request, data: PackageIn):
 
 
 @router.put("/packages/{int:package_id}", auth=staff_auth, response=PackageOut)
+@business_operation
 def update_package(request, package_id: int, data: PackageIn):
     ctx = request.auth
     require_scope(ctx, "pricing")
@@ -274,6 +284,7 @@ def update_package(request, package_id: int, data: PackageIn):
 
 
 @router.delete("/packages/{int:package_id}", auth=staff_auth, response=OkOut)
+@business_operation
 def delete_package(request, package_id: int):
     ctx = request.auth
     require_scope(ctx, "pricing")

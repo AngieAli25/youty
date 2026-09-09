@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from django.conf import settings as django_settings
 from django.utils.dateparse import parse_date
 from ninja import File, Router
@@ -5,6 +6,7 @@ from ninja.errors import HttpError
 from ninja.files import UploadedFile
 from ninja.pagination import LimitOffsetPagination, paginate
 
+from common.portal_access import business_operation, resolve_portal_access
 from common.auth import staff_auth
 from common.permissions import require_owner, require_scope
 from common.utils import salon_get
@@ -63,11 +65,12 @@ def get_salon(request):
         "default_lang": salon.default_lang,
         "currency": salon.currency,
         "locations": list(salon.locations.all()),
-        "settings": _settings_out(_settings(salon)),
+        "settings": _settings_out(SalonSettings.objects.filter(salon=salon).first() or SalonSettings(salon=salon)),
     }
 
 
 @router.put("/settings", auth=staff_auth, response=SettingsOut)
+@business_operation
 def update_settings(request, data: SettingsIn):
     ctx = request.auth
     require_owner(ctx)
@@ -89,6 +92,7 @@ def update_settings(request, data: SettingsIn):
 
 
 @router.post("/settings/logo", auth=staff_auth, response=SettingsOut)
+@business_operation
 def upload_logo(request, logo: UploadedFile = File(...)):
     ctx = request.auth
     require_owner(ctx)
@@ -99,6 +103,7 @@ def upload_logo(request, logo: UploadedFile = File(...)):
 
 
 @router.delete("/settings/logo", auth=staff_auth, response=SettingsOut)
+@business_operation
 def delete_logo(request):
     ctx = request.auth
     require_owner(ctx)
@@ -119,6 +124,7 @@ def list_locations(request):
 
 
 @router.post("/locations", auth=staff_auth, response=LocationOut)
+@business_operation
 def create_location(request, data: LocationIn):
     ctx = request.auth
     require_owner(ctx)
@@ -126,6 +132,7 @@ def create_location(request, data: LocationIn):
 
 
 @router.put("/locations/{int:location_id}", auth=staff_auth, response=LocationOut)
+@business_operation
 def update_location(request, location_id: int, data: LocationIn):
     ctx = request.auth
     require_owner(ctx)
@@ -137,6 +144,7 @@ def update_location(request, location_id: int, data: LocationIn):
 
 
 @router.delete("/locations/{int:location_id}", auth=staff_auth, response=OkOut)
+@business_operation
 def delete_location(request, location_id: int):
     ctx = request.auth
     require_owner(ctx)
@@ -157,6 +165,7 @@ def list_deposit_rules(request):
 
 
 @router.post("/deposit-rules", auth=staff_auth, response=DepositRuleOut)
+@business_operation
 def create_deposit_rule(request, data: DepositRuleIn):
     ctx = request.auth
     require_owner(ctx)
@@ -166,6 +175,7 @@ def create_deposit_rule(request, data: DepositRuleIn):
 
 
 @router.put("/deposit-rules/{int:rule_id}", auth=staff_auth, response=DepositRuleOut)
+@business_operation
 def update_deposit_rule(request, rule_id: int, data: DepositRuleIn):
     ctx = request.auth
     require_owner(ctx)
@@ -177,6 +187,7 @@ def update_deposit_rule(request, rule_id: int, data: DepositRuleIn):
 
 
 @router.delete("/deposit-rules/{int:rule_id}", auth=staff_auth, response=OkOut)
+@business_operation
 def delete_deposit_rule(request, rule_id: int):
     ctx = request.auth
     require_owner(ctx)
@@ -219,7 +230,7 @@ def public_branding(request, salon: str):
         s = Salon.objects.get(slug=salon)
     except Salon.DoesNotExist:
         raise HttpError(404, "Salone non trovato")
-    st = _settings(s)
+    st = SalonSettings.objects.filter(salon=s).first() or SalonSettings(salon=s)
     location = s.locations.filter(is_default=True).first() or s.locations.first()
     return {
         "name": s.name,
@@ -232,3 +243,14 @@ def public_branding(request, salon: str):
         "opening_hours": st.opening_hours,
         "privacy_policy_url": st.privacy_policy_url,
     }
+
+
+@router.get("/public/portal-access")
+def public_portal_access(request, response: HttpResponse, salon: str):
+    response["Cache-Control"] = "no-store"
+    obj = Salon.objects.filter(slug=salon).first()
+    if obj is None:
+        raise HttpError(404, "Salone non trovato")
+    access = resolve_portal_access(obj)
+    # No tenant IDs, purchased variant, billing details or diagnostics publicly.
+    return {key: access[key] for key in ("operational_access", "checked_at", "valid_until")}

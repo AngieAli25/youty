@@ -1,3 +1,5 @@
+import { withPortalForm } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // BulkImportModal — CSV paste/upload (Nome, Email, Telefono) → parse →
 // POST /api/clients/import → shows the API's {created, updated} result.
 // The backend upserts by phone, then email (the prototype matched by name).
@@ -28,7 +30,7 @@ function parseCsv(raw) {
   return out;
 }
 
-export default function BulkImportModal({ onClose }) {
+function BulkImportModal({ onClose }) {
   const { t, fireToast } = useDash();
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
@@ -79,9 +81,9 @@ export default function BulkImportModal({ onClose }) {
       foot={<React.Fragment>
         <span className="t-sm" style={{ marginRight: 'auto', color: 'var(--muted)' }}>{rows.length > 0 ? t(`${rows.length} righe pronte`, `${rows.length} rows ready`) : ''}</span>
         <button className="dk-btn dk-btn--ghost" onClick={onClose}>{t('Annulla', 'Cancel')}</button>
-        <button className="dk-btn dk-btn--clay" disabled={!rows.length || busy} style={{ opacity: rows.length && !busy ? 1 : 0.4 }} onClick={apply}>
+        <MutationButton className="dk-btn dk-btn--clay" disabled={!rows.length || busy} style={{ opacity: rows.length && !busy ? 1 : 0.4 }} onClick={apply}>
           <Icon name="check" size={17} color="#fff" />{busy ? t('Importo…', 'Importing…') : `${t('Importa', 'Import')} ${rows.length || ''}`}
-        </button>
+        </MutationButton>
       </React.Fragment>}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
         <button className="dk-btn dk-btn--ghost" onClick={() => fileRef.current && fileRef.current.click()}><Icon name="arrowDn" size={15} />{t('Carica file CSV', 'Upload CSV file')}</button>
@@ -112,3 +114,5 @@ export default function BulkImportModal({ onClose }) {
     </DkModal>
   );
 }
+
+export default withPortalForm(BulkImportModal);

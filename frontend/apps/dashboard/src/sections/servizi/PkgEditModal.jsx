@@ -1,3 +1,5 @@
+import { withPortalForm } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // PkgEditModal.jsx — create / edit a package (POST/PUT /api/catalog/packages).
 // items = [{service_id, qty}] picked from the service catalog; savings preview.
 import React, { useState } from 'react';
@@ -9,7 +11,7 @@ function svcName(s, lang) {
   return lang === 'en' && s.name_en ? s.name_en : s.name_it;
 }
 
-export default function PkgEditModal({ pkg, services, onSave, onDelete, onClose, t, lang }) {
+function PkgEditModal({ pkg, services, onSave, onDelete, onClose, t, lang }) {
   const isNew = !pkg?.id;
   const [draft, setDraft] = useState(() => ({
     name: pkg?.name || '',
@@ -75,14 +77,14 @@ export default function PkgEditModal({ pkg, services, onSave, onDelete, onClose,
       foot={(
         <React.Fragment>
           {!isNew && onDelete && (
-            <button className="dk-btn dk-btn--ghost" style={{ marginRight: 'auto', color: 'var(--danger)' }} onClick={onDelete}>
+            <MutationButton className="dk-btn dk-btn--ghost" style={{ marginRight: 'auto', color: 'var(--danger)' }} onClick={onDelete}>
               <Icon name="pause" size={15} color="var(--danger)" />{t('Disattiva', 'Deactivate')}
-            </button>
+            </MutationButton>
           )}
           <button className="dk-btn dk-btn--ghost" onClick={onClose}>{t('Annulla', 'Cancel')}</button>
-          <button className="dk-btn dk-btn--clay" disabled={!canSave} style={{ opacity: canSave ? 1 : 0.5 }} onClick={submit}>
+          <MutationButton className="dk-btn dk-btn--clay" disabled={!canSave} style={{ opacity: canSave ? 1 : 0.5 }} onClick={submit}>
             <Icon name="check" size={17} color="#fff" />{saving ? t('Salvataggio…', 'Saving…') : t('Salva pacchetto', 'Save package')}
-          </button>
+          </MutationButton>
         </React.Fragment>
       )}
     >
@@ -194,3 +196,5 @@ export default function PkgEditModal({ pkg, services, onSave, onDelete, onClose,
     </DkModal>
   );
 }
+
+export default withPortalForm(PkgEditModal, { preview: ({ pkg }) => !!pkg?.id });

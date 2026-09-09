@@ -1,3 +1,4 @@
+import { MutationButton } from '@youty/shared';
 // FreedSlotModal — after a staff cancel/no-show: matching waitlist entries for the freed
 // slot, ranked client-side, with WhatsApp-suggestion copy (display only — Yourang sends).
 import React, { useState } from 'react';
@@ -7,7 +8,7 @@ import { useDash } from '../../../ctx.jsx';
 import { aStartMin, aEndMin, initialsOf, prefLabel, svcLabel, toastErr, wlRank, wlDaysWaiting, wlWhatsAppMsg } from '../lib.js';
 
 export default function FreedSlotModal({ appointment, matches: rawMatches, onClose }) {
-  const { t, lang, salon, fireToast, openModal, hasScope } = useDash();
+  const { t, lang, salon, fireToast, openModal, hasScope, canMutate } = useDash();
   const canWrite = hasScope('agenda');
   const [entries, setEntries] = useState(() => wlRank(rawMatches || [], appointment));
   const [busyId, setBusyId] = useState(null);
@@ -83,9 +84,9 @@ export default function FreedSlotModal({ appointment, matches: rawMatches, onClo
                 <Icon name="calendar" size={16} color="#fff" />{t('Proponi lo slot', 'Propose the slot')}
               </button>
               {best.status !== 'contacted' && (
-                <button className="dk-btn dk-btn--ghost" disabled={busyId === best.id} style={{ flex: 1, height: 42 }} onClick={() => markContacted(best)}>
+                <MutationButton className="dk-btn dk-btn--ghost" disabled={busyId === best.id} style={{ flex: 1, height: 42 }} onClick={() => markContacted(best)}>
                   <Icon name="whatsapp" size={16} color="#3F9D58" />{t('Contattato', 'Contacted')}
-                </button>
+                </MutationButton>
               )}
             </div>
           )}
@@ -111,9 +112,9 @@ export default function FreedSlotModal({ appointment, matches: rawMatches, onClo
                   <div style={{ display: 'flex', gap: 7, flexShrink: 0 }}>
                     <button className="dk-btn dk-btn--clay" style={{ height: 34, fontSize: 12.5, padding: '0 12px' }} onClick={() => propose(w)}>{t('Proponi', 'Propose')}</button>
                     {w.status !== 'contacted' && (
-                      <button className="dk-btn dk-btn--ghost" disabled={busyId === w.id} title={t('Segna contattata', 'Mark contacted')} style={{ height: 34, fontSize: 12.5, padding: '0 12px' }} onClick={() => markContacted(w)}>
+                      <MutationButton className="dk-btn dk-btn--ghost" disabled={busyId === w.id} title={t('Segna contattata', 'Mark contacted')} style={{ height: 34, fontSize: 12.5, padding: '0 12px' }} onClick={() => markContacted(w)}>
                         <Icon name="whatsapp" size={13} color="#3F9D58" />
-                      </button>
+                      </MutationButton>
                     )}
                   </div>
                 )}

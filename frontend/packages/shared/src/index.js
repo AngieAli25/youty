@@ -18,3 +18,5 @@ export {
 } from './format.js';
 
 export * from './ui/index.js';
+
+export { PortalAccessContext, PortalAccessProvider, PortalAccessDialog, PortalFormBody, useMutationAction, PortalAccessPanel, PortalFormGate, withPortalForm, PortalAccessNotice, MutationButton, MutationInput, MutationTextarea, MutationNumInput, MutationSelect, MutationToggle, usePortalAccess, decisionIsActive } from "./portalAccess.jsx";

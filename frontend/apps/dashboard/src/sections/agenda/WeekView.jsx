@@ -7,8 +7,8 @@ import { useDash } from '../../ctx.jsx';
 import { DK_START, DK_END, PXM, DOW_IT, DOW_EN, weekLayout, fmtMoney, toastErr, opDisplay, isoAtMin } from './lib.js';
 
 export default function WeekView({ weekStart, operators, colorOf, onOpenDay, onNewAppt }) {
-  const { t, lang, showRevenue, fireToast, openModal, hasScope, settings } = useDash();
-  const canWrite = hasScope('agenda');
+  const { t, lang, showRevenue, fireToast, openModal, hasScope, canMutate, settings } = useDash();
+  const canWrite = canMutate('agenda');
   const step = settings?.slot_interval_min || 15;   // granularità fasce orarie (Impostazioni)
   const opFirsts = operators.map((o) => o.first_name); // per la disambiguazione omonimie
   const [days, setDays] = useState(null); // null = loading
@@ -139,7 +139,7 @@ export default function WeekView({ weekStart, operators, colorOf, onOpenDay, onN
 
   function onEmptyClick(e, opId, date) {
     if (e.target !== e.currentTarget) return;   // only the empty sub-column background, not a block
-    if (justDragged.current || !canWrite) return;
+    if (justDragged.current || !hasScope('agenda')) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const raw = DK_START + (e.clientY - rect.top) / PXM;
     const minutes = Math.max(DK_START, Math.min(DK_END - step, Math.round(raw / step) * step));

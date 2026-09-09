@@ -6,6 +6,8 @@ sales/agenda potrebbero non essere ancora pronte: ogni lettura cross-app è
 importata pigramente e degrada a 0/[] senza sollevare eccezioni.
 """
 
+from common.portal_access import require_portal_access
+
 from decimal import Decimal
 
 from .models import Client
@@ -73,6 +75,7 @@ def import_rows(salon, rows: list[dict]) -> dict:
     corrispondenza per email viene ignorata (il telefono è obbligatorio per
     creare un nuovo cliente).
     """
+    require_portal_access(salon)
     created = 0
     updated = 0
     for row in rows:

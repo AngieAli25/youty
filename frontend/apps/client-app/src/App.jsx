@@ -1,5 +1,6 @@
+import { PortalFormGate } from '@youty/shared';
 import React, { useEffect } from 'react';
-import { LangProvider, Toast } from '@youty/shared';
+import { LangProvider, Toast, PortalAccessNotice } from '@youty/shared';
 import { AppProvider, useApp } from './ctx.jsx';
 import { brandVars } from './theme.js';
 import { SCREENS } from './screens/registry.js';
@@ -24,7 +25,7 @@ export default function App() {
 }
 
 function Root() {
-  const { t, brand, brandError, reloadBrand, session, view, toastProps, authOpen, openAuth, closeAuth, setView } = useApp();
+  const { t, brand, brandError, reloadBrand, session, view, portalAccess, refreshPortalAccess, toastProps, authOpen, openAuth, closeAuth, setView } = useApp();
 
   const PERSONAL_VIEWS = ['prenotazioni', 'wallet', 'profilo', 'waitlist', 'waitlist-new', 'sposta', 'annulla', 'giftcard'];
   const gated = !session && PERSONAL_VIEWS.includes(view);
@@ -59,8 +60,9 @@ function Root() {
     return (
       <div className="app-viewport">
         <div className="app-frame" style={{ ...vars, fontFamily: 'var(--sans)' }}>
+        <PortalAccessNotice access={portalAccess} refresh={refreshPortalAccess} publicAccess />
           <div className="scroll" style={{ flex: 1, minHeight: 0, background: 'var(--paper-0)' }}>
-            <Hook />
+            <PortalFormGate><Hook /></PortalFormGate>
           </div>
           <Toast {...toastProps} />
         </div>
@@ -74,9 +76,12 @@ function Root() {
   return (
     <div className="app-viewport">
       <div className="app-frame" style={{ ...vars, fontFamily: 'var(--sans)' }}>
+        <PortalAccessNotice access={portalAccess} refresh={refreshPortalAccess} publicAccess />
         <div className="scroll" style={{ flex: 1, minHeight: 0, background: 'var(--paper-0)' }}>
           <div style={{ minHeight: '100%', paddingBottom: showNav ? 'calc(var(--safe-bottom) + 78px)' : 0 }}>
-            <Screen />
+            {['prenota', 'giftcard', 'waitlist-new', 'sposta', 'annulla'].includes(view)
+              ? <PortalFormGate key={view} onClose={() => setView('home')}><Screen /></PortalFormGate>
+              : <Screen />}
           </div>
         </div>
         {showNav && <Utility />}

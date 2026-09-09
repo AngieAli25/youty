@@ -11,7 +11,7 @@ export default function App() {
   return (
     <LangProvider>
       {session
-        ? <DashboardProvider key={session.user?.id}><Shell /></DashboardProvider>
+        ? <DashboardProvider key={`${session.user?.id}:${session.salon?.id}`}><Shell /></DashboardProvider>
         : <LoginPage />}
     </LangProvider>
   );

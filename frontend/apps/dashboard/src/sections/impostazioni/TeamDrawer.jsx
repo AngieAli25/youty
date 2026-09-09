@@ -1,3 +1,6 @@
+import { MutationInput } from '@youty/shared';
+import { MutationSelect } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // TeamDrawer.jsx — port of TeamManager on the real accounts API.
 // Members: GET /api/auth/members, POST /members/{id}/role, DELETE /members/{id}.
 // Invitations: GET/POST /api/auth/invitations — delivery is Yourang (phase 2),
@@ -17,7 +20,7 @@ const initialsOf = (name, email) => {
 };
 
 export default function TeamDrawer({ onClose, onRoles }) {
-  const { t, lang, hasScope, session, fireToast } = useDash();
+  const { t, lang, hasScope, canMutate, session, fireToast } = useDash();
   const canTeam = hasScope('team');
   const [members, setMembers] = useState(null);
   const [roles, setRoles] = useState([]);
@@ -84,7 +87,7 @@ export default function TeamDrawer({ onClose, onRoles }) {
       </div>
 
       <div className="scroll" style={{ flex: 1, overflowY: 'auto', padding: '16px 22px' }}>
-        {!canTeam ? (
+        {!hasScope("team") ? (
           <LockNote t={t} msg={t('Ti serve il permesso "Team" per gestire i membri.', 'You need the "Team" permission to manage members.')} />
         ) : members === null ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
@@ -108,13 +111,13 @@ export default function TeamDrawer({ onClose, onRoles }) {
                     <span className="t-sm" style={{ color: 'var(--muted-2)', fontWeight: 600, flexShrink: 0 }}>{t('Accesso totale', 'Full access')}</span>
                   ) : (
                     <React.Fragment>
-                      <select value={m.role?.id ?? ''} onChange={(e) => setRole(m.id, e.target.value ? Number(e.target.value) : null)}
+                      <MutationSelect value={m.role?.id ?? ''} onChange={(e) => setRole(m.id, e.target.value ? Number(e.target.value) : null)}
                         style={{ border: '1px solid var(--hair)', borderRadius: 9, outline: 'none', fontSize: 13, fontWeight: 600, padding: '7px 10px', fontFamily: 'var(--sans)', background: 'var(--surface)', cursor: 'pointer', flexShrink: 0, color: 'var(--ink)' }}>
                         <option value="">{t('Nessun ruolo', 'No role')}</option>
                         {roles.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
-                      </select>
+                      </MutationSelect>
                       {m.user.id !== session?.user?.id && (
-                        <button className="dk-iconbtn" title={t('Rimuovi membro', 'Remove member')} onClick={() => removeMember(m)} style={{ width: 30, height: 30, borderRadius: 8 }}><Icon name="x" size={14} color="var(--danger)" /></button>
+                        <MutationButton className="dk-iconbtn" title={t('Rimuovi membro', 'Remove member')} onClick={() => removeMember(m)} style={{ width: 30, height: 30, borderRadius: 8 }}><Icon name="x" size={14} color="var(--danger)" /></MutationButton>
                       )}
                     </React.Fragment>
                   )}
@@ -151,17 +154,17 @@ export default function TeamDrawer({ onClose, onRoles }) {
             {inviting ? (
               <div className="dk-card" style={{ padding: 15, border: '1px solid var(--clay)', boxShadow: 'none', marginTop: 12 }}>
                 <div className="t-meta" style={{ marginBottom: 10 }}>{t('Invita un membro', 'Invite a member')}</div>
-                <input value={inv.email} onChange={(e) => setInv((f) => ({ ...f, email: e.target.value }))} type="email" placeholder="email@salone.it" style={{ ...inputCss, width: '100%', boxSizing: 'border-box', marginBottom: 9 }} />
-                <select value={inv.role_id ?? ''} onChange={(e) => setInv((f) => ({ ...f, role_id: Number(e.target.value) }))} style={{ ...inputCss, width: '100%', fontWeight: 600, cursor: 'pointer', marginBottom: 12 }}>
+                <MutationInput value={inv.email} onChange={(e) => setInv((f) => ({ ...f, email: e.target.value }))} type="email" placeholder="email@salone.it" style={{ ...inputCss, width: '100%', boxSizing: 'border-box', marginBottom: 9 }} />
+                <MutationSelect value={inv.role_id ?? ''} onChange={(e) => setInv((f) => ({ ...f, role_id: Number(e.target.value) }))} style={{ ...inputCss, width: '100%', fontWeight: 600, cursor: 'pointer', marginBottom: 12 }}>
                   {roles.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
-                </select>
+                </MutationSelect>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button className="dk-btn dk-btn--ghost" style={{ flex: 1 }} onClick={() => setInviting(false)}>{t('Annulla', 'Cancel')}</button>
-                  <button className="dk-btn dk-btn--clay" style={{ flex: 1 }} disabled={!inv.email.trim() || !inv.role_id || sending} onClick={sendInvite}><Icon name="check" size={16} color="#fff" />{t('Crea invito', 'Create invite')}</button>
+                  <MutationButton className="dk-btn dk-btn--clay" style={{ flex: 1 }} disabled={!inv.email.trim() || !inv.role_id || sending} onClick={sendInvite}><Icon name="check" size={16} color="#fff" />{t('Crea invito', 'Create invite')}</MutationButton>
                 </div>
               </div>
             ) : (
-              <button className="dk-btn dk-btn--ghost" style={{ width: '100%', borderStyle: 'dashed', marginTop: 12 }} onClick={() => setInviting(true)}><Icon name="plus" size={16} />{t('Invita un membro', 'Invite a member')}</button>
+              <MutationButton className="dk-btn dk-btn--ghost" style={{ width: '100%', borderStyle: 'dashed', marginTop: 12 }} onClick={() => setInviting(true)}><Icon name="plus" size={16} />{t('Invita un membro', 'Invite a member')}</MutationButton>
             )}
 
             {/* link to roles */}

@@ -1,3 +1,4 @@
+import { MutationButton } from '@youty/shared';
 // Sposta.jsx — reschedule an upcoming appointment: day strip + availability
 // with the SAME service items, then POST /api/agenda/client/appointments/{id}/move.
 // The 24h-policy 400 error is surfaced inline (banner) + toast.
@@ -176,9 +177,9 @@ export default function Sposta() {
       </div>
       <div style={{ flex: 1 }} />
       <StickyCta>
-        <button className="btn btn--brand btn--block press" disabled={!slot || moving} style={{ opacity: !slot || moving ? 0.4 : 1 }} onClick={confirm}>
+        <MutationButton className="btn btn--brand btn--block press" disabled={!slot || moving} style={{ opacity: !slot || moving ? 0.4 : 1 }} onClick={confirm}>
           {moving ? t('Spostamento…', 'Rescheduling…') : t('Conferma nuovo orario', 'Confirm new time')}
-        </button>
+        </MutationButton>
       </StickyCta>
     </div>
   );

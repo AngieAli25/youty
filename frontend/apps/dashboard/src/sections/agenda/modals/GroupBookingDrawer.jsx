@@ -1,3 +1,5 @@
+import { withPortalForm, PortalFormBody } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // GroupBookingDrawer — book MULTIPLE clients in one session while the agenda stays visible.
 // Right-side live drawer (no dark backdrop): each row = one client + services + a chosen start,
 // so staff can stagger times against the live grid. Submits each row sequentially to
@@ -7,8 +9,8 @@ import { api, ApiError, Avatar, Icon, fmtEur, fmtDur, timeLabel, minutesOfDay, t
 import { useDash } from '../../../ctx.jsx';
 import { initialsOf, toastErr, fmtMoney } from '../lib.js';
 
-export default function GroupBookingDrawer({ date, onClose, onCreated }) {
-  const { t, lang, services, serviceCategories, operators, fireToast, hasScope } = useDash();
+function GroupBookingDrawer({ date, onClose, onCreated }) {
+  const { t, lang, services, serviceCategories, operators, fireToast, hasScope, canMutate } = useDash();
   const canWrite = hasScope('agenda');
   const baseDate = date || todayStr();
 
@@ -92,7 +94,7 @@ export default function GroupBookingDrawer({ date, onClose, onCreated }) {
         </div>
         <button className="dk-iconbtn" style={{ flexShrink: 0 }} onClick={onClose} aria-label={t('Chiudi', 'Close')}><Icon name="x" size={18} /></button>
       </div>
-      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px 20px' }}>{body}</div>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px 20px' }}><PortalFormBody onClose={onClose}>{body}</PortalFormBody></div>
       {footer && (
         <div style={{ padding: '14px 20px', borderTop: '1px solid var(--hair)', background: 'var(--surface-2)', display: 'flex', gap: 10, alignItems: 'center', flexShrink: 0 }}>
           {footer}
@@ -139,7 +141,7 @@ export default function GroupBookingDrawer({ date, onClose, onCreated }) {
         </div>
       </React.Fragment>,
       <React.Fragment>
-        <button className="dk-btn dk-btn--ghost" onClick={resetAll}><Icon name="plus" size={16} />{t('Nuovo gruppo', 'New group')}</button>
+        <MutationButton className="dk-btn dk-btn--ghost" onClick={resetAll}><Icon name="plus" size={16} />{t('Nuovo gruppo', 'New group')}</MutationButton>
         <button className="dk-btn dk-btn--clay" style={{ marginLeft: 'auto' }} onClick={onClose}><Icon name="check" size={16} color="#fff" />{t('Chiudi', 'Close')}</button>
       </React.Fragment>
     );
@@ -179,12 +181,12 @@ export default function GroupBookingDrawer({ date, onClose, onCreated }) {
         )}
       </div>
       <button className="dk-btn dk-btn--ghost" onClick={onClose} disabled={batchRunning}>{t('Annulla', 'Cancel')}</button>
-      <button className="dk-btn dk-btn--clay" disabled={batchRunning || readyCount === 0} onClick={createAll}>
+      <MutationButton className="dk-btn dk-btn--clay" disabled={batchRunning || readyCount === 0} onClick={createAll}>
         <Icon name="plus" size={16} color="#fff" />
         {batchRunning
           ? t('Creazione…', 'Creating…')
           : t(`Crea ${readyCount} prenotazion${readyCount === 1 ? 'e' : 'i'}`, `Create ${readyCount} booking${readyCount === 1 ? '' : 's'}`)}
-      </button>
+      </MutationButton>
     </React.Fragment>
   );
 }
@@ -404,3 +406,5 @@ function GroupRow({ row, index, canRemove, busy, onPatch, onRemove }) {
     </div>
   );
 }
+
+export default withPortalForm(GroupBookingDrawer);

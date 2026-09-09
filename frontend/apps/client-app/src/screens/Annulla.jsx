@@ -1,3 +1,4 @@
+import { MutationButton } from '@youty/shared';
 // Annulla.jsx — cancel confirmation with deposit-forfeit warning, then
 // POST /api/agenda/client/appointments/{id}/cancel. 400 policy errors are
 // surfaced inline + toast.
@@ -105,9 +106,9 @@ export default function Annulla() {
           )}
         </div>
 
-        <button className="btn btn--block press" disabled={busy} style={{ background: 'var(--danger)', color: '#fff', opacity: busy ? 0.6 : 1 }} onClick={confirm}>
+        <MutationButton className="btn btn--block press" disabled={busy} style={{ background: 'var(--danger)', color: '#fff', opacity: busy ? 0.6 : 1 }} onClick={confirm}>
           {busy ? t('Annullamento…', 'Cancelling…') : t('Sì, annulla', 'Yes, cancel')}
-        </button>
+        </MutationButton>
         <button className="btn btn--ghost btn--block press" style={{ marginTop: 10 }} onClick={() => setView('home')}>
           {t('No, mantieni', 'No, keep it')}
         </button>

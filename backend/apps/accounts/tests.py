@@ -6,7 +6,7 @@ richiedono che tutte le app di dominio siano presenti (post-integrazione).
 
 import json
 
-from django.test import TestCase
+from common.testing import SubscribedSalonTestCase as TestCase
 
 from apps.core.models import OutboxEvent, Salon
 

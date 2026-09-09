@@ -1,3 +1,5 @@
+import { withPortalForm } from '@youty/shared';
+import { MutationButton } from '@youty/shared';
 // RestockModal.jsx — batch "Carico merce": pick existing products and/or paste a CSV,
 // then POST /api/inventory/load-csv (matches sku→name; creates missing products when a
 // supplier is set). Shows the per-row results/errors returned by the API.
@@ -11,7 +13,7 @@ import { NumBox, inputCss } from './bits.jsx';
 let keySeq = 0;
 const nextKey = () => 'k' + (keySeq++) + '_' + Date.now();
 
-export default function RestockModal({ allProds, suppliers, onClose, onDone }) {
+function RestockModal({ allProds, suppliers, onClose, onDone }) {
   const { t, lang, fireToast } = useDash();
   const [lines, setLines] = useState([]);       // {key, product?, name, sku, qty, isNew}
   const [pickQ, setPickQ] = useState('');
@@ -104,7 +106,7 @@ export default function RestockModal({ allProds, suppliers, onClose, onDone }) {
             <span className="t-num" style={{ fontSize: 18 }}>{totalUnits > 0 ? '+' : ''}{totalUnits}</span>
           </div>
           <button className="dk-btn dk-btn--ghost" onClick={onClose}>{t('Annulla', 'Cancel')}</button>
-          <button className="dk-btn dk-btn--clay" disabled={!canApply} onClick={apply}><Icon name="check" size={17} color="#fff" />{t('Conferma carico', 'Confirm restock')}</button>
+          <MutationButton className="dk-btn dk-btn--clay" disabled={!canApply} onClick={apply}><Icon name="check" size={17} color="#fff" />{t('Conferma carico', 'Confirm restock')}</MutationButton>
         </React.Fragment>
       )}>
 
@@ -233,3 +235,5 @@ export default function RestockModal({ allProds, suppliers, onClose, onDone }) {
     </DkModal>
   );
 }
+
+export default withPortalForm(RestockModal);

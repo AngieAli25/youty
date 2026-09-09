@@ -12,7 +12,8 @@ import hmac
 import time
 from unittest.mock import Mock, patch
 
-from django.test import SimpleTestCase, TestCase, override_settings
+from django.test import SimpleTestCase, override_settings
+from common.testing import SubscribedSalonTestCase as TestCase
 
 from .api import _verify_webhook
 from .sync import import_event, normalize_phone

@@ -1,6 +1,6 @@
 from datetime import date
 
-from django.test import TestCase
+from common.testing import SubscribedSalonTestCase as TestCase
 from django.utils import timezone
 
 from apps.agenda.models import Appointment, AppointmentService

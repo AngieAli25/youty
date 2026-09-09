@@ -10,7 +10,7 @@ import json
 from decimal import Decimal
 from unittest.mock import patch
 
-from django.test import TestCase
+from common.testing import SubscribedSalonTestCase as TestCase
 from django.utils import timezone
 from ninja.errors import HttpError
 

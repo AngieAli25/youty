@@ -50,7 +50,7 @@ async function parseBody(res) {
 }
 
 async function request(method, path, opts = {}) {
-  const { params, body, form, headers = {}, auth = true, _retried = false } = opts;
+  const { params, body, form, headers = {}, auth = true, _retried = false, signal } = opts;
   const url = API_URL + path + qs(params);
 
   const h = { ...headers };
@@ -66,7 +66,7 @@ async function request(method, path, opts = {}) {
     if (token) h['Authorization'] = 'Bearer ' + token;
   }
 
-  const res = await fetch(url, { method, headers: h, body: payload });
+  const res = await fetch(url, { method, headers: h, body: payload, signal });
 
   if (res.ok) return parseBody(res);
 

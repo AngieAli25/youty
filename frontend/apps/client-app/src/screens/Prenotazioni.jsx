@@ -1,3 +1,4 @@
+import { MutationButton } from '@youty/shared';
 // Prenotazioni.jsx — upcoming + past appointment lists with status/deposit
 // chips; upcoming items expose sposta/annulla actions.
 // Data: GET /api/agenda/client/appointments.
@@ -40,14 +41,14 @@ function ApptRow({ appt, t, lang, dim, actions, onSposta, onAnnulla }) {
       )}
       {actions && (
         <div style={{ display: 'flex', gap: 8, marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--hair)' }}>
-          <button className="press" onClick={onSposta}
+          <MutationButton className="press" onClick={onSposta}
             style={{ flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '10px 0', borderRadius: 'var(--r-pill)', border: '1.5px solid var(--brand)', color: 'var(--brand-ink)', fontWeight: 700, fontSize: 13.5, background: 'transparent' }}>
             <Icon name="calendar" size={15} color="var(--brand-ink)" />{t('Sposta', 'Reschedule')}
-          </button>
-          <button className="press" onClick={onAnnulla}
+          </MutationButton>
+          <MutationButton className="press" onClick={onAnnulla}
             style={{ flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '10px 0', borderRadius: 'var(--r-pill)', border: '1.5px solid var(--hair)', color: 'var(--danger)', fontWeight: 700, fontSize: 13.5, background: 'transparent' }}>
             <Icon name="x" size={15} color="var(--danger)" />{t('Annulla', 'Cancel')}
-          </button>
+          </MutationButton>
         </div>
       )}
     </div>
@@ -85,10 +86,10 @@ export default function Prenotazioni() {
           <DashedEmpty style={{ marginBottom: 6 }}>
             {t('Nessun appuntamento in programma.', 'No upcoming appointments.')}
             <div style={{ marginTop: 12 }}>
-              <button className="press" onClick={() => setView('prenota')}
+              <MutationButton className="press" onClick={() => setView('prenota')}
                 style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '10px 18px', borderRadius: 99, background: 'var(--brand-tint)', color: 'var(--brand-ink)', fontWeight: 700, fontSize: 13.5 }}>
                 <Icon name="plus" size={15} color="var(--brand-ink)" />{t('Prenota ora', 'Book now')}
-              </button>
+              </MutationButton>
             </div>
           </DashedEmpty>
         )}

@@ -1,3 +1,4 @@
+import { MutationButton } from '@youty/shared';
 import React, { useEffect, useState } from 'react';
 import { api, ApiError, Icon } from '@youty/shared';
 import { useDash } from '../../ctx.jsx';
@@ -7,7 +8,7 @@ import { useDash } from '../../ctx.jsx';
  * and CouponEditModal. Debounced search on GET /api/clients/?q=; new clients via
  * POST /api/clients/ (gated on the `clients` scope) without leaving the flow. */
 export default function ClientPicker({ client, onChange, placeholder, t }) {
-  const { hasScope, fireToast } = useDash();
+  const { hasScope, canMutate, fireToast } = useDash();
   const canCreate = hasScope('clients');
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState('');
@@ -92,9 +93,9 @@ export default function ClientPicker({ client, onChange, placeholder, t }) {
                 <input value={nf.phone} onChange={(e) => setNf((f) => ({ ...f, phone: e.target.value }))} placeholder={t('Telefono', 'Phone')} style={nfInput} />
                 <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 2 }}>
                   <button className="dk-btn dk-btn--ghost" style={{ height: 34, fontSize: 12.5 }} onClick={() => setAdding(false)}>{t('Indietro', 'Back')}</button>
-                  <button className="dk-btn dk-btn--clay" style={{ height: 34, fontSize: 12.5 }} disabled={creating || !nf.first_name.trim() || !nf.phone.trim()} onClick={createClient}>
+                  <MutationButton className="dk-btn dk-btn--clay" style={{ height: 34, fontSize: 12.5 }} disabled={creating || !nf.first_name.trim() || !nf.phone.trim()} onClick={createClient}>
                     <Icon name="check" size={14} color="#fff" />{creating ? t('Creazione…', 'Creating…') : t('Crea e seleziona', 'Create & select')}
-                  </button>
+                  </MutationButton>
                 </div>
               </div>
             ) : (
